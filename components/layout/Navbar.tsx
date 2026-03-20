@@ -10,25 +10,33 @@ import {
     Database
 } from "lucide-react";
 
+import { useClusterStore } from "@/store/useClusterStore";
+
 interface NavbarProps {
     onOpenConnect: () => void;
 }
 
 const Navbar = ({ onOpenConnect }: NavbarProps) => {
+    const { selectedCluster } = useClusterStore();
+
     return (
         <nav className="fixed right-0 top-0 z-30 flex h-14 w-[calc(100%-16rem)] items-center justify-between border-b border-white/5 bg-background px-6 font-sans overflow-hidden">
             {/* Breadcrumbs */}
             <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
-                    <span className="hover:text-foreground cursor-pointer transition-colors">Projects</span>
-                    <ChevronRight className="h-3.5 w-3.5 text-zinc-700" />
-                    <span className="text-foreground font-bold">Main Service</span>
+                <div className="flex items-center gap-2 text-[11px] font-medium text-zinc-400">
+                    <span className="hover:text-foreground cursor-pointer transition-colors">Clusters</span>
+                    <ChevronRight className="h-3.5 w-3.5 text-zinc-600" />
+                    <span className="text-foreground font-bold">{selectedCluster?.name || "No Active Connection"}</span>
                 </div>
-                <div className="h-4 w-px bg-border mx-2"></div>
-                <div className="flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-0.5 text-[9px] font-black text-primary border border-primary/20">
-                    <div className="h-1 w-1 rounded-full bg-primary"></div>
-                    SECURE
-                </div>
+                {selectedCluster && (
+                    <>
+                        <div className="h-4 w-px bg-border mx-2"></div>
+                        <div className="flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-0.5 text-[9px] font-black text-primary border border-primary/20">
+                            <div className="h-1 w-1 rounded-full bg-primary animate-pulse"></div>
+                            {selectedCluster.type.toUpperCase()}
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Actions */}

@@ -11,13 +11,21 @@ import ConnectionDialog from "@/components/dashboard/ConnectionDialog";
 import ERDiagram from "@/components/dashboard/ERDiagram";
 import { History, Copy, Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
+import ClusterGate from "@/components/dashboard/ClusterGate";
+import { useClusterStore } from "@/store/useClusterStore";
 
 export default function DashboardPage() {
     const router = useRouter();
     const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
     const [isConnectOpen, setIsConnectOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<"query" | "er" | "table" | "logs">("query");
-    const [selectedTable, setSelectedTable] = useState("users");
+    const { selectedCluster } = useClusterStore();
+    const [selectedTable, setSelectedTable] = useState("");
+
+    useEffect(() => {
+        // Reset table selection when switching clusters
+        setSelectedTable("");
+    }, [selectedCluster?.id]);
 
     useEffect(() => {
         checkAuth();
@@ -33,7 +41,7 @@ export default function DashboardPage() {
         return (
             <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
                 <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 animate-pulse">Initializing Interface...</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 animate-pulse">Initializing Interface...</p>
             </div>
         );
     }
@@ -56,100 +64,102 @@ export default function DashboardPage() {
     }, {} as Record<string, typeof mockLogs>);
 
     return (
-        <div className="flex min-h-screen max-w-full bg-background text-foreground animate-in fade-in duration-700 font-sans overflow-x-hidden">
-            {/* Sidebar navigation */}
-            <Sidebar
-                onOpenConnect={() => setIsConnectOpen(true)}
-                activeTab={activeTab === "table" ? "query" : activeTab}
-                onTabChange={(tab) => setActiveTab(tab)}
-                onTableSelect={(name) => {
-                    setSelectedTable(name);
-                    setActiveTab("table");
-                }}
-                selectedTable={selectedTable}
-            />
+        <ClusterGate>
+            <div className="flex min-h-screen max-w-full bg-background text-foreground animate-in fade-in duration-700 font-sans overflow-x-hidden">
+                {/* Sidebar navigation */}
+                <Sidebar
+                    onOpenConnect={() => setIsConnectOpen(true)}
+                    activeTab={activeTab}
+                    onTabChange={(tab) => setActiveTab(tab)}
+                    onTableSelect={(name) => {
+                        setSelectedTable(name);
+                        setActiveTab("table");
+                    }}
+                    selectedTable={selectedTable}
+                />
 
-            {/* Main Content Area */}
-            <div className="flex flex-1 flex-col pl-64 min-w-0 max-w-full relative">
-                {/* Top Navbar */}
-                <Navbar onOpenConnect={() => setIsConnectOpen(true)} />
+                {/* Main Content Area */}
+                <div className="flex flex-1 flex-col pl-64 min-w-0 max-w-full relative">
+                    {/* Top Navbar */}
+                    <Navbar onOpenConnect={() => setIsConnectOpen(true)} />
 
-                {/* Workspace */}
-                <main className="flex flex-1 flex-col pt-14 pb-0 bg-background transition-all">
-                    {activeTab === "query" || activeTab === "table" ? (
-                        <div className="flex flex-1 flex-col divide-y divide-white/5 text-foreground min-w-0 overflow-hidden">
-                            {/* SQL Editor Section - Only shown in query mode */}
-                            {activeTab === "query" && (
-                                <div className="flex-none h-[500px] min-w-0 overflow-hidden">
-                                    <QueryEditor />
-                                </div>
-                            )}
-
-                            {/* Results Table Section */}
-                            <div className="flex-1 overflow-hidden bg-background min-w-0">
-                                <DataTable selectedTable={selectedTable} />
-                            </div>
-                        </div>
-                    ) : activeTab === "logs" ? (
-                        <div className="flex flex-1 flex-col overflow-y-auto scrollbar-hide bg-[#021016]/20">
-                            <div className="p-8 space-y-10 max-w-5xl mx-auto w-full">
-                                {Object.entries(groupedLogs).map(([date, logs]) => (
-                                    <div key={date} className="space-y-3">
-                                        <div className="flex items-center gap-4 mb-1 px-2">
-                                            <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">{date}</span>
-                                            <div className="h-px flex-1 bg-white/5"></div>
-                                        </div>
-
-                                        <div className="divide-y divide-white/[0.03] bg-white/[0.01] rounded-xl border border-white/5 overflow-hidden">
-                                            {logs.map((log) => (
-                                                <div key={log.id} className="group flex items-center gap-6 py-3 px-4 hover:bg-white/[0.02] transition-colors">
-                                                    <div className="flex items-center gap-4 shrink-0 min-w-[140px]">
-                                                        <div className={`h-1.5 w-1.5 rounded-full ${log.status === 'Success' ? 'bg-primary' : 'bg-red-500'}`}></div>
-                                                        <span className="text-[9px] font-mono text-zinc-500 w-14">{log.timestamp}</span>
-                                                        <div className={`px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-widest border ${log.status === 'Success' ? 'bg-primary/5 text-primary/40 border-primary/10' : 'bg-red-500/5 text-red-400/50 border-red-500/10'}`}>
-                                                            {log.status}
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex-1 min-w-0 flex items-center justify-between">
-                                                        <code className="font-mono text-[11px] text-zinc-400 truncate group-hover:text-zinc-200 transition-colors">
-                                                            {log.query}
-                                                        </code>
-                                                        <div className="flex items-center gap-6 pr-2 ml-4">
-                                                            <div className="flex items-center gap-4 text-[8px] font-black text-zinc-700 uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                                                <span>@{log.user}</span>
-                                                                <span className="h-1 w-1 bg-zinc-800 rounded-full"></span>
-                                                                <span>{log.duration}</span>
-                                                            </div>
-                                                            <button
-                                                                onClick={() => navigator.clipboard.writeText(log.query)}
-                                                                className="opacity-0 group-hover:opacity-100 p-1 hover:text-primary transition-all shrink-0"
-                                                                title="Copy Query"
-                                                            >
-                                                                <Copy className="h-3.5 w-3.5" />
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
+                    {/* Workspace */}
+                    <main className="flex flex-1 flex-col pt-14 pb-0 bg-background transition-all">
+                        {activeTab === "query" || activeTab === "table" ? (
+                            <div className="flex flex-1 flex-col divide-y divide-white/5 text-foreground min-w-0 overflow-hidden">
+                                {/* SQL Editor Section - Only shown in query mode */}
+                                {activeTab === "query" && (
+                                    <div className="flex-none h-[500px] min-w-0 overflow-hidden">
+                                        <QueryEditor />
                                     </div>
-                                ))}
+                                )}
+
+                                {/* Results Table Section */}
+                                <div className="flex-1 overflow-hidden bg-background min-w-0">
+                                    <DataTable selectedTable={selectedTable} />
+                                </div>
                             </div>
-                        </div>
-                    ) : (
-                        <div className="flex flex-1 p-8 bg-background/50">
-                            <ERDiagram />
-                        </div>
-                    )}
-                </main>
+                        ) : activeTab === "logs" ? (
+                            <div className="flex flex-1 flex-col overflow-y-auto scrollbar-hide bg-[#021016]/20">
+                                <div className="p-8 space-y-10 max-w-5xl mx-auto w-full">
+                                    {Object.entries(groupedLogs).map(([date, logs]) => (
+                                        <div key={date} className="space-y-3">
+                                            <div className="flex items-center gap-4 mb-1 px-2">
+                                                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{date}</span>
+                                                <div className="h-px flex-1 bg-white/5"></div>
+                                            </div>
 
-                {/* Bottom Status Bar */}
-                <StatusBar />
+                                            <div className="divide-y divide-white/[0.03] bg-white/[0.01] rounded-xl border border-white/5 overflow-hidden">
+                                                {logs.map((log) => (
+                                                    <div key={log.id} className="group flex items-center gap-6 py-3 px-4 hover:bg-white/[0.02] transition-colors">
+                                                        <div className="flex items-center gap-4 shrink-0 min-w-[140px]">
+                                                            <div className={`h-1.5 w-1.5 rounded-full ${log.status === 'Success' ? 'bg-primary' : 'bg-red-500'}`}></div>
+                                                            <span className="text-[9px] font-mono text-zinc-400 w-14">{log.timestamp}</span>
+                                                            <div className={`px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-widest border ${log.status === 'Success' ? 'bg-primary/5 text-primary border-primary/20' : 'bg-red-500/5 text-red-400 border-red-500/20'}`}>
+                                                                {log.status}
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex-1 min-w-0 flex items-center justify-between">
+                                                            <code className="font-mono text-[11px] text-zinc-300 truncate group-hover:text-white transition-colors">
+                                                                {log.query}
+                                                            </code>
+                                                            <div className="flex items-center gap-6 pr-2 ml-4">
+                                                                <div className="flex items-center gap-4 text-[8px] font-black text-zinc-400 uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                                                    <span>@{log.user}</span>
+                                                                    <span className="h-1 w-1 bg-zinc-700 rounded-full"></span>
+                                                                    <span>{log.duration}</span>
+                                                                </div>
+                                                                <button
+                                                                    onClick={() => navigator.clipboard.writeText(log.query)}
+                                                                    className="opacity-0 group-hover:opacity-100 p-1 hover:text-primary transition-all shrink-0"
+                                                                    title="Copy Query"
+                                                                >
+                                                                    <Copy className="h-3.5 w-3.5" />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex flex-1 p-8 bg-background/50">
+                                <ERDiagram />
+                            </div>
+                        )}
+                    </main>
+
+                    {/* Bottom Status Bar */}
+                    <StatusBar />
+                </div>
+
+                {/* Connection Dialog Modal */}
+                <ConnectionDialog isOpen={isConnectOpen} onClose={() => setIsConnectOpen(false)} />
             </div>
-
-            {/* Connection Dialog Modal */}
-            <ConnectionDialog isOpen={isConnectOpen} onClose={() => setIsConnectOpen(false)} />
-        </div>
+        </ClusterGate>
     );
 }

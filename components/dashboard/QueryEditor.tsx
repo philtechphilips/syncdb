@@ -103,10 +103,10 @@ LIMIT 10;`
                             onClick={() => setActiveQueryId(q.id)}
                             className={`group flex shrink-0 items-center gap-3 px-6 py-2.5 text-[11px] font-bold border-x border-t transition-all cursor-pointer relative -mb-[1px] translate-y-[1px] ${activeQueryId === q.id
                                 ? "bg-background border-white/5 text-primary"
-                                : "bg-background/50 border-transparent text-zinc-500 hover:text-white"
+                                : "bg-background/50 border-transparent text-zinc-400 hover:text-white"
                                 }`}
                         >
-                            <div className={`h-1.5 w-1.5 rounded-full ${activeQueryId === q.id ? 'bg-primary animate-pulse' : 'bg-zinc-700'}`}></div>
+                            <div className={`h-1.5 w-1.5 rounded-full ${activeQueryId === q.id ? 'bg-primary animate-pulse' : 'bg-zinc-600'}`}></div>
                             {q.name}
                             {queries.length > 1 && (
                                 <button
@@ -123,13 +123,13 @@ LIMIT 10;`
                     ))}
                     <button
                         onClick={handleNewQuery}
-                        className="flex shrink-0 items-center gap-1.5 px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-zinc-600 hover:text-zinc-300 transition-all active:scale-95 outline-none border-r border-white/5"
+                        className="flex shrink-0 items-center gap-1.5 px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-200 transition-all active:scale-95 outline-none border-r border-white/5"
                     >
                         <span className="text-sm">+</span> New Query
                     </button>
                     <button
                         onClick={() => setIsAiOpen(!isAiOpen)}
-                        className={`flex shrink-0 items-center gap-2.5 px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 outline-none border-r border-white/5 ${isAiOpen ? 'text-primary bg-primary/5' : 'text-zinc-500 hover:text-primary'}`}
+                        className={`flex shrink-0 items-center gap-2.5 px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 outline-none border-r border-white/5 ${isAiOpen ? 'text-primary bg-primary/5' : 'text-zinc-400 hover:text-primary'}`}
                     >
                         <Sparkles className="h-3.5 w-3.5" />
                         AI Assistant
@@ -143,14 +143,14 @@ LIMIT 10;`
                     <div className="max-w-5xl mx-auto px-6 py-3 flex items-center gap-4 group/ai">
                         <div className="flex items-center gap-2 shrink-0">
                             <Sparkles className={`h-4 w-4 text-primary ${isGenerating ? 'animate-spin' : ''}`} />
-                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Ask AI</span>
+                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Ask AI</span>
                         </div>
                         <input
                             value={aiPrompt}
                             onChange={(e) => setAiPrompt(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleAskAi()}
                             placeholder="e.g. 'Show me top 5 customers with most orders from last year'"
-                            className="flex-1 bg-transparent border-none outline-none text-[12px] font-medium text-zinc-200 placeholder:text-zinc-700"
+                            className="flex-1 bg-transparent border-none outline-none text-[12px] font-medium text-zinc-200 placeholder:text-zinc-500"
                             autoFocus
                         />
                         <div className="flex items-center gap-4">
@@ -161,10 +161,10 @@ LIMIT 10;`
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2">
-                                    <span className="text-[9px] font-black text-zinc-600 border border-white/10 px-2 py-1 rounded uppercase tracking-tighter bg-white/[0.02]">Enter to Generate</span>
+                                    <span className="text-[9px] font-black text-zinc-400 border border-white/10 px-2 py-1 rounded uppercase tracking-tighter bg-white/[0.02]">Enter to Generate</span>
                                     <button
                                         onClick={() => setIsAiOpen(false)}
-                                        className="p-1 hover:text-white text-zinc-600 transition-colors"
+                                        className="p-1 hover:text-white text-zinc-400 transition-colors"
                                     >
                                         <X className="h-4 w-4" />
                                     </button>
@@ -178,11 +178,11 @@ LIMIT 10;`
             <div className="flex flex-1 w-full overflow-hidden relative font-mono text-sm group">
                 {/* Line Numbers */}
                 <div
-                    className="flex w-14 shrink-0 flex-col items-center bg-[#021016]/30 py-6 text-[11px] text-zinc-700 border-r border-white/5 select-none leading-7"
+                    className="flex w-14 shrink-0 flex-col items-center bg-[#021016]/30 py-6 text-[11px] text-zinc-400 border-r border-white/5 select-none leading-7"
                     aria-hidden="true"
                 >
                     {Array.from({ length: 40 }).map((_, i) => (
-                        <div key={i} className={activeQuery.code.split('\n').length > i ? "text-zinc-600" : "text-zinc-800"}>
+                        <div key={i} className={activeQuery.code.split('\n').length > i ? "text-zinc-300" : "text-zinc-600"}>
                             {i + 1}
                         </div>
                     ))}
@@ -208,13 +208,13 @@ LIMIT 10;`
 
             {/* Action Bar */}
             <div className="w-full border-t border-white/5 p-2 bg-[#021016] flex items-center justify-between px-6 shrink-0">
-                <div className="flex items-center gap-6 text-[10px] font-bold text-zinc-700 uppercase tracking-widest px-4">
+                <div className="flex items-center gap-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-4">
                     <span className="flex items-center gap-2">
-                        <span className="text-zinc-800">UTF-8</span>
+                        <span className="text-zinc-500">UTF-8</span>
                     </span>
                     <span className="flex items-center gap-2">
-                        <span className="text-zinc-800">Line:</span>
-                        <span className="text-zinc-600">{activeQuery.code.split('\n').length}</span>
+                        <span className="text-zinc-500">Line:</span>
+                        <span className="text-zinc-400">{activeQuery.code.split('\n').length}</span>
                     </span>
                 </div>
                 <div className="flex items-center gap-3">

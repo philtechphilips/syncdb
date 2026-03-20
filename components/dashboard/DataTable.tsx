@@ -20,6 +20,8 @@ import {
     CheckCircle2,
     Table
 } from "lucide-react";
+import { downloadFile, formatToCSV, formatToJSON, formatToSQL, formatToMarkdown } from '@/lib/exportUtils';
+import { useClusterStore } from "@/store/useClusterStore";
 
 interface DataTableProps {
     data?: any[];
@@ -27,66 +29,36 @@ interface DataTableProps {
 }
 
 const DataTable = ({ data, selectedTable }: DataTableProps) => {
-    const defaultData = [
-        { id: 1, name: "John Doe", email: "john@example.com", role: "Admin", status: "Active", created: "2024-01-15" },
-        { id: 2, name: "Jane Smith", email: "jane@example.com", role: "Editor", status: "Active", created: "2024-01-16" },
-        { id: 3, name: "Bob Johnson", email: "bob@example.com", role: "Viewer", status: "Inactive", created: "2024-01-17" },
-        { id: 4, name: "Alice Brown", email: "alice@example.com", role: "Editor", status: "Active", created: "2024-01-18" },
-        { id: 5, name: "Charlie Davis", email: "charlie@example.com", role: "Viewer", status: "Active", created: "2024-01-19" },
-    ];
-    const [rows, setRows] = useState(data || defaultData);
+    const { selectedCluster, fetchTableData, updateRow, tableData, isDataLoading: isLoading } = useClusterStore();
+    const [rows, setRows] = useState(tableData);
+    const [editingCell, setEditingCell] = useState<{ rowId: any, colName: string, value: string } | null>(null);
 
-    const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+    const [selectedRows, setSelectedRows] = useState<Set<any>>(new Set());
     const [contextMenu, setContextMenu] = useState<{ x: number, y: number, rowId: number, colName: string, type: 'cell' | 'row' } | null>(null);
     const [activeCell, setActiveCell] = useState<{ rowId: number, colName: string } | null>(null);
-    const [filterText, setFilterText] = useState("");
-    const [isFilterVisible, setIsFilterVisible] = useState(false);
     const [showSelectedOnly, setShowSelectedOnly] = useState(false);
+
+    const [showCopyDropdown, setShowCopyDropdown] = useState(false);
+    const [showExportDropdown, setShowExportDropdown] = useState(false);
+    const [showGlobalExportDropdown, setShowGlobalExportDropdown] = useState(false);
+    const [lastCopiedFormat, setLastCopiedFormat] = useState<string | null>(null);
     const [showExportModal, setShowExportModal] = useState(false);
     const [exportSuccess, setExportSuccess] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (!selectedTable) return;
+    // Advanced Filtering
+    const [activeFilters, setActiveFilters] = useState<{ column: string, operator: string, value: string }[]>([]);
+    const [showFilterPopover, setShowFilterPopover] = useState(false);
 
-        let newData = [];
-        switch (selectedTable) {
-            case "users":
-                newData = defaultData;
-                break;
-            case "orders":
-                newData = [
-                    { id: 101, customer: "Company A", total: "$1,200", status: "Paid", date: "2024-02-01" },
-                    { id: 102, customer: "Individual B", total: "$450", status: "Pending", date: "2024-02-02" },
-                    { id: 103, customer: "Enterprise C", total: "$15,000", status: "Shipped", date: "2024-02-03" },
-                ];
-                break;
-            case "products":
-                newData = [
-                    { id: 1, sku: "NH-001", name: "Premium Widget", price: "$99.99", stock: 42 },
-                    { id: 2, sku: "NH-002", name: "Deluxe Gadget", price: "$149.50", stock: 12 },
-                    { id: 3, sku: "NH-003", name: "Standard Tool", price: "$29.00", stock: 156 },
-                ];
-                break;
-            case "analytics":
-                newData = [
-                    { id: 1, event: "page_view", path: "/home", duration: "1.2s", user_id: "u_94" },
-                    { id: 2, event: "click", component: "cta_main", label: "Buy Now", user_id: "u_12" },
-                ];
-                break;
-            case "logs":
-                newData = [
-                    { id: 1, level: "INFO", message: "System initialized", timestamp: "12:00:01" },
-                    { id: 2, level: "WARN", message: "Memory pressure high", timestamp: "12:05:22" },
-                    { id: 3, level: "ERROR", message: "Database timeout", timestamp: "12:10:45" },
-                ];
-                break;
-            default:
-                newData = defaultData;
-        }
-        setRows(newData);
+    useEffect(() => {
+        if (!selectedTable || !selectedCluster) return;
+        fetchTableData(selectedCluster.id, selectedTable);
+    }, [selectedTable, selectedCluster, fetchTableData]);
+
+    useEffect(() => {
+        setRows(tableData);
         setSelectedRows(new Set());
-        setFilterText("");
-    }, [selectedTable]);
+        setActiveFilters([]);
+    }, [tableData]);
 
     const handleContextMenu = (e: React.MouseEvent, rowId: number, colName: string) => {
         e.preventDefault();
@@ -172,71 +144,119 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
     };
 
     const filteredRows = rows.filter(row => {
+        // 1. Selection Filter
         if (showSelectedOnly && !selectedRows.has(row.id)) return false;
-        if (!filterText) return true;
-        return Object.values(row).some(val =>
-            String(val).toLowerCase().includes(filterText.toLowerCase())
-        );
+        
+        // 2. Advanced Column Filters
+        const passesAdvancedFilters = activeFilters.every(filter => {
+            const rowValue = row[filter.column];
+            const filterValue = filter.value.toLowerCase();
+            const valStr = String(rowValue).toLowerCase();
+
+            switch (filter.operator) {
+                case 'is': return valStr === filterValue;
+                case 'is_not': return valStr !== filterValue;
+                case 'contains': return valStr.includes(filterValue);
+                case 'not_contains': return !valStr.includes(filterValue);
+                case 'starts_with': return valStr.startsWith(filterValue);
+                case 'ends_with': return valStr.endsWith(filterValue);
+                case 'gt': return Number(rowValue) > Number(filter.value);
+                case 'lt': return Number(rowValue) < Number(filter.value);
+                case 'is_null': return rowValue === null || rowValue === "NULL";
+                case 'is_not_null': return rowValue !== null && rowValue !== "NULL";
+                default: return true;
+            }
+        });
+
+        return passesAdvancedFilters;
     });
 
-    const copySelectionAsMarkdown = (ids: Set<number>) => {
-        const targetRows = rows.filter(r => ids.has(r.id));
-        if (targetRows.length === 0) return "";
-        const cols = Object.keys(targetRows[0]);
-        const header = `| ${cols.join(" | ")} |`;
-        const divider = `| ${cols.map(() => "---").join(" | ")} |`;
-        const body = targetRows.map(r => `| ${cols.map(c => r[c]).join(" | ")} |`).join("\n");
-        return `${header}\n${divider}\n${body}`;
+    const addFilter = () => {
+        const columns = rows.length > 0 ? Object.keys(rows[0]) : [];
+        if (columns.length === 0) return;
+        setActiveFilters([...activeFilters, { column: columns[0], operator: 'contains', value: '' }]);
     };
 
-    const copyRowAsMarkdown = (row: any) => {
-        const cols = Object.keys(row);
-        const header = `| ${cols.join(" | ")} |`;
-        const divider = `| ${cols.map(() => "---").join(" | ")} |`;
-        const body = `| ${cols.map(c => row[c]).join(" | ")} |`;
-        return `${header}\n${divider}\n${body}`;
+    const removeFilter = (index: number) => {
+        setActiveFilters(activeFilters.filter((_, i) => i !== index));
     };
 
-    const convertToCSV = (data: any[]) => {
-        if (data.length === 0) return "";
-        const cols = Object.keys(data[0]);
-        const header = cols.join(",");
-        const body = data.map(r => cols.map(c => `"${r[c]}"`).join(",")).join("\n");
-        return `${header}\n${body}`;
+    const updateFilterRule = (index: number, updates: Partial<{ column: string, operator: string, value: string }>) => {
+        setActiveFilters(activeFilters.map((f, i) => i === index ? { ...f, ...updates } : f));
     };
 
-    const handleExport = (format: 'json' | 'markdown' | 'csv' | 'sql', onlySelected: boolean) => {
-        const dataToExport = onlySelected ? rows.filter(r => selectedRows.has(r.id)) : rows;
+
+    const handleCopy = (format: string, dataToProcess: any[] = rows.filter(r => selectedRows.has(r.id))) => {
         let content = "";
-
-        switch (format) {
-            case 'json':
-                content = JSON.stringify(dataToExport, null, 2);
-                break;
-            case 'markdown':
-                content = copySelectionAsMarkdown(new Set(dataToExport.map(r => r.id)));
-                break;
-            case 'csv':
-                content = convertToCSV(dataToExport);
-                break;
-            case 'sql':
-                // Simple insert statement generator
-                const tableName = "exported_data";
-                const cols = Object.keys(dataToExport[0]).join(", ");
-                content = dataToExport.map(r => {
-                    const vals = Object.values(r).map(v => typeof v === 'string' ? `'${v}'` : v).join(", ");
-                    return `INSERT INTO ${tableName} (${cols}) VALUES (${vals});`;
-                }).join("\n");
-                break;
-        }
-
-        copyToClipboard(content);
-        setExportSuccess(format);
-        setTimeout(() => {
-            setExportSuccess(null);
-            setShowExportModal(false);
-        }, 1500);
+        const upperFormat = format.toUpperCase();
+        if (upperFormat === 'JSON') content = formatToJSON(dataToProcess);
+        else if (upperFormat === 'CSV') content = formatToCSV(dataToProcess);
+        else if (upperFormat === 'MARKDOWN') content = formatToMarkdown(dataToProcess);
+        else if (upperFormat === 'SQL') content = formatToSQL(dataToProcess, selectedTable || 'table');
+        
+        navigator.clipboard.writeText(content);
+        setLastCopiedFormat(upperFormat);
+        setTimeout(() => setLastCopiedFormat(null), 2000);
+        setShowCopyDropdown(false);
     };
+
+    const handleExport = (format: string, dataToProcess: any[] = filteredRows) => {
+        let content = "";
+        const upperFormat = format.toUpperCase();
+        if (upperFormat === 'JSON') content = formatToJSON(dataToProcess);
+        else if (upperFormat === 'CSV') content = formatToCSV(dataToProcess);
+        else if (upperFormat === 'MARKDOWN') content = formatToMarkdown(dataToProcess);
+        else if (upperFormat === 'SQL') content = formatToSQL(dataToProcess, selectedTable || 'table');
+
+        const subName = selectedRows.size > 0 ? 'selection' : 'filtered';
+        downloadFile(content, `${selectedTable || 'export'}_${subName}.${upperFormat.toLowerCase()}`);
+        
+        setShowExportDropdown(false);
+        setShowGlobalExportDropdown(false);
+        setShowExportModal(false);
+    };
+
+    const handleSave = async () => {
+        if (!editingCell || !selectedCluster || !selectedTable) return;
+
+        const { rowId, colName, value } = editingCell;
+        
+        try {
+            await updateRow(selectedCluster.id, selectedTable, { [colName]: value }, { id: rowId });
+            setEditingCell(null);
+        } catch (error) {
+            console.error('Failed to update cell:', error);
+        }
+    };
+
+    if (!selectedTable) {
+        return (
+            <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)] text-zinc-600 gap-4 animate-in fade-in duration-1000">
+                <div className="p-8 rounded-full bg-white/[0.01] border border-white/5 relative group">
+                    <Table className="h-16 w-16 opacity-10 group-hover:scale-110 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-primary/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </div>
+                <div className="text-center space-y-2">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Database Explorer Ready</p>
+                    <p className="text-[11px] font-medium text-zinc-400 max-w-[200px] leading-relaxed mx-auto">Select a table from the sidebar to begin exploring your data.</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (isLoading && tableData.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)] text-zinc-600 gap-6">
+                <div className="relative">
+                    <div className="h-12 w-12 rounded-full border-t-2 border-primary animate-spin"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <Database className="h-4 w-4 text-primary opacity-50" />
+                    </div>
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 animate-pulse">Syncing Connection...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col h-full bg-background font-sans min-w-0 overflow-hidden relative">
@@ -269,7 +289,12 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                                 <Copy className="h-4 w-4 text-zinc-500" />
                                 Copy Cell Value
                             </button>
-                            <button onClick={() => { setFilterText(rows.find(r => r.id === contextMenu.rowId)?.[contextMenu.colName]?.toString() || ""); setIsFilterVisible(true); closeMenu(); }} className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all">
+                            <button onClick={() => { 
+                                const val = rows.find(r => r.id === contextMenu.rowId)?.[contextMenu.colName]?.toString() || "";
+                                setActiveFilters([...activeFilters, { column: contextMenu.colName, operator: 'is', value: val }]);
+                                setShowFilterPopover(true);
+                                closeMenu(); 
+                            }} className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all">
                                 <Filter className="h-4 w-4 text-zinc-500" />
                                 Filter by this value
                             </button>
@@ -281,15 +306,15 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                             <div className="h-px bg-white/5 my-1.5"></div>
                             <div className="px-3 py-1 text-[8px] font-black text-zinc-600 uppercase tracking-widest">Row Options</div>
 
-                            <button onClick={() => { copyToClipboard(JSON.stringify(rows.find(r => r.id === contextMenu.rowId))); closeMenu(); }} className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all">
+                            <button onClick={() => { handleCopy('JSON', [rows.find(r => r.id === contextMenu.rowId)]); closeMenu(); }} className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all">
                                 <FileJson className="h-4 w-4 text-zinc-500" />
                                 Copy Row as JSON
                             </button>
-                            <button onClick={() => { copyToClipboard(copyRowAsMarkdown(rows.find(r => r.id === contextMenu.rowId))); closeMenu(); }} className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all">
+                            <button onClick={() => { handleCopy('CSV', [rows.find(r => r.id === contextMenu.rowId)]); closeMenu(); }} className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all">
                                 <FileType className="h-4 w-4 text-zinc-500" />
-                                Copy Row as Markdown
+                                Copy Row as CSV
                             </button>
-                            <button onClick={() => { closeMenu(); }} className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all">
+                            <button onClick={() => { handleCopy('SQL', [rows.find(r => r.id === contextMenu.rowId)]); closeMenu(); }} className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all">
                                 <Database className="h-4 w-4 text-zinc-500" />
                                 Copy Row as SQL
                             </button>
@@ -307,15 +332,15 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                         </>
                     ) : (
                         <>
-                            <button onClick={() => { copyToClipboard(JSON.stringify(rows.filter(r => selectedRows.has(r.id)))); closeMenu(); }} className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all">
+                            <button onClick={() => { handleCopy('JSON'); closeMenu(); }} className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all">
                                 <FileJson className="h-4 w-4 text-zinc-500" />
                                 Copy Selection as JSON
                             </button>
-                            <button onClick={() => { copyToClipboard(copySelectionAsMarkdown(selectedRows)); closeMenu(); }} className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all">
+                            <button onClick={() => { handleCopy('CSV'); closeMenu(); }} className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all">
                                 <FileType className="h-4 w-4 text-zinc-500" />
-                                Copy Selection as Markdown
+                                Copy Selection as CSV
                             </button>
-                            <button onClick={() => { closeMenu(); }} className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all">
+                            <button onClick={() => { handleCopy('SQL'); closeMenu(); }} className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all">
                                 <Database className="h-4 w-4 text-zinc-500" />
                                 Copy Selection as SQL
                             </button>
@@ -370,7 +395,12 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                             ].map((format) => (
                                 <button
                                     key={format.id}
-                                    onClick={() => handleExport(format.id as any, selectedRows.size > 0 && showSelectedOnly)}
+                                    onClick={() => handleExport(
+                                        format.id, 
+                                        (selectedRows.size > 0 && showSelectedOnly) 
+                                            ? rows.filter(r => selectedRows.has(r.id)) 
+                                            : filteredRows
+                                    )}
                                     className="flex flex-col items-start gap-3 p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-primary/50 transition-all text-left group"
                                 >
                                     <div className="p-2 rounded-lg bg-white/5 group-hover:bg-primary/20 group-hover:text-primary transition-colors">
@@ -417,64 +447,209 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-3">
                         <Table className="h-4 w-4 text-primary" />
-                        <span className="text-[10px] font-black text-white uppercase tracking-widest">
+                        <span className="text-[10px] font-black text-white tracking-widest">
                             {selectedTable || "Query Results"}
                         </span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <History className="h-3.5 w-3.5 text-zinc-600" />
-                        <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">{rows.length} rows returned</span>
+                        <History className="h-3.5 w-3.5 text-zinc-500" />
+                        <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">{rows.length} rows returned</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
                     {selectedRows.size > 0 && (
-                        <div className="flex items-center gap-3 pr-3 border-r border-white/5 mr-1">
-                            <span className="text-[10px] font-black text-primary uppercase tracking-widest">{selectedRows.size} selected</span>
-                            <button onClick={() => deleteRow(Array.from(selectedRows)[0])} className="p-1 text-zinc-500 hover:text-red-400">
-                                <Trash2 className="h-3.5 w-3.5" />
+                        <div className="flex items-center gap-2 pr-3 border-r border-white/5 mr-1 animate-in slide-in-from-left-4 duration-200">
+                            <span className="text-[9px] font-black text-primary uppercase tracking-widest mr-2">{selectedRows.size} selected</span>
+                            
+                            <button 
+                                onClick={() => deleteRow(Array.from(selectedRows)[0])} 
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-red-500/10 text-red-500 hover:bg-red-500/20 text-[9px] font-black uppercase tracking-widest transition-all"
+                            >
+                                <Trash2 className="h-3 w-3" />
+                                Delete
                             </button>
+
+                            {/* Copy Dropdown */}
+                            <div className="relative">
+                                <button 
+                                    onClick={() => setShowCopyDropdown(!showCopyDropdown)}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest transition-all ${lastCopiedFormat ? 'bg-primary/20 text-primary' : 'bg-white/[0.03] text-zinc-400 hover:bg-white/[0.08] hover:text-white'}`}
+                                >
+                                    <Copy className="h-3 w-3" />
+                                    {lastCopiedFormat ? `Copied ${lastCopiedFormat}` : 'Copy'}
+                                </button>
+                                {showCopyDropdown && (
+                                    <div className="absolute top-full mt-2 left-0 z-[100] w-28 bg-zinc-900 border border-white/10 rounded-lg shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150">
+                                        {['CSV', 'JSON', 'SQL'].map((format) => (
+                                            <button
+                                                key={format}
+                                                onClick={() => handleCopy(format)}
+                                                className="flex w-full items-center px-4 py-2 text-[9px] font-bold text-zinc-400 hover:text-white hover:bg-white/5 transition-colors uppercase"
+                                            >
+                                                {format}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Export Dropdown */}
+                            <div className="relative">
+                                <button 
+                                    onClick={() => setShowExportDropdown(!showExportDropdown)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white/[0.03] text-zinc-400 hover:bg-white/[0.08] hover:text-white text-[9px] font-black uppercase tracking-widest transition-all"
+                                >
+                                    <Download className="h-3 w-3" />
+                                    Export
+                                </button>
+                                {showExportDropdown && (
+                                    <div className="absolute top-full mt-2 left-0 z-[100] w-28 bg-zinc-900 border border-white/10 rounded-lg shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150">
+                                        {['CSV', 'JSON', 'SQL'].map((format) => (
+                                            <button
+                                                key={format}
+                                                onClick={() => handleExport(format, rows.filter(r => selectedRows.has(r.id)))}
+                                                className="flex w-full items-center px-4 py-2 text-[9px] font-bold text-zinc-400 hover:text-white hover:bg-white/5 transition-colors uppercase"
+                                            >
+                                                {format}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
-                    {isFilterVisible ? (
-                        <div className="flex items-center gap-2 bg-white/[0.03] border border-white/10 rounded-lg px-3 py-1.5 animate-in slide-in-from-right-4 duration-200">
-                            <Search className="h-3.5 w-3.5 text-zinc-500" />
-                            <input
-                                type="text"
-                                value={filterText}
-                                onChange={(e) => setFilterText(e.target.value)}
-                                placeholder="Filter results..."
-                                className="bg-transparent border-none outline-none text-[11px] font-bold text-white placeholder:text-zinc-600 w-32"
-                                autoFocus
-                            />
-                            {(filterText || showSelectedOnly) && (
-                                <button
-                                    onClick={() => { setFilterText(""); setShowSelectedOnly(false); }}
-                                    className="p-1 hover:bg-white/10 rounded text-primary"
-                                    title="Clear all filters"
-                                >
-                                    <X className="h-3 w-3" />
-                                </button>
-                            )}
-                            <button onClick={() => { setFilterText(""); setIsFilterVisible(false); }} className="hover:text-white text-zinc-600 transition-colors pl-1 border-l border-white/5">
-                                <X className="h-3 w-3" />
-                            </button>
-                        </div>
-                    ) : (
+                    <div className="relative">
                         <button
-                            onClick={() => setIsFilterVisible(true)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/5 bg-white/[0.02] text-[10px] font-black text-zinc-400 hover:text-white hover:border-white/20 transition-all uppercase tracking-widest"
+                            onClick={() => setShowFilterPopover(!showFilterPopover)}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all uppercase tracking-widest text-[10px] font-black ${
+                                activeFilters.length > 0 
+                                ? 'bg-primary/10 border-primary text-primary shadow-[0_0_15px_rgba(0,237,100,0.1)]' 
+                                : 'bg-white/[0.02] border-white/5 text-zinc-400 hover:text-white hover:border-white/20'
+                            }`}
                         >
                             <Filter className="h-3 w-3" />
-                            Filter
+                            Filters
+                            {activeFilters.length > 0 && (
+                                <span className="ml-1 bg-primary text-primary-foreground h-3.5 w-3.5 flex items-center justify-center rounded-full text-[8px] font-black">
+                                    {activeFilters.length}
+                                </span>
+                            )}
                         </button>
-                    )}
-                    <button
-                        onClick={() => setShowExportModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/5 bg-white/[0.02] text-[10px] font-black text-zinc-400 hover:text-white hover:border-white/20 transition-all uppercase tracking-widest"
-                    >
-                        <Download className="h-3 w-3" />
-                        Export
-                    </button>
+
+                        {/* Advanced Filter Popover */}
+                        {showFilterPopover && (
+                            <div className="absolute top-full mt-2 right-0 z-[100] w-[450px] bg-zinc-900 border border-white/10 rounded-xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-200">
+                                <div className="flex items-center justify-between mb-4 px-1">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-black text-white uppercase tracking-widest">Active Filters</span>
+                                        <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-tight">Displaying rows where:</span>
+                                    </div>
+                                    <button 
+                                        onClick={() => setActiveFilters([])}
+                                        className="text-[9px] font-black text-zinc-500 hover:text-red-400 uppercase tracking-widest transition-colors"
+                                    >
+                                        Clear All
+                                    </button>
+                                </div>
+
+                                <div className="space-y-2 max-h-[300px] overflow-y-auto scrollbar-hide mb-4">
+                                    {activeFilters.length === 0 ? (
+                                        <div className="py-8 text-center border-2 border-dashed border-white/5 rounded-xl">
+                                            <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">No filters applied</p>
+                                        </div>
+                                    ) : (
+                                        activeFilters.map((filter, index) => (
+                                            <div key={index} className="flex items-center gap-2 bg-white/[0.02] p-2 rounded-lg group">
+                                                <select 
+                                                    value={filter.column}
+                                                    onChange={(e) => updateFilterRule(index, { column: e.target.value })}
+                                                    className="bg-zinc-800 border-none rounded px-2 py-1.5 text-[11px] font-bold text-zinc-200 focus:ring-1 focus:ring-primary outline-none w-32"
+                                                >
+                                                    {Object.keys(rows[0] || {}).map(col => (
+                                                        <option key={col} value={col}>{col}</option>
+                                                    ))}
+                                                </select>
+
+                                                <select 
+                                                    value={filter.operator}
+                                                    onChange={(e) => updateFilterRule(index, { operator: e.target.value })}
+                                                    className="bg-zinc-800 border-none rounded px-2 py-1.5 text-[11px] font-bold text-primary focus:ring-1 focus:ring-primary outline-none w-28 uppercase"
+                                                >
+                                                    <option value="is">Is</option>
+                                                    <option value="is_not">Is Not</option>
+                                                    <option value="contains">Contains</option>
+                                                    <option value="not_contains">Does not contain</option>
+                                                    <option value="starts_with">Starts with</option>
+                                                    <option value="ends_with">Ends with</option>
+                                                    <option value="gt">&gt; Greater than</option>
+                                                    <option value="lt">&lt; Less than</option>
+                                                    <option value="is_null">Is Null</option>
+                                                    <option value="is_not_null">Is Not Null</option>
+                                                </select>
+
+                                                <input 
+                                                    disabled={filter.operator.includes('null')}
+                                                    value={filter.value}
+                                                    onChange={(e) => updateFilterRule(index, { value: e.target.value })}
+                                                    placeholder="Value..."
+                                                    className="flex-1 bg-zinc-800 border-none rounded px-3 py-1.5 text-[11px] font-bold text-zinc-300 focus:ring-1 focus:ring-primary outline-none disabled:opacity-20"
+                                                />
+
+                                                <button 
+                                                    onClick={() => removeFilter(index)}
+                                                    className="p-1.5 rounded bg-white/5 text-zinc-500 hover:text-red-400 hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100"
+                                                >
+                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                </button>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+
+                                <div className="flex items-center justify-between border-t border-white/5 pt-4">
+                                    <button 
+                                        onClick={addFilter}
+                                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 text-[9px] font-black uppercase tracking-widest transition-all"
+                                    >
+                                        <Plus className="h-3 w-3" />
+                                        Add Condition
+                                    </button>
+                                    <button 
+                                        onClick={() => setShowFilterPopover(false)}
+                                        className="px-4 py-1.5 rounded-lg bg-zinc-800 text-white text-[9px] font-black uppercase tracking-widest hover:bg-zinc-700 transition-all"
+                                    >
+                                        Apply Filters
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowGlobalExportDropdown(!showGlobalExportDropdown)}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/5 bg-white/[0.02] text-[10px] font-black text-zinc-400 hover:text-white hover:border-white/20 transition-all uppercase tracking-widest"
+                        >
+                            <Download className="h-3 w-3" />
+                            Export
+                        </button>
+                        {showGlobalExportDropdown && (
+                            <div className="absolute top-full mt-2 right-0 z-[100] w-32 bg-zinc-900 border border-white/10 rounded-lg shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150">
+                                <div className="px-4 py-1.5 text-[8px] font-black text-zinc-600 uppercase tracking-tighter border-b border-white/5 mb-1">
+                                    Table View ({filteredRows.length})
+                                </div>
+                                {['CSV', 'JSON', 'SQL'].map((format) => (
+                                    <button
+                                        key={format}
+                                        onClick={() => handleExport(format, filteredRows)}
+                                        className="flex w-full items-center px-4 py-2 text-[9px] font-bold text-zinc-400 hover:text-white hover:bg-white/5 transition-colors uppercase"
+                                    >
+                                        {format} File
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -492,7 +667,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                                 />
                             </th>
                             {rows.length > 0 && Object.keys(rows[0]).map((col) => (
-                                <th key={col} className="px-6 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest border-r border-white/5 last:border-0 cursor-default hover:text-zinc-300 transition-colors">
+                                <th key={col} className="px-6 py-4 text-[10px] font-black text-zinc-400 tracking-widest border-r border-white/5 last:border-0 cursor-default hover:text-zinc-200 transition-colors">
                                     <div className="flex items-center gap-2">
                                         {col}
                                         <ArrowUpDown className="h-2.5 w-2.5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -502,12 +677,12 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                             <th className="px-6 py-4"></th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/[0.02]">
+                    <tbody className="divide-y divide-white/10">
                         {filteredRows.map((row) => (
-                            <tr
-                                key={row.id}
-                                className={`group hover:bg-white/[0.015] transition-colors ${selectedRows.has(row.id) ? 'bg-primary/5' : ''}`}
-                            >
+                             <tr
+                                 key={row.id}
+                                 className={`group bg-white/[0.02] hover:bg-white/[0.05] border-l-2 border-transparent hover:border-l-primary/40 transition-all ${selectedRows.has(row.id) ? 'bg-primary/[0.04] border-l-primary' : ''}`}
+                             >
                                 <td className="px-6 py-4 w-12 text-center">
                                     <input
                                         type="checkbox"
@@ -516,24 +691,53 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                                         className="accent-primary w-3.5 h-3.5 rounded border-white/10 bg-white/5"
                                     />
                                 </td>
-                                {Object.keys(row).map((col) => (
-                                    <td
-                                        key={col}
-                                        onContextMenu={(e) => handleContextMenu(e, row.id, col)}
-                                        className={`px-6 py-4 text-xs font-medium border-r border-white/[0.02] last:border-0 relative transition-all ${col === "id" ? 'font-mono text-zinc-600' : 'text-zinc-400'
-                                            } ${row[col] === "NULL" ? 'italic text-zinc-700' : ''} ${activeCell?.rowId === row.id && activeCell?.colName === col
-                                                ? 'outline outline-1 outline-primary/50 bg-primary/[0.02] z-20 shadow-[0_0_15px_rgba(0,237,100,0.1)]'
-                                                : ''
-                                            }`}
-                                    >
-                                        {col === "status" ? (
-                                            <div className="flex items-center gap-2">
-                                                <div className={`h-1.5 w-1.5 rounded-full ${row[col] === 'Active' ? 'bg-primary shadow-[0_0_8px_rgba(0,237,100,0.5)]' : 'bg-zinc-800'}`}></div>
-                                                <span className={`${row[col] === 'Active' ? 'text-zinc-300' : 'text-zinc-600'}`}>{row[col]}</span>
-                                            </div>
-                                        ) : row[col]}
-                                    </td>
-                                ))}
+                                {Object.keys(row).map((col) => {
+                                    const isEditing = editingCell?.rowId === row.id && editingCell?.colName === col;
+                                    return (
+                                        <td
+                                            key={col}
+                                            onContextMenu={(e) => handleContextMenu(e, row.id, col)}
+                                            onDoubleClick={() => col !== "id" && setEditingCell({ rowId: row.id, colName: col, value: String(row[col]) })}
+                                            className={`px-6 py-4 text-xs font-medium border-r border-white/[0.02] last:border-0 relative transition-all ${col === "id" ? 'font-mono text-zinc-500' : 'text-zinc-300'
+                                                } ${row[col] === "NULL" ? 'italic text-zinc-600' : ''} ${activeCell?.rowId === row.id && activeCell?.colName === col
+                                                    ? 'outline outline-1 outline-primary/50 bg-primary/[0.02] z-20 shadow-[0_0_15px_rgba(0,237,100,0.1)]'
+                                                    : ''
+                                                }`}
+                                        >
+                                            {isEditing ? (
+                                                <div className="absolute inset-0 z-50 bg-zinc-900 border-2 border-primary shadow-2xl rounded-md flex items-center p-1 animate-in zoom-in-95 duration-150">
+                                                    <textarea
+                                                        autoFocus
+                                                        className="w-full h-full bg-transparent border-none outline-none text-[11px] font-medium text-white resize-none scrollbar-hide py-1.5 px-3 leading-relaxed"
+                                                        value={editingCell?.value}
+                                                        onChange={(e) => setEditingCell({ ...editingCell!, value: e.target.value })}
+                                                        onBlur={handleSave}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                                e.preventDefault();
+                                                                handleSave();
+                                                            }
+                                                            if (e.key === 'Escape') {
+                                                                setEditingCell(null);
+                                                            }
+                                                        }}
+                                                    />
+                                                </div>
+                                            ) : col === "status" ? (
+                                                <div className="flex items-center gap-2">
+                                                    <div className={`h-1.5 w-1.5 rounded-full ${row[col] === 'Active' ? 'bg-primary shadow-[0_0_8px_rgba(0,237,100,0.5)]' : 'bg-zinc-700'}`}></div>
+                                                    <span className={`${row[col] === 'Active' ? 'text-zinc-200' : 'text-zinc-500'}`}>{row[col]}</span>
+                                                </div>
+                                            ) : (
+                                                <span className="line-clamp-2">
+                                                    {typeof row[col] === 'object' ? JSON.stringify(row[col]) : (
+                                                        String(row[col]).length > 70 ? `${String(row[col]).substring(0, 70)}...` : row[col]
+                                                    )}
+                                                </span>
+                                            )}
+                                        </td>
+                                    );
+                                })}
                                 <td className="px-6 py-4 text-right">
                                     <button className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-white/5 transition-all outline-none">
                                         <MoreHorizontal className="h-4 w-4 text-zinc-600 hover:text-white" />
@@ -549,11 +753,11 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
             <div className="px-6 py-3 border-t border-white/5 bg-[#021016]/30 flex items-center justify-between">
                 <div className="flex items-center gap-4 text-[10px] font-black text-zinc-700 uppercase tracking-widest">
                     <div className="flex items-center gap-2">
-                        <button className="p-1.5 rounded-md border border-white/5 bg-white/[0.02] text-zinc-700 disabled:opacity-20 translate-y-[-1px]" disabled>
+                        <button className="p-1.5 rounded-md border border-white/5 bg-white/[0.02] text-zinc-500 disabled:opacity-20 translate-y-[-1px]" disabled>
                             <ArrowUpDown className="h-3 w-3 rotate-90" />
                         </button>
                         <span>Page 1 of 1</span>
-                        <button className="p-1.5 rounded-md border border-white/5 bg-white/[0.02] text-zinc-700 disabled:opacity-20 translate-y-[-1px]" disabled>
+                        <button className="p-1.5 rounded-md border border-white/5 bg-white/[0.02] text-zinc-500 disabled:opacity-20 translate-y-[-1px]" disabled>
                             <ArrowUpDown className="h-3 w-3 -rotate-90" />
                         </button>
                     </div>
