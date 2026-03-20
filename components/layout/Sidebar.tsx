@@ -24,6 +24,8 @@ interface SidebarProps {
     selectedTable: string;
 }
 
+import { useAuthStore } from "@/store/useAuthStore";
+
 const Sidebar = ({
     onOpenConnect,
     activeTab,
@@ -31,13 +33,15 @@ const Sidebar = ({
     onTableSelect,
     selectedTable
 }: SidebarProps) => {
+    const { user, logout } = useAuthStore();
     const [isTablesExpanded, setIsTablesExpanded] = React.useState(true);
     const [isConnectionDropdownOpen, setIsConnectionDropdownOpen] = React.useState(false);
-    const [activeConnection, setActiveConnection] = React.useState("MultiDBM Main");
+    const [activeConnection, setActiveConnection] = React.useState("SynqDB Main");
     const [contextMenu, setContextMenu] = React.useState<{ x: number, y: number, table: string | null } | null>(null);
+    const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false);
 
     const mockConnections = [
-        { name: "MultiDBM Main", type: "PostgreSQL", cluster: "Production Cluster", icon: "P" },
+        { name: "SynqDB Main", type: "PostgreSQL", cluster: "Production Cluster", icon: "P" },
         { name: "Enterprise DB", type: "MSSQL", cluster: "Legacy Cluster", icon: "M" },
         { name: "Local Dev", type: "SQLite", cluster: "Edge node", icon: "S" },
     ];
@@ -213,20 +217,48 @@ const Sidebar = ({
                 </div>
             </div>
 
-            {/* User Footer */}
-            <div className="p-4 border-t border-border mt-auto bg-zinc-950/20">
-                <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                    <div className="h-8 w-8 rounded-full bg-zinc-800 border border-border flex items-center justify-center overflow-hidden">
-                        <div className="h-full w-full bg-gradient-to-tr from-primary/40 to-secondary/40"></div>
+            {/* User Footer with Logout */}
+            <div className="p-4 border-t border-border mt-auto bg-zinc-950/20 relative">
+                <div 
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
+                >
+                    <div className="h-8 w-8 rounded-full bg-zinc-800 border border-border flex items-center justify-center overflow-hidden shrink-0">
+                        {user?.profile_picture ? (
+                            <img src={user.profile_picture} alt={user.full_name} className="h-full w-full object-cover" />
+                        ) : (
+                            <div className="h-full w-full bg-gradient-to-tr from-primary/40 to-secondary/40 flex items-center justify-center text-[10px] font-black">
+                                {user?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??'}
+                            </div>
+                        )}
                     </div>
-                    <div className="flex flex-col">
-                        <span className="text-xs font-bold text-foreground">admin@multidbm.com</span>
-                        <div className="flex items-center gap-1.5">
-                            <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></div>
-                            <span className="text-[9px] text-muted-foreground font-black uppercase tracking-tighter">Connected</span>
-                        </div>
+                    <div className="flex flex-col min-w-0">
+                        <span className="text-xs font-bold text-foreground truncate">{user?.full_name || 'Anonymous User'}</span>
+                        <span className="text-[9px] text-muted-foreground font-black uppercase tracking-tighter truncate opacity-60">
+                            {user?.role || 'User'}
+                        </span>
                     </div>
                 </div>
+
+                {isUserMenuOpen && (
+                    <div className="absolute bottom-[calc(100%-8px)] left-4 right-4 z-50 bg-zinc-900 border border-white/5 rounded-xl shadow-2xl py-2 animate-in slide-in-from-bottom-2 duration-200">
+                        <div className="px-3 py-1.5 border-b border-white/5 mb-2">
+                            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Account Settings</span>
+                        </div>
+                        <button className="flex w-full items-center gap-3 px-3 py-2 text-xs font-bold text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">
+                            <Settings className="h-3.5 w-3.5" />
+                            Profile
+                        </button>
+                        <div className="h-px bg-white/5 my-2"></div>
+                        <button 
+                            onClick={() => logout()}
+                            className="flex w-full items-center gap-3 px-3 py-2 text-xs font-bold text-red-500/80 hover:text-red-400 hover:bg-red-500/5 transition-colors"
+                        >
+                            <History className="h-3.5 w-3.5 rotate-180" />
+                            Sign Out
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Context Menu */}

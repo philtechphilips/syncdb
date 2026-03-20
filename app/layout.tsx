@@ -19,7 +19,7 @@ const dmSerif = DM_Serif_Display({
 });
 
 export const metadata: Metadata = {
-  title: "MultiDBM | The Professional Database Management Platform",
+  title: "SynqDB | The Professional Database Management Platform",
   description: "Industry-standard database management for modern engineering teams. Scale your data infrastructure with zero friction.",
 };
 

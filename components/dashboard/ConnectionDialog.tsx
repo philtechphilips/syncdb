@@ -118,7 +118,6 @@ const ConnectionDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
                         <button onClick={onClose} className="rounded-xl px-8 py-3 text-sm font-bold text-zinc-400 hover:text-white hover:bg-white/5 transition-all">Discard</button>
                         <button className="flex items-center gap-3 rounded-xl bg-primary px-10 py-3 text-sm font-black text-primary-foreground shadow-[0_0_20px_rgba(0,237,100,0.3)] hover:shadow-[0_0_30px_rgba(0,237,100,0.5)] transition-all active:scale-95 group">
                             Establish Connection
-                            <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                         </button>
                     </div>
                 </div>

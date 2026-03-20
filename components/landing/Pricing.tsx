@@ -73,7 +73,6 @@ export const Pricing = () => {
                                     : "bg-white/5 text-white border border-white/10 hover:bg-white/10"
                                 }`}>
                                 {plan.cta}
-                                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                             </button>
                         </div>
                     ))}

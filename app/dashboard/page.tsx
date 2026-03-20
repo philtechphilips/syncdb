@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Sidebar from "@/components/layout/Sidebar";
 import Navbar from "@/components/layout/Navbar";
 import StatusBar from "@/components/layout/StatusBar";
@@ -8,12 +9,37 @@ import QueryEditor from "@/components/dashboard/QueryEditor";
 import DataTable from "@/components/dashboard/DataTable";
 import ConnectionDialog from "@/components/dashboard/ConnectionDialog";
 import ERDiagram from "@/components/dashboard/ERDiagram";
-import { History, Copy } from "lucide-react";
+import { History, Copy, Loader2 } from "lucide-react";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function DashboardPage() {
+    const router = useRouter();
+    const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
     const [isConnectOpen, setIsConnectOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<"query" | "er" | "table" | "logs">("query");
     const [selectedTable, setSelectedTable] = useState("users");
+
+    useEffect(() => {
+        checkAuth();
+    }, []);
+
+    useEffect(() => {
+        if (!isLoading && !isAuthenticated) {
+            router.push("/auth/login");
+        }
+    }, [isAuthenticated, isLoading, router]);
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 animate-pulse">Initializing Interface...</p>
+            </div>
+        );
+    }
+
+    if (!isAuthenticated) return null;
+
     const mockLogs = [
         { id: 1, date: "Today", query: "SELECT * FROM users LIMIT 10;", status: "Success", duration: "12ms", user: "admin", timestamp: "10:45:01" },
         { id: 2, date: "Today", query: "UPDATE orders SET status = 'Shipped' WHERE id = 45;", status: "Success", duration: "45ms", user: "admin", timestamp: "10:48:12" },

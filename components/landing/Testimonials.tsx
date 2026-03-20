@@ -33,7 +33,7 @@ export const Testimonials = () => {
             <div className="max-w-7xl mx-auto px-6">
                 <div className="text-center mb-24">
                     <h2 className="text-3xl md:text-5xl font-serif text-white mb-6">Loved by engineering teams.</h2>
-                    <p className="text-xl text-zinc-500 font-medium">From startups to global enterprises, engineers rely on MultiDBM every day.</p>
+                    <p className="text-xl text-zinc-500 font-medium">From startups to global enterprises, engineers rely on SynqDB every day.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

@@ -58,7 +58,7 @@ export const SecuritySection = () => {
                             Enterprise Grade
                         </div>
                         <h2 className="text-4xl md:text-6xl font-serif text-white mb-8 leading-tight">Neural Intelligence.<br />Bit-level Security.</h2>
-                        <p className="text-xl text-zinc-400 mb-12 font-medium leading-relaxed">MultiDBM combines AI-assisted policy generation with zero-trust architecture. We don't just secure your data; we secure every SQL execution and automated migration path.</p>
+                        <p className="text-xl text-zinc-400 mb-12 font-medium leading-relaxed">SynqDB combines AI-assisted policy generation with zero-trust architecture. We don't just secure your data; we secure every SQL execution and automated migration path.</p>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {features.map((f, i) => (

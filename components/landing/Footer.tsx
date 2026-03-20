@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { Database, Twitter, Github, Linkedin } from "lucide-react";
+import { Twitter, Github, Linkedin } from "lucide-react";
+import { SynqLogo } from "@/components/ui/SynqLogo";
 
 export const Footer = () => {
     return (
@@ -12,11 +13,9 @@ export const Footer = () => {
             <div className="max-w-7xl mx-auto px-6 relative z-10">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
                     <div className="col-span-1 md:col-span-1">
-                        <div className="flex items-center gap-2 mb-6">
-                            <div className="h-6 w-6 flex items-center justify-center rounded-md bg-primary">
-                                <Database className="h-4 w-4 text-primary-foreground" />
-                            </div>
-                            <span className="text-xl font-serif tracking-tight text-white">MultiDBM</span>
+                        <div className="flex items-center mb-6 cursor-pointer">
+                            <SynqLogo className="h-6 w-6 text-primary translate-y-[1px]" />
+                            <span className="text-xl font-serif tracking-tight text-white -ml-0.5">ynqDB</span>
                         </div>
                         <p className="text-zinc-500 text-sm font-medium leading-relaxed">
                             The industry standard for multi-cloud database orchestration and management.
@@ -54,7 +53,7 @@ export const Footer = () => {
                 </div>
 
                 <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between gap-4 text-zinc-600 text-[10px] font-black uppercase tracking-widest">
-                    <span>&copy; 2024 MultiDBM, INC. ALL RIGHTS RESERVED.</span>
+                    <span>&copy; 2024 SynqDB, INC. ALL RIGHTS RESERVED.</span>
                     <span>MADE WITH &hearts; BY THE COMMUNITY.</span>
                 </div>
             </div>
