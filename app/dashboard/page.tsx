@@ -18,9 +18,13 @@ export default function DashboardPage() {
     const router = useRouter();
     const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
     const [isConnectOpen, setIsConnectOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<"query" | "er" | "table" | "logs">("query");
-    const { selectedCluster } = useClusterStore();
-    const [selectedTable, setSelectedTable] = useState("");
+    const { 
+        selectedCluster, 
+        activeTab, 
+        setActiveTab, 
+        selectedTable, 
+        setSelectedTable 
+    } = useClusterStore();
 
     useEffect(() => {
         // Reset table selection when switching clusters
@@ -70,7 +74,7 @@ export default function DashboardPage() {
                 <Sidebar
                     onOpenConnect={() => setIsConnectOpen(true)}
                     activeTab={activeTab}
-                    onTabChange={(tab) => setActiveTab(tab)}
+                    onTabChange={(tab: any) => setActiveTab(tab)}
                     onTableSelect={(name) => {
                         setSelectedTable(name);
                         setActiveTab("table");

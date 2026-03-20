@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/errorUtils';
 
 export interface User {
   id: string;
@@ -69,8 +70,7 @@ export const useAuthStore = create<AuthState>()(
           });
           return response.data;
         } catch (error: any) {
-          const message = error.response?.data?.message || 'Login failed';
-          set({ isLoading: false, error: message });
+          set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
         }
       },
@@ -82,8 +82,7 @@ export const useAuthStore = create<AuthState>()(
           set({ isLoading: false });
           return response.data;
         } catch (error: any) {
-          const message = error.response?.data?.message || 'Registration failed';
-          set({ isLoading: false, error: message });
+          set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
         }
       },
@@ -95,8 +94,7 @@ export const useAuthStore = create<AuthState>()(
           set({ isLoading: false });
           return response.data;
         } catch (error: any) {
-          const message = error.response?.data?.message || 'Failed to send reset link';
-          set({ isLoading: false, error: message });
+          set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
         }
       },
@@ -108,8 +106,7 @@ export const useAuthStore = create<AuthState>()(
           set({ isLoading: false });
           return response.data;
         } catch (error: any) {
-          const message = error.response?.data?.message || 'Failed to reset password';
-          set({ isLoading: false, error: message });
+          set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
         }
       },

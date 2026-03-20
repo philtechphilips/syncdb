@@ -27,11 +27,19 @@ api.interceptors.request.use(
   }
 );
 
-// Add a response interceptor to handle token refresh or logout on 401
+import { toast } from "sonner";
+import { getErrorMessage } from "./errorUtils";
+
+// Add a response interceptor to handle errors and token refresh
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
+    // Show toast for critical errors (excluding some statuses if needed)
+    if (error.response?.status !== 401) {
+        toast.error(getErrorMessage(error));
+    }
 
     // If the error is 401 and not a retry, try to refresh the token
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -53,6 +61,7 @@ api.interceptors.response.use(
         }
       } catch (refreshError) {
         // If refresh fails, logout
+        toast.error("Session expired. Please login again.");
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('user');
@@ -63,5 +72,6 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 
 export default api;

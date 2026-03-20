@@ -23,16 +23,19 @@ export const metadata: Metadata = {
   description: "Industry-standard database management for modern engineering teams. Scale your data infrastructure with zero friction.",
 };
 
+import { Toaster } from "sonner";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${dmSerif.variable} antialiased`}
       >
+        <Toaster position="top-right" theme="dark" richColors closeButton />
         {children}
       </body>
     </html>

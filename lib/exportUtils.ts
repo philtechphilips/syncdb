@@ -52,3 +52,14 @@ export const downloadFile = (content: string, filename: string, mimeType: string
   URL.revokeObjectURL(url);
 };
 
+export const formatData = (format: string, data: any[], tableName: string = 'table') => {
+    const upperFormat = format.toUpperCase();
+    switch (upperFormat) {
+        case 'JSON': return formatToJSON(data);
+        case 'CSV': return formatToCSV(data);
+        case 'MARKDOWN': return formatToMarkdown(data);
+        case 'SQL': return formatToSQL(data, tableName);
+        default: return "";
+    }
+};
+

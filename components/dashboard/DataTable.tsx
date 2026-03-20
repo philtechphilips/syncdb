@@ -20,8 +20,10 @@ import {
     CheckCircle2,
     Table
 } from "lucide-react";
-import { downloadFile, formatToCSV, formatToJSON, formatToSQL, formatToMarkdown } from '@/lib/exportUtils';
+import { downloadFile, formatData } from '@/lib/exportUtils';
 import { useClusterStore } from "@/store/useClusterStore";
+import { applyFilters, cloneTableRow, deleteTableRow } from "@/lib/tableUtils";
+import { calculateContextMenuPosition, copyToClipboard } from "@/lib/uiUtils";
 
 interface DataTableProps {
     data?: any[];
@@ -63,23 +65,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
     const handleContextMenu = (e: React.MouseEvent, rowId: number, colName: string) => {
         e.preventDefault();
         const isRowSelected = selectedRows.has(rowId);
-
-        // Estimate dimensions for smart positioning
-        const menuWidth = 256; // w-64
-        const menuHeight = isRowSelected ? 220 : 420; // safe estimates for row/cell menus
-
-        let x = e.clientX;
-        let y = e.clientY;
-
-        // Flip horizontal if overflow
-        if (x + menuWidth > window.innerWidth) {
-            x = x - menuWidth;
-        }
-
-        // Flip vertical if overflow
-        if (y + menuHeight > window.innerHeight) {
-            y = y - menuHeight;
-        }
+        const { x, y } = calculateContextMenuPosition(e.clientX, e.clientY, isRowSelected);
 
         if (isRowSelected) {
             setContextMenu({ x, y, rowId, colName, type: 'row' });
@@ -121,55 +107,21 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
     };
 
     const deleteRow = (id: number) => {
-        setRows(rows.filter(r => r.id !== id));
+        setRows(deleteTableRow(rows, id));
         const next = new Set(selectedRows);
         next.delete(id);
         setSelectedRows(next);
     };
 
     const cloneRow = (rowId: number) => {
-        const rowToClone = rows.find(r => r.id === rowId);
-        if (rowToClone) {
-            const newId = Math.max(...rows.map(r => r.id)) + 1;
-            const newRow = { ...rowToClone, id: newId };
-            const index = rows.findIndex(r => r.id === rowId);
-            const nextRows = [...rows];
-            nextRows.splice(index + 1, 0, newRow);
-            setRows(nextRows);
-        }
+        setRows(cloneTableRow(rows, rowId));
     };
 
-    const copyToClipboard = (text: string) => {
-        navigator.clipboard.writeText(text);
+    const copyToClipboardAction = (text: string) => {
+        copyToClipboard(text);
     };
 
-    const filteredRows = rows.filter(row => {
-        // 1. Selection Filter
-        if (showSelectedOnly && !selectedRows.has(row.id)) return false;
-        
-        // 2. Advanced Column Filters
-        const passesAdvancedFilters = activeFilters.every(filter => {
-            const rowValue = row[filter.column];
-            const filterValue = filter.value.toLowerCase();
-            const valStr = String(rowValue).toLowerCase();
-
-            switch (filter.operator) {
-                case 'is': return valStr === filterValue;
-                case 'is_not': return valStr !== filterValue;
-                case 'contains': return valStr.includes(filterValue);
-                case 'not_contains': return !valStr.includes(filterValue);
-                case 'starts_with': return valStr.startsWith(filterValue);
-                case 'ends_with': return valStr.endsWith(filterValue);
-                case 'gt': return Number(rowValue) > Number(filter.value);
-                case 'lt': return Number(rowValue) < Number(filter.value);
-                case 'is_null': return rowValue === null || rowValue === "NULL";
-                case 'is_not_null': return rowValue !== null && rowValue !== "NULL";
-                default: return true;
-            }
-        });
-
-        return passesAdvancedFilters;
-    });
+    const filteredRows = applyFilters(rows, activeFilters, showSelectedOnly, selectedRows);
 
     const addFilter = () => {
         const columns = rows.length > 0 ? Object.keys(rows[0]) : [];
@@ -187,29 +139,18 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
 
 
     const handleCopy = (format: string, dataToProcess: any[] = rows.filter(r => selectedRows.has(r.id))) => {
-        let content = "";
-        const upperFormat = format.toUpperCase();
-        if (upperFormat === 'JSON') content = formatToJSON(dataToProcess);
-        else if (upperFormat === 'CSV') content = formatToCSV(dataToProcess);
-        else if (upperFormat === 'MARKDOWN') content = formatToMarkdown(dataToProcess);
-        else if (upperFormat === 'SQL') content = formatToSQL(dataToProcess, selectedTable || 'table');
+        const content = formatData(format, dataToProcess, selectedTable || 'table');
         
-        navigator.clipboard.writeText(content);
-        setLastCopiedFormat(upperFormat);
+        copyToClipboard(content);
+        setLastCopiedFormat(format.toUpperCase());
         setTimeout(() => setLastCopiedFormat(null), 2000);
         setShowCopyDropdown(false);
     };
 
     const handleExport = (format: string, dataToProcess: any[] = filteredRows) => {
-        let content = "";
-        const upperFormat = format.toUpperCase();
-        if (upperFormat === 'JSON') content = formatToJSON(dataToProcess);
-        else if (upperFormat === 'CSV') content = formatToCSV(dataToProcess);
-        else if (upperFormat === 'MARKDOWN') content = formatToMarkdown(dataToProcess);
-        else if (upperFormat === 'SQL') content = formatToSQL(dataToProcess, selectedTable || 'table');
-
+        const content = formatData(format, dataToProcess, selectedTable || 'table');
         const subName = selectedRows.size > 0 ? 'selection' : 'filtered';
-        downloadFile(content, `${selectedTable || 'export'}_${subName}.${upperFormat.toLowerCase()}`);
+        downloadFile(content, `${selectedTable || 'export'}_${subName}.${format.toLowerCase()}`);
         
         setShowExportDropdown(false);
         setShowGlobalExportDropdown(false);

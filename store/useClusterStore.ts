@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/errorUtils';
 
 export interface Cluster {
   id: string;
@@ -21,6 +22,8 @@ interface ClusterState {
   error: string | null;
   tables: any[];
   tableData: any[];
+  activeTab: "query" | "er" | "table" | "logs";
+  selectedTable: string;
   fetchClusters: () => Promise<Cluster[]>;
   fetchTables: (clusterId: string) => Promise<any[]>;
   fetchTableData: (clusterId: string, tableName: string, page?: number, limit?: number) => Promise<any[]>;
@@ -29,6 +32,8 @@ interface ClusterState {
   createCluster: (data: any) => Promise<Cluster>;
   testConnection: (data: any) => Promise<any>;
   deleteCluster: (id: string) => Promise<void>;
+  setActiveTab: (tab: "query" | "er" | "table" | "logs") => void;
+  setSelectedTable: (tableName: string) => void;
   clearError: () => void;
 }
 
@@ -43,6 +48,8 @@ export const useClusterStore = create<ClusterState>()(
       isTablesLoading: false,
       isDataLoading: false,
       error: null,
+      activeTab: "query",
+      selectedTable: "",
 
       fetchClusters: async () => {
         set({ isLoading: true, error: null });
@@ -66,8 +73,7 @@ export const useClusterStore = create<ClusterState>()(
           set({ clusters, selectedCluster: nextSelected, isLoading: false });
           return clusters;
         } catch (error: any) {
-          const message = error.response?.data?.message || 'Failed to fetch clusters';
-          set({ isLoading: false, error: message });
+          set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
         }
       },
@@ -79,8 +85,7 @@ export const useClusterStore = create<ClusterState>()(
           set({ tables: response.data, isTablesLoading: false });
           return response.data;
         } catch (error: any) {
-          const message = error.response?.data?.message || 'Failed to fetch tables';
-          set({ isTablesLoading: false, error: message, tables: [] });
+          set({ isTablesLoading: false, error: getErrorMessage(error), tables: [] });
           throw error;
         }
       },
@@ -92,8 +97,7 @@ export const useClusterStore = create<ClusterState>()(
           set({ tableData: response.data, isDataLoading: false });
           return response.data;
         } catch (error: any) {
-          const message = error.response?.data?.message || 'Failed to fetch table data';
-          set({ isDataLoading: false, error: message, tableData: [] });
+          set({ isDataLoading: false, error: getErrorMessage(error), tableData: [] });
           throw error;
         }
       },
@@ -111,8 +115,7 @@ export const useClusterStore = create<ClusterState>()(
           });
           set({ tableData: updatedTableData, isDataLoading: false });
         } catch (error: any) {
-          const message = error.response?.data?.message || 'Failed to update row';
-          set({ isDataLoading: false, error: message });
+          set({ isDataLoading: false, error: getErrorMessage(error) });
           throw error;
         }
       },
@@ -136,8 +139,7 @@ export const useClusterStore = create<ClusterState>()(
           }));
           return newCluster;
         } catch (error: any) {
-          const message = error.response?.data?.message || 'Failed to create cluster';
-          set({ isLoading: false, error: message });
+          set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
         }
       },
@@ -149,8 +151,7 @@ export const useClusterStore = create<ClusterState>()(
           set({ isLoading: false });
           return response.data;
         } catch (error: any) {
-          const message = error.response?.data?.message || 'Connection test failed';
-          set({ isLoading: false, error: message });
+          set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
         }
       },
@@ -165,18 +166,21 @@ export const useClusterStore = create<ClusterState>()(
             isLoading: false
           }));
         } catch (error: any) {
-          const message = error.response?.data?.message || 'Failed to delete cluster';
-          set({ isLoading: false, error: message });
+          set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
         }
       },
 
+      setActiveTab: (tab) => set({ activeTab: tab }),
+      setSelectedTable: (tableName) => set({ selectedTable: tableName }),
       clearError: () => set({ error: null }),
     }),
     {
       name: 'cluster-storage',
       partialize: (state) => ({ 
-        selectedCluster: state.selectedCluster 
+        selectedCluster: state.selectedCluster,
+        activeTab: state.activeTab,
+        selectedTable: state.selectedTable
       }),
     }
   )
