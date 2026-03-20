@@ -26,8 +26,11 @@ interface ClusterState {
   selectedTable: string;
   fetchClusters: () => Promise<Cluster[]>;
   fetchTables: (clusterId: string) => Promise<any[]>;
+  fetchTableColumns: (clusterId: string, tableName: string) => Promise<any[]>;
   fetchTableData: (clusterId: string, tableName: string, page?: number, limit?: number) => Promise<any[]>;
   updateRow: (clusterId: string, tableName: string, data: any, where: any) => Promise<void>;
+  insertRow: (clusterId: string, tableName: string, data: any) => Promise<void>;
+  deleteRows: (clusterId: string, tableName: string, where: any) => Promise<void>;
   selectCluster: (cluster: Cluster | null) => void;
   createCluster: (data: any) => Promise<Cluster>;
   testConnection: (data: any) => Promise<any>;
@@ -90,6 +93,16 @@ export const useClusterStore = create<ClusterState>()(
         }
       },
 
+      fetchTableColumns: async (clusterId: string, tableName: string) => {
+        try {
+          const response = await api.get(`/v1/clusters/${clusterId}/tables/${tableName}/columns`);
+          return response.data;
+        } catch (error: any) {
+          set({ error: getErrorMessage(error) });
+          throw error;
+        }
+      },
+
       fetchTableData: async (clusterId: string, tableName: string, page: number = 1, limit: number = 100) => {
         set({ isDataLoading: true, error: null });
         try {
@@ -116,6 +129,39 @@ export const useClusterStore = create<ClusterState>()(
           set({ tableData: updatedTableData, isDataLoading: false });
         } catch (error: any) {
           set({ isDataLoading: false, error: getErrorMessage(error) });
+          throw error;
+        }
+      },
+
+      insertRow: async (clusterId, tableName, data) => {
+        set({ isDataLoading: true, error: null });
+        try {
+          const res = await api.post(`/v1/clusters/${clusterId}/tables/${tableName}`, data);
+          const newRow = res.data;
+          set((state) => ({ 
+            tableData: [newRow, ...state.tableData],
+            isDataLoading: false 
+          }));
+        } catch (error) {
+          const message = getErrorMessage(error);
+          set({ error: message, isDataLoading: false });
+          throw error;
+        }
+      },
+
+      deleteRows: async (clusterId, tableName, where) => {
+        set({ isDataLoading: true, error: null });
+        try {
+          await api.delete(`/v1/clusters/${clusterId}/tables/${tableName}/rows`, { data: { where } });
+          const { tableData } = get();
+          const filteredData = tableData.filter(row => {
+            const match = Object.keys(where).every(key => row[key] === where[key]);
+            return !match;
+          });
+          set({ tableData: filteredData, isDataLoading: false });
+        } catch (error) {
+          const message = getErrorMessage(error);
+          set({ error: message, isDataLoading: false });
           throw error;
         }
       },

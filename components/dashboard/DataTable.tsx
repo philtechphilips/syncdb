@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 import {
     Filter,
     ArrowUpDown,
@@ -31,7 +32,16 @@ interface DataTableProps {
 }
 
 const DataTable = ({ data, selectedTable }: DataTableProps) => {
-    const { selectedCluster, fetchTableData, updateRow, tableData, isDataLoading: isLoading } = useClusterStore();
+    const { 
+        selectedCluster, 
+        fetchTableData, 
+        updateRow, 
+        tableData, 
+        isDataLoading: isLoading,
+        fetchTableColumns,
+        insertRow,
+        deleteRows
+    } = useClusterStore();
     const [rows, setRows] = useState(tableData);
     const [editingCell, setEditingCell] = useState<{ rowId: any, colName: string, value: string } | null>(null);
 
@@ -46,6 +56,11 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
     const [lastCopiedFormat, setLastCopiedFormat] = useState<string | null>(null);
     const [showExportModal, setShowExportModal] = useState(false);
     const [exportSuccess, setExportSuccess] = useState<string | null>(null);
+
+    // Insert Row State
+    const [showInsertModal, setShowInsertModal] = useState(false);
+    const [tableColumns, setTableColumns] = useState<any[]>([]);
+    const [isInserting, setIsInserting] = useState(false);
 
     // Advanced Filtering
     const [activeFilters, setActiveFilters] = useState<{ column: string, operator: string, value: string }[]>([]);
@@ -106,11 +121,23 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
         setRows(rows.map(r => r.id === rowId ? { ...r, [colName]: "NULL" } : r));
     };
 
-    const deleteRow = (id: number) => {
-        setRows(deleteTableRow(rows, id));
-        const next = new Set(selectedRows);
-        next.delete(id);
-        setSelectedRows(next);
+    const deleteRow = async (id: any) => {
+        if (!selectedCluster || !selectedTable) return;
+        
+        // Find row to get identifying keys (currently assuming 'id')
+        const rowToDelete = rows.find(r => r.id === id);
+        if (!rowToDelete) return;
+
+        try {
+            await deleteRows(selectedCluster.id, selectedTable, { id: id });
+            setRows(deleteTableRow(rows, id));
+            const next = new Set(selectedRows);
+            next.delete(id);
+            setSelectedRows(next);
+            toast.success("Row deleted successfully");
+        } catch (error) {
+            console.error('Failed to delete row:', error);
+        }
     };
 
     const cloneRow = (rowId: number) => {
@@ -165,8 +192,34 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
         try {
             await updateRow(selectedCluster.id, selectedTable, { [colName]: value }, { id: rowId });
             setEditingCell(null);
+            toast.success("Cell updated");
         } catch (error) {
             console.error('Failed to update cell:', error);
+        }
+    };
+
+    const handleOpenInsertModal = async () => {
+        if (!selectedCluster || !selectedTable) return;
+        setShowInsertModal(true);
+        try {
+            const columns = await fetchTableColumns(selectedCluster.id, selectedTable);
+            setTableColumns(columns);
+        } catch (error) {
+            console.error('Failed to fetch columns:', error);
+        }
+    };
+
+    const handleInsert = async (formData: any) => {
+        if (!selectedCluster || !selectedTable) return;
+        setIsInserting(true);
+        try {
+            await insertRow(selectedCluster.id, selectedTable, formData);
+            setShowInsertModal(false);
+            toast.success("New row inserted successfully");
+        } catch (error) {
+            console.error('Insert failed:', error);
+        } finally {
+            setIsInserting(false);
         }
     };
 
@@ -591,6 +644,14 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                             </div>
                         )}
                     </div>
+
+                    <button
+                        onClick={handleOpenInsertModal}
+                        className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-lg text-[10px] font-black text-primary hover:bg-primary/20 hover:shadow-[0_0_15px_rgba(0,237,100,0.1)] transition-all uppercase tracking-widest"
+                    >
+                        <Plus className="h-3 w-3" />
+                        Insert Row
+                    </button>
                 </div>
             </div>
 
@@ -690,6 +751,98 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                 </table>
             </div>
 
+            {/* Insert Row Modal */}
+            {showInsertModal && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-end bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="w-full max-w-xl h-full bg-[#021016] border-l border-white/10 shadow-2xl flex flex-col animate-in slide-in-from-right duration-500 ease-out">
+                        <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
+                            <div>
+                                <h3 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-3">
+                                    <Plus className="h-5 w-5 text-primary" />
+                                    Insert New Row
+                                </h3>
+                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Adding to <span className="text-white">{selectedTable}</span></p>
+                            </div>
+                            <button onClick={() => setShowInsertModal(false)} className="p-2.5 hover:bg-white/5 rounded-xl text-zinc-500 hover:text-white transition-all group">
+                                <X className="h-5 w-5 group-hover:rotate-90 transition-transform duration-300" />
+                            </button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto px-8 py-8 space-y-8 scrollbar-hide">
+                            {tableColumns.length === 0 ? (
+                                <div className="space-y-4">
+                                    {[1,2,3,4,5].map(i => (
+                                        <div key={i} className="h-16 bg-white/[0.02] rounded-xl animate-pulse"></div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <form id="insert-form" className="space-y-6" onSubmit={(e) => {
+                                    e.preventDefault();
+                                    const formData = new FormData(e.currentTarget);
+                                    const data: any = {};
+                                    tableColumns.forEach(col => {
+                                        const val = formData.get(col.name);
+                                        if (val !== "" && val !== null) data[col.name] = val;
+                                    });
+                                    handleInsert(data);
+                                }}>
+                                    {tableColumns.map((col) => (
+                                        <div key={col.name} className="space-y-2 group">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2 group-focus-within:text-primary transition-colors">
+                                                    {col.name}
+                                                    {col.nullable === 'NO' && col.columnKey !== 'PRI' && <span className="text-red-500">*</span>}
+                                                </label>
+                                                <span className="text-[8px] font-black text-zinc-600 uppercase tracking-tighter bg-white/5 px-1.5 py-0.5 rounded">
+                                                    {col.type}
+                                                </span>
+                                            </div>
+                                            <input
+                                                name={col.name}
+                                                type={col.type.includes('int') ? 'number' : 'text'}
+                                                placeholder={col.defaultValue || (col.nullable === 'YES' ? 'NULL' : `Enter ${col.name}...`)}
+                                                className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 text-sm font-medium text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all"
+                                                disabled={col.columnKey === 'PRI' && col.defaultValue?.includes('nextval') || col.name === 'id'}
+                                            />
+                                            {col.columnKey === 'PRI' && (
+                                                <p className="text-[8px] text-primary/50 font-black uppercase tracking-widest pt-1">Primary Key (Auto-generated)</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </form>
+                            )}
+                        </div>
+
+                        <div className="px-8 py-6 bg-white/[0.01] border-t border-white/5 flex items-center justify-end gap-4">
+                            <button 
+                                onClick={() => setShowInsertModal(false)}
+                                className="px-6 py-2.5 rounded-xl text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                form="insert-form"
+                                type="submit"
+                                disabled={isInserting}
+                                className="flex items-center gap-3 px-8 py-2.5 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:shadow-[0_0_20px_rgba(0,237,100,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100"
+                            >
+                                {isInserting ? (
+                                    <>
+                                        <div className="h-3 w-3 border-2 border-primary-foreground/30 border-t-primary-foreground animate-spin rounded-full"></div>
+                                        Inserting...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Plus className="h-4 w-4" />
+                                        Insert Row
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Pagination Footer */}
             <div className="px-6 py-3 border-t border-white/5 bg-[#021016]/30 flex items-center justify-between">
                 <div className="flex items-center gap-4 text-[10px] font-black text-zinc-700 uppercase tracking-widest">
@@ -703,16 +856,6 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                         </button>
                     </div>
                 </div>
-                <button
-                    onClick={() => {
-                        const newId = Math.max(...rows.map(r => r.id)) + 1;
-                        setRows([...rows, { id: newId, name: "New User", email: "user@example.com", role: "Contributor", status: "Inactive", created: new Date().toISOString().split('T')[0] }]);
-                    }}
-                    className="flex items-center gap-2 px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-lg text-[10px] font-black text-primary hover:bg-primary/20 hover:shadow-[0_0_15px_rgba(0,237,100,0.1)] transition-all uppercase tracking-widest"
-                >
-                    <Plus className="h-3 w-3" />
-                    New Row
-                </button>
             </div>
         </div>
     );
