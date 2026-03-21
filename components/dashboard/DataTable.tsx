@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useSearchParams, usePathname } from "next/navigation";
 import { toast } from "sonner";
 import {
     Filter,
@@ -19,8 +20,14 @@ import {
     FileSpreadsheet,
     FileText,
     CheckCircle2,
-    Table
+    Table,
+    ChevronDown,
+    Calendar,
+    Clock
 } from "lucide-react";
+import CustomSelect from "@/components/ui/CustomSelect";
+import CustomDatePicker from "@/components/ui/CustomDatePicker";
+import CustomFKSelect from "@/components/ui/CustomFKSelect";
 import { downloadFile, formatData } from '@/lib/exportUtils';
 import { useClusterStore } from "@/store/useClusterStore";
 import { applyFilters, cloneTableRow, deleteTableRow } from "@/lib/tableUtils";
@@ -32,6 +39,8 @@ interface DataTableProps {
 }
 
 const DataTable = ({ data, selectedTable }: DataTableProps) => {
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
     const { 
         selectedCluster, 
         fetchTableData, 
@@ -61,10 +70,43 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
     const [showInsertModal, setShowInsertModal] = useState(false);
     const [tableColumns, setTableColumns] = useState<any[]>([]);
     const [isInserting, setIsInserting] = useState(false);
+    const [insertData, setInsertData] = useState<Record<string, any>>({});
+    const [nullFields, setNullFields] = useState<Set<string>>(new Set());
 
     // Advanced Filtering
     const [activeFilters, setActiveFilters] = useState<{ column: string, operator: string, value: string }[]>([]);
     const [showFilterPopover, setShowFilterPopover] = useState(false);
+
+    // Sync filters from URL on mount or table change
+    useEffect(() => {
+        const urlFilters = searchParams.get("f");
+        if (urlFilters) {
+            try {
+                const parsed = JSON.parse(urlFilters);
+                if (Array.isArray(parsed)) {
+                    setActiveFilters(parsed);
+                }
+            } catch (e) {
+                console.error("Failed to parse filters from URL");
+            }
+        }
+    }, [selectedTable]); // Re-check when table changes
+
+    // Sync filters TO URL
+    useEffect(() => {
+        const params = new URLSearchParams(searchParams.toString());
+        const currentF = params.get("f");
+        const nextF = activeFilters.length > 0 ? JSON.stringify(activeFilters) : null;
+        
+        if (currentF === nextF) return; // Break loop if value hasn't changed
+
+        if (nextF) params.set("f", nextF);
+        else params.delete("f");
+        
+        const queryString = params.toString();
+        const url = queryString ? `${pathname}?${queryString}` : pathname;
+        window.history.replaceState(null, '', url);
+    }, [activeFilters, pathname, searchParams]);
 
     useEffect(() => {
         if (!selectedTable || !selectedCluster) return;
@@ -74,7 +116,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
     useEffect(() => {
         setRows(tableData);
         setSelectedRows(new Set());
-        setActiveFilters([]);
+        // Don't clear filters here, as they might be from URL
     }, [tableData]);
 
     const handleContextMenu = (e: React.MouseEvent, rowId: number, colName: string) => {
@@ -184,6 +226,30 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
         setShowExportModal(false);
     };
 
+    const handleInputChange = (colName: string, value: any) => {
+        setInsertData(prev => ({ ...prev, [colName]: value }));
+        // Remove from nullFields if a value is set
+        if (nullFields.has(colName)) {
+            const nextNulls = new Set(nullFields);
+            nextNulls.delete(colName);
+            setNullFields(nextNulls);
+        }
+    };
+
+    const toggleNull = (colName: string) => {
+        const nextNulls = new Set(nullFields);
+        if (nextNulls.has(colName)) {
+            nextNulls.delete(colName);
+        } else {
+            nextNulls.add(colName);
+            // Optionally clear the data value too
+            const nextData = { ...insertData };
+            delete nextData[colName];
+            setInsertData(nextData);
+        }
+        setNullFields(nextNulls);
+    };
+
     const handleSave = async () => {
         if (!editingCell || !selectedCluster || !selectedTable) return;
 
@@ -201,6 +267,8 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
     const handleOpenInsertModal = async () => {
         if (!selectedCluster || !selectedTable) return;
         setShowInsertModal(true);
+        setInsertData({});
+        setNullFields(new Set());
         try {
             const columns = await fetchTableColumns(selectedCluster.id, selectedTable);
             setTableColumns(columns);
@@ -209,11 +277,18 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
         }
     };
 
-    const handleInsert = async (formData: any) => {
+    const handleInsert = async () => {
         if (!selectedCluster || !selectedTable) return;
         setIsInserting(true);
+        
+        // Prepare final data, respecting nullFields
+        const finalData: any = { ...insertData };
+        nullFields.forEach(col => {
+            finalData[col] = null;
+        });
+
         try {
-            await insertRow(selectedCluster.id, selectedTable, formData);
+            await insertRow(selectedCluster.id, selectedTable, finalData);
             setShowInsertModal(false);
             toast.success("New row inserted successfully");
         } catch (error) {
@@ -761,7 +836,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                                     <Plus className="h-5 w-5 text-primary" />
                                     Insert New Row
                                 </h3>
-                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Adding to <span className="text-white">{selectedTable}</span></p>
+                                <p className="text-[10px] text-zinc-500 font-bold tracking-widest mt-1">Adding to <span className="text-white">{selectedTable}</span></p>
                             </div>
                             <button onClick={() => setShowInsertModal(false)} className="p-2.5 hover:bg-white/5 rounded-xl text-zinc-500 hover:text-white transition-all group">
                                 <X className="h-5 w-5 group-hover:rotate-90 transition-transform duration-300" />
@@ -778,37 +853,125 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                             ) : (
                                 <form id="insert-form" className="space-y-6" onSubmit={(e) => {
                                     e.preventDefault();
-                                    const formData = new FormData(e.currentTarget);
-                                    const data: any = {};
-                                    tableColumns.forEach(col => {
-                                        const val = formData.get(col.name);
-                                        if (val !== "" && val !== null) data[col.name] = val;
-                                    });
-                                    handleInsert(data);
+                                    handleInsert();
                                 }}>
-                                    {tableColumns.map((col) => (
-                                        <div key={col.name} className="space-y-2 group">
-                                            <div className="flex items-center justify-between">
-                                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2 group-focus-within:text-primary transition-colors">
-                                                    {col.name}
-                                                    {col.nullable === 'NO' && col.columnKey !== 'PRI' && <span className="text-red-500">*</span>}
-                                                </label>
-                                                <span className="text-[8px] font-black text-zinc-600 uppercase tracking-tighter bg-white/5 px-1.5 py-0.5 rounded">
-                                                    {col.type}
-                                                </span>
+                                    {tableColumns.map((col) => {
+                                        const isNull = nullFields.has(col.name);
+                                        const isDisabled = (col.columnKey === 'PRI' && col.defaultValue?.includes('nextval')) || col.name === 'id';
+                                        const lowerType = col.type.toLowerCase();
+                                        
+                                        // Detect specialized types
+                                        const isBoolean = lowerType === 'boolean' || lowerType === 'bool' || (lowerType === 'tinyint' && col.fullType?.includes('(1)'));
+                                        const isDateTime = lowerType.includes('timestamp') || lowerType.includes('datetime');
+                                        const isDate = lowerType === 'date' && !isDateTime;
+                                        
+                                        // Parse enums
+                                        let enumOptions: string[] | null = null;
+                                        if (lowerType === 'enum' && col.fullType) {
+                                            const match = col.fullType.match(/enum\((.*)\)/);
+                                            if (match) enumOptions = match[1].split(',').map((s: string) => s.replace(/'/g, '').trim());
+                                        } else if (col.enumValues) {
+                                            enumOptions = col.enumValues.split(',');
+                                        }
+
+                                        return (
+                                            <div key={col.name} className="space-y-2 group">
+                                                <div className="flex items-center justify-between">
+                                                    <label className="text-[10px] font-black text-zinc-400 tracking-widest flex items-center gap-2 group-focus-within:text-primary transition-colors">
+                                                        {col.name}
+                                                        {col.nullable === 'NO' && col.columnKey !== 'PRI' && <span className="text-red-500">*</span>}
+                                                    </label>
+                                                    <div className="flex items-center gap-2">
+                                                        {col.nullable === 'YES' && (
+                                                            <button 
+                                                                type="button"
+                                                                onClick={() => toggleNull(col.name)}
+                                                                className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-widest transition-all ${isNull ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' : 'bg-white/5 text-zinc-500 border border-transparent hover:bg-white/10 hover:text-zinc-300'}`}
+                                                            >
+                                                                <FileMinus className={`h-2.5 w-2.5 ${isNull ? 'text-amber-500' : 'text-zinc-600'}`} />
+                                                                {isNull ? 'NULL SET' : 'SET NULL'}
+                                                            </button>
+                                                        )}
+                                                        <span className="text-[8px] font-black text-zinc-600 tracking-tighter bg-white/5 px-1.5 py-0.5 rounded">
+                                                            {col.type}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className={`relative transition-all duration-300 ${isNull ? 'opacity-100' : ''}`}>
+                                                    {col.referencedTable && col.referencedColumn ? (
+                                                        <CustomFKSelect
+                                                            value={isNull ? "NULL" : (insertData[col.name] ?? "")}
+                                                            onChange={(val) => handleInputChange(col.name, val)}
+                                                            referencedTable={col.referencedTable}
+                                                            referencedColumn={col.referencedColumn}
+                                                            clusterId={selectedCluster?.id || ""}
+                                                            disabled={isDisabled}
+                                                            isNull={isNull}
+                                                        />
+                                                    ) : isBoolean ? (
+                                                        <CustomSelect
+                                                            value={isNull ? "NULL" : (insertData[col.name] ?? true)}
+                                                            onChange={(val) => handleInputChange(col.name, val)}
+                                                            options={[
+                                                                ...(col.nullable === 'YES' ? [{ label: 'NULL (Unset)', value: 'NULL' }] : []),
+                                                                { label: 'True', value: true },
+                                                                { label: 'False', value: false }
+                                                            ]}
+                                                            placeholder={`Set ${col.name}...`}
+                                                            disabled={isDisabled}
+                                                        />
+                                                    ) : enumOptions ? (
+                                                        <CustomSelect
+                                                            value={isNull ? "NULL" : (insertData[col.name] ?? "")}
+                                                            onChange={(val) => handleInputChange(col.name, val)}
+                                                            options={[
+                                                                ...(col.nullable === 'YES' ? [{ label: 'NULL (Unset)', value: 'NULL' }] : []),
+                                                                ...enumOptions.map(opt => ({ label: opt, value: opt }))
+                                                            ]}
+                                                            placeholder={`Select ${col.name}...`}
+                                                            disabled={isDisabled}
+                                                        />
+                                                    ) : isDate || isDateTime ? (
+                                                        <CustomDatePicker
+                                                            value={isNull ? "" : (insertData[col.name] ?? "")}
+                                                            onChange={(val) => handleInputChange(col.name, val)}
+                                                            isDateTime={isDateTime}
+                                                            disabled={isDisabled}
+                                                            isNull={isNull}
+                                                        />
+                                                    ) : (
+                                                        <div className="relative group/input">
+                                                            <input
+                                                                name={col.name}
+                                                                type={isNull ? 'text' : (lowerType.includes('int') || lowerType === 'decimal' ? 'number' : 'text')}
+                                                                placeholder={col.defaultValue || (col.nullable === 'YES' ? 'NULL' : `Enter ${col.name}...`)}
+                                                                value={isNull ? "NULL" : (insertData[col.name] ?? "")}
+                                                                readOnly={isNull}
+                                                                onChange={(e) => handleInputChange(col.name, e.target.value)}
+                                                                className={`w-full border rounded-xl px-4 py-3 text-sm font-medium transition-all ${
+                                                                    isNull 
+                                                                    ? 'bg-amber-500/[0.03] border-amber-500/20 text-amber-500/50 italic cursor-default' 
+                                                                    : 'bg-white/[0.02] border-white/5 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 hover:bg-white/[0.04]'
+                                                                }`}
+                                                                disabled={isDisabled}
+                                                            />
+                                                            {isNull && (
+                                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 animate-in fade-in slide-in-from-right-2">
+                                                                    <span className="text-[10px] font-black text-amber-500/40 uppercase tracking-widest">Unset</span>
+                                                                    <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                
+                                                {col.columnKey === 'PRI' && (
+                                                    <p className="text-[8px] text-primary/50 font-black uppercase tracking-widest pt-1">Primary Key (Auto-generated)</p>
+                                                )}
                                             </div>
-                                            <input
-                                                name={col.name}
-                                                type={col.type.includes('int') ? 'number' : 'text'}
-                                                placeholder={col.defaultValue || (col.nullable === 'YES' ? 'NULL' : `Enter ${col.name}...`)}
-                                                className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 text-sm font-medium text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all"
-                                                disabled={col.columnKey === 'PRI' && col.defaultValue?.includes('nextval') || col.name === 'id'}
-                                            />
-                                            {col.columnKey === 'PRI' && (
-                                                <p className="text-[8px] text-primary/50 font-black uppercase tracking-widest pt-1">Primary Key (Auto-generated)</p>
-                                            )}
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </form>
                             )}
                         </div>

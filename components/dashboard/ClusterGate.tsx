@@ -1,36 +1,21 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Database, Plus, ChevronRight, Loader2, Server, Activity, ArrowRight, LogOut } from "lucide-react";
-import { useClusterStore, Cluster } from "@/store/useClusterStore";
+import React, { useState } from "react";
+import { Database, Plus, ChevronRight, Server, Activity, ArrowRight, LogOut } from "lucide-react";
+import { useClusterStore } from "@/store/useClusterStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { SynqLogo } from "@/components/ui/SynqLogo";
 import ConnectionDialog from "./ConnectionDialog";
 
 export default function ClusterGate({ children }: { children: React.ReactNode }) {
-    const { clusters, selectedCluster, fetchClusters, selectCluster, isLoading: isClustersLoading } = useClusterStore();
-    const { user, logout } = useAuthStore();
+    const { clusters, selectedCluster, selectCluster } = useClusterStore();
+    const { logout } = useAuthStore();
     const [isConnectOpen, setIsConnectOpen] = useState(false);
-    const [hasChecked, setHasChecked] = useState(false);
 
-    useEffect(() => {
-        fetchClusters().finally(() => setHasChecked(true));
-    }, [fetchClusters]);
-
-    if (!hasChecked || isClustersLoading) {
-        return (
-            <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-                <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 animate-pulse">Syncing Clusters...</p>
-            </div>
-        );
-    }
-
-    // Goal: if user has dbs, they must select one. If they have none, they must connect one.
+    // If no cluster is selected, show the selector screen
     if (!selectedCluster) {
         return (
             <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative overflow-hidden">
-                {/* Background Tech Elements */}
                 <div className="absolute inset-0 tech-grid opacity-[0.05] pointer-events-none"></div>
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
 

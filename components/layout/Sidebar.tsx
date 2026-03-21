@@ -53,11 +53,7 @@ const Sidebar = ({
         return () => window.removeEventListener('click', handleClick);
     }, []);
 
-    React.useEffect(() => {
-        if (clusters.length === 0) {
-            fetchClusters();
-        }
-    }, [clusters.length, fetchClusters]);
+    // Clusters are now managed by the DashboardLayout master handshake
 
     React.useEffect(() => {
         if (selectedCluster) {

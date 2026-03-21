@@ -58,7 +58,7 @@ export const useClusterStore = create<ClusterState>()(
         set({ isLoading: true, error: null });
         try {
           const response = await api.get('/v1/clusters');
-          const clusters = response.data;
+          const clusters = (response.data || []).sort((a: Cluster, b: Cluster) => a.name.localeCompare(b.name));
           
           const { selectedCluster } = get();
           let nextSelected = selectedCluster;
@@ -85,8 +85,9 @@ export const useClusterStore = create<ClusterState>()(
         set({ isTablesLoading: true, error: null });
         try {
           const response = await api.get(`/v1/clusters/${clusterId}/tables`);
-          set({ tables: response.data, isTablesLoading: false });
-          return response.data;
+          const sortedTables = (response.data || []).sort((a: any, b: any) => a.name.localeCompare(b.name));
+          set({ tables: sortedTables, isTablesLoading: false });
+          return sortedTables;
         } catch (error: any) {
           set({ isTablesLoading: false, error: getErrorMessage(error), tables: [] });
           throw error;
