@@ -41,6 +41,7 @@ interface ClusterState {
   setActiveTab: (tab: "query" | "er" | "table" | "logs") => void;
   setSelectedTable: (tableName: string) => void;
   clearError: () => void;
+  fetchSchema: (clusterId: string) => Promise<any[]>;
 }
 
 export const useClusterStore = create<ClusterState>()(
@@ -242,6 +243,16 @@ export const useClusterStore = create<ClusterState>()(
       setActiveTab: (tab) => set({ activeTab: tab }),
       setSelectedTable: (tableName) => set({ selectedTable: tableName }),
       clearError: () => set({ error: null }),
+
+      fetchSchema: async (clusterId: string) => {
+        try {
+          const response = await api.get(`/v1/clusters/${clusterId}/schema`);
+          return response.data || [];
+        } catch (error: any) {
+          set({ error: getErrorMessage(error) });
+          throw error;
+        }
+      },
     }),
     {
       name: 'cluster-storage',
