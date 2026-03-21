@@ -13,13 +13,8 @@ export default function QueryPage() {
     }, []);
 
     return (
-        <div className="flex flex-1 flex-col divide-y divide-white/5 text-foreground min-w-0 overflow-hidden">
-            <div className="flex-none h-[500px] min-w-0 overflow-hidden">
-                <QueryEditor />
-            </div>
-            <div className="flex-1 overflow-hidden bg-background min-w-0">
-                <DataTable />
-            </div>
+        <div className="flex flex-1 flex-col text-foreground min-w-0 h-full overflow-hidden">
+            <QueryEditor />
         </div>
     );
 }

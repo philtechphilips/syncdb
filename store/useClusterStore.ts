@@ -42,6 +42,8 @@ interface ClusterState {
   setSelectedTable: (tableName: string) => void;
   clearError: () => void;
   fetchSchema: (clusterId: string) => Promise<any[]>;
+  executeQuery: (clusterId: string, query: string) => Promise<any>;
+  fetchQueryLogs: (clusterId: string) => Promise<any[]>;
 }
 
 export const useClusterStore = create<ClusterState>()(
@@ -253,10 +255,32 @@ export const useClusterStore = create<ClusterState>()(
           throw error;
         }
       },
+
+      executeQuery: async (clusterId: string, query: string) => {
+        try {
+          const response = await api.post(`/v1/clusters/${clusterId}/query`, { query });
+          return response.data;
+        } catch (error: any) {
+          const message = getErrorMessage(error);
+          set({ error: message });
+          throw error;
+        }
+      },
+
+      fetchQueryLogs: async (clusterId: string) => {
+        try {
+          const response = await api.get(`/v1/clusters/${clusterId}/query/logs`);
+          return response.data;
+        } catch (error: any) {
+          const message = getErrorMessage(error);
+          set({ error: message });
+          throw error;
+        }
+      },
     }),
     {
       name: 'cluster-storage',
-      partialize: (state) => ({ 
+      partialize: (state: ClusterState) => ({ 
         selectedCluster: state.selectedCluster,
         activeTab: state.activeTab,
         selectedTable: state.selectedTable
