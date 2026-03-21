@@ -81,6 +81,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
 
     // Advanced Filtering
     const [activeFilters, setActiveFilters] = useState<{ column: string, operator: string, value: string }[]>([]);
+    const [stagedFilters, setStagedFilters] = useState<{ column: string, operator: string, value: string }[]>([]);
     const [showFilterPopover, setShowFilterPopover] = useState(false);
 
     // Sync filters from URL on mount or table change
@@ -91,12 +92,28 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                 const parsed = JSON.parse(urlFilters);
                 if (Array.isArray(parsed)) {
                     setActiveFilters(parsed);
+                    setStagedFilters(parsed);
                 }
             } catch (e) {
                 console.error("Failed to parse filters from URL");
             }
         }
-    }, [selectedTable]); // Re-check when table changes
+    }, [selectedTable, searchParams]); // Re-check when table changes
+
+    // Update staged filters when popover opens
+    useEffect(() => {
+        if (showFilterPopover) {
+            setStagedFilters(activeFilters);
+        }
+    }, [showFilterPopover, activeFilters]);
+
+    // Fetch columns for the table to use in filters
+    useEffect(() => {
+        if (!selectedTable || !selectedCluster) return;
+        fetchTableColumns(selectedCluster.id, selectedTable).then(cols => {
+            setTableColumns(cols);
+        });
+    }, [selectedTable, selectedCluster, fetchTableColumns]);
 
     // Sync filters TO URL
     useEffect(() => {
@@ -104,7 +121,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
         const currentF = params.get("f");
         const nextF = activeFilters.length > 0 ? JSON.stringify(activeFilters) : null;
         
-        if (currentF === nextF) return; // Break loop if value hasn't changed
+        if (currentF === nextF) return;
 
         if (nextF) params.set("f", nextF);
         else params.delete("f");
@@ -116,13 +133,12 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
 
     useEffect(() => {
         if (!selectedTable || !selectedCluster) return;
-        fetchTableData(selectedCluster.id, selectedTable);
-    }, [selectedTable, selectedCluster, fetchTableData]);
+        fetchTableData(selectedCluster.id, selectedTable, 1, rowsPerPage, activeFilters);
+    }, [selectedTable, selectedCluster, fetchTableData, activeFilters, rowsPerPage]);
 
     useEffect(() => {
         setRows(tableData);
         setSelectedRows(new Set());
-        // Don't clear filters here, as they might be from URL
     }, [tableData]);
 
     const handleContextMenu = (e: React.MouseEvent, rowId: number, colName: string) => {
@@ -172,7 +188,6 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
     const deleteRow = async (id: any) => {
         if (!selectedCluster || !selectedTable) return;
         
-        // Find row to get identifying keys (currently assuming 'id')
         const rowToDelete = rows.find(r => r.id === id);
         if (!rowToDelete) return;
 
@@ -196,22 +211,27 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
         copyToClipboard(text);
     };
 
-    const filteredRows = applyFilters(rows, activeFilters, showSelectedOnly, selectedRows);
+    // Filtered rows for FE only handles 'Show Selected Only' now, as general filters are backend-driven
+    const filteredRows = applyFilters(rows, [], showSelectedOnly, selectedRows);
 
     const addFilter = () => {
-        const columns = rows.length > 0 ? Object.keys(rows[0]) : [];
+        const columns = tableColumns.length > 0 ? tableColumns.map(c => c.name) : (rows.length > 0 ? Object.keys(rows[0]) : []);
         if (columns.length === 0) return;
-        setActiveFilters([...activeFilters, { column: columns[0], operator: 'contains', value: '' }]);
+        setStagedFilters([...stagedFilters, { column: columns[0], operator: 'is', value: '' }]);
     };
 
     const removeFilter = (index: number) => {
-        setActiveFilters(activeFilters.filter((_, i) => i !== index));
+        setStagedFilters(stagedFilters.filter((_, i) => i !== index));
     };
 
     const updateFilterRule = (index: number, updates: Partial<{ column: string, operator: string, value: string }>) => {
-        setActiveFilters(activeFilters.map((f, i) => i === index ? { ...f, ...updates } : f));
+        setStagedFilters(stagedFilters.map((f, i) => i === index ? { ...f, ...updates } : f));
     };
 
+    const applyStagedFilters = () => {
+        setActiveFilters(stagedFilters);
+        setShowFilterPopover(false);
+    };
 
     const handleCopy = (format: string, dataToProcess: any[] = rows.filter(r => selectedRows.has(r.id))) => {
         const content = formatData(format, dataToProcess, selectedTable || 'table');
@@ -234,7 +254,6 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
 
     const handleInputChange = (colName: string, value: any) => {
         setFormData((prev: any) => ({ ...prev, [colName]: value }));
-        // Remove from nullFields if a value is set
         if (nullFields.has(colName)) {
             const nextNulls = new Set(nullFields);
             nextNulls.delete(colName);
@@ -248,7 +267,6 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
             nextNulls.delete(colName);
         } else {
             nextNulls.add(colName);
-            // Optionally clear the data value too
             const nextData = { ...formData };
             delete nextData[colName];
             setFormData(nextData);
@@ -292,7 +310,6 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
         setShowRowModal(true);
         setFormData({ ...row });
         
-        // Identify NULL fields
         const nextNulls = new Set<string>();
         Object.keys(row).forEach(key => {
             if (row[key] === null || row[key] === "NULL") {
@@ -315,7 +332,6 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
         if (!selectedCluster || !selectedTable) return;
         setIsSaving(true);
         
-        // Prepare final data, respecting nullFields
         const finalData: any = { ...formData };
         nullFields.forEach(col => {
             finalData[col] = null;
@@ -323,7 +339,6 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
 
         try {
             if (isEditMode && editingRow) {
-                // Determine PK for WHERE clause (assuming 'id' if exists, else all fields)
                 const where = editingRow.id ? { id: editingRow.id } : { ...editingRow };
                 await updateRow(selectedCluster.id, selectedTable, finalData, where);
                 toast.success("Row updated successfully");
@@ -342,14 +357,14 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
     const handleNextPage = () => {
         if (!selectedCluster || !selectedTable) return;
         if (currentPage * rowsPerPage < totalRows) {
-            fetchTableData(selectedCluster.id, selectedTable, currentPage + 1, rowsPerPage);
+            fetchTableData(selectedCluster.id, selectedTable, currentPage + 1, rowsPerPage, activeFilters);
         }
     };
 
     const handlePrevPage = () => {
         if (!selectedCluster || !selectedTable) return;
         if (currentPage > 1) {
-            fetchTableData(selectedCluster.id, selectedTable, currentPage - 1, rowsPerPage);
+            fetchTableData(selectedCluster.id, selectedTable, currentPage - 1, rowsPerPage, activeFilters);
         }
     };
 
@@ -679,19 +694,19 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                                 </div>
 
                                 <div className="space-y-2 max-h-[300px] overflow-y-auto scrollbar-hide mb-4">
-                                    {activeFilters.length === 0 ? (
+                                    {stagedFilters.length === 0 ? (
                                         <div className="py-8 text-center border-2 border-dashed border-white/5 rounded-xl">
                                             <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">No filters applied</p>
                                         </div>
                                     ) : (
-                                        activeFilters.map((filter, index) => (
+                                        stagedFilters.map((filter, index) => (
                                             <div key={index} className="flex items-center gap-2 bg-white/[0.02] p-2 rounded-lg group">
                                                 <select 
                                                     value={filter.column}
                                                     onChange={(e) => updateFilterRule(index, { column: e.target.value })}
                                                     className="bg-zinc-800 border-none rounded px-2 py-1.5 text-[11px] font-bold text-zinc-200 focus:ring-1 focus:ring-primary outline-none w-32"
                                                 >
-                                                    {Object.keys(rows[0] || {}).map(col => (
+                                                    {(tableColumns.length > 0 ? tableColumns.map(c => c.name) : Object.keys(rows[0] || {})).map(col => (
                                                         <option key={col} value={col}>{col}</option>
                                                     ))}
                                                 </select>
@@ -741,7 +756,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                                         Add Condition
                                     </button>
                                     <button 
-                                        onClick={() => setShowFilterPopover(false)}
+                                        onClick={applyStagedFilters}
                                         className="px-4 py-1.5 rounded-lg bg-zinc-800 text-white text-[9px] font-black uppercase tracking-widest hover:bg-zinc-700 transition-all"
                                     >
                                         Apply Filters

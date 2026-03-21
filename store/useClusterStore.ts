@@ -30,7 +30,7 @@ interface ClusterState {
   fetchClusters: () => Promise<Cluster[]>;
   fetchTables: (clusterId: string) => Promise<any[]>;
   fetchTableColumns: (clusterId: string, tableName: string) => Promise<any[]>;
-  fetchTableData: (clusterId: string, tableName: string, page?: number, limit?: number) => Promise<any[]>;
+  fetchTableData: (clusterId: string, tableName: string, page?: number, limit?: number, filters?: any[]) => Promise<any[]>;
   updateRow: (clusterId: string, tableName: string, data: any, where: any) => Promise<void>;
   insertRow: (clusterId: string, tableName: string, data: any) => Promise<void>;
   deleteRows: (clusterId: string, tableName: string, where: any) => Promise<void>;
@@ -72,12 +72,10 @@ export const useClusterStore = create<ClusterState>()(
           const { selectedCluster } = get();
           let nextSelected = selectedCluster;
           
-          // Clear if selected is not in the list
           if (selectedCluster && !clusters.find((c: Cluster) => c.id === selectedCluster.id)) {
             nextSelected = null;
           }
 
-          // Auto-select if none and exactly one exists
           if (!nextSelected && clusters.length === 1) {
             nextSelected = clusters[0];
           }
@@ -113,11 +111,11 @@ export const useClusterStore = create<ClusterState>()(
         }
       },
 
-      fetchTableData: async (clusterId: string, tableName: string, page: number = 1, limit: number = 100) => {
+      fetchTableData: async (clusterId: string, tableName: string, page: number = 1, limit: number = 100, filters: any[] = []) => {
         set({ isDataLoading: true, error: null });
         try {
-          const response = await api.get(`/v1/clusters/${clusterId}/tables/${tableName}?page=${page}&limit=${limit}`);
-          // New paginated format: { data, total, page, limit }
+          const filterParam = filters.length > 0 ? `&filters=${encodeURIComponent(JSON.stringify(filters))}` : '';
+          const response = await api.get(`/v1/clusters/${clusterId}/tables/${tableName}?page=${page}&limit=${limit}${filterParam}`);
           const { data, total, page: resPage, limit: resLimit } = response.data;
           
           set({ 

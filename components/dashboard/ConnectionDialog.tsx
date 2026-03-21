@@ -16,7 +16,7 @@ import { useClusterStore } from "@/store/useClusterStore";
 const ConnectionDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     const { createCluster, testConnection, isLoading, error, clearError } = useClusterStore();
     
-    const [selectedDb, setSelectedDb] = useState<"mysql" | "postgres">("postgres");
+    const [selectedDb, setSelectedDb] = useState<"mysql" | "postgres" | "mssql">("postgres");
     const [formData, setFormData] = useState({
         name: "",
         host: "",
@@ -32,9 +32,10 @@ const ConnectionDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
     const databases = [
         { id: "postgres", name: "PostgreSQL", icon: "🐘", defaultPort: "5432" },
         { id: "mysql", name: "MySQL / MariaDB", icon: "🐬", defaultPort: "3306" },
+        { id: "mssql", name: "SQL Server (MSSQL)", icon: "🖥️", defaultPort: "1433" },
     ];
 
-    const handleDbSelect = (id: "mysql" | "postgres") => {
+    const handleDbSelect = (id: "mysql" | "postgres" | "mssql") => {
         const db = databases.find(d => d.id === id);
         setSelectedDb(id);
         setFormData({ ...formData, port: db?.defaultPort || "5432" });
