@@ -23,7 +23,8 @@ import {
     Table,
     ChevronDown,
     Calendar,
-    Clock
+    Clock,
+    Maximize2
 } from "lucide-react";
 import CustomSelect from "@/components/ui/CustomSelect";
 import CustomDatePicker from "@/components/ui/CustomDatePicker";
@@ -69,11 +70,13 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
     const [showExportModal, setShowExportModal] = useState(false);
     const [exportSuccess, setExportSuccess] = useState<string | null>(null);
 
-    // Insert Row State
-    const [showInsertModal, setShowInsertModal] = useState(false);
+    // Insert/Update Row State
+    const [showRowModal, setShowRowModal] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [editingRow, setEditingRow] = useState<any>(null);
     const [tableColumns, setTableColumns] = useState<any[]>([]);
-    const [isInserting, setIsInserting] = useState(false);
-    const [insertData, setInsertData] = useState<Record<string, any>>({});
+    const [isSaving, setIsSaving] = useState(false);
+    const [formData, setFormData] = useState<Record<string, any>>({});
     const [nullFields, setNullFields] = useState<Set<string>>(new Set());
 
     // Advanced Filtering
@@ -230,7 +233,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
     };
 
     const handleInputChange = (colName: string, value: any) => {
-        setInsertData(prev => ({ ...prev, [colName]: value }));
+        setFormData((prev: any) => ({ ...prev, [colName]: value }));
         // Remove from nullFields if a value is set
         if (nullFields.has(colName)) {
             const nextNulls = new Set(nullFields);
@@ -246,9 +249,9 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
         } else {
             nextNulls.add(colName);
             // Optionally clear the data value too
-            const nextData = { ...insertData };
+            const nextData = { ...formData };
             delete nextData[colName];
-            setInsertData(nextData);
+            setFormData(nextData);
         }
         setNullFields(nextNulls);
     };
@@ -269,8 +272,10 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
 
     const handleOpenInsertModal = async () => {
         if (!selectedCluster || !selectedTable) return;
-        setShowInsertModal(true);
-        setInsertData({});
+        setIsEditMode(false);
+        setEditingRow(null);
+        setShowRowModal(true);
+        setFormData({});
         setNullFields(new Set());
         try {
             const columns = await fetchTableColumns(selectedCluster.id, selectedTable);
@@ -280,24 +285,57 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
         }
     };
 
-    const handleInsert = async () => {
+    const handleOpenUpdateModal = async (row: any) => {
         if (!selectedCluster || !selectedTable) return;
-        setIsInserting(true);
+        setIsEditMode(true);
+        setEditingRow(row);
+        setShowRowModal(true);
+        setFormData({ ...row });
+        
+        // Identify NULL fields
+        const nextNulls = new Set<string>();
+        Object.keys(row).forEach(key => {
+            if (row[key] === null || row[key] === "NULL") {
+                nextNulls.add(key);
+            }
+        });
+        setNullFields(nextNulls);
+
+        if (tableColumns.length === 0) {
+            try {
+                const columns = await fetchTableColumns(selectedCluster.id, selectedTable);
+                setTableColumns(columns);
+            } catch (error) {
+                console.error('Failed to fetch columns:', error);
+            }
+        }
+    };
+
+    const handleSubmit = async () => {
+        if (!selectedCluster || !selectedTable) return;
+        setIsSaving(true);
         
         // Prepare final data, respecting nullFields
-        const finalData: any = { ...insertData };
+        const finalData: any = { ...formData };
         nullFields.forEach(col => {
             finalData[col] = null;
         });
 
         try {
-            await insertRow(selectedCluster.id, selectedTable, finalData);
-            setShowInsertModal(false);
-            toast.success("New row inserted successfully");
+            if (isEditMode && editingRow) {
+                // Determine PK for WHERE clause (assuming 'id' if exists, else all fields)
+                const where = editingRow.id ? { id: editingRow.id } : { ...editingRow };
+                await updateRow(selectedCluster.id, selectedTable, finalData, where);
+                toast.success("Row updated successfully");
+            } else {
+                await insertRow(selectedCluster.id, selectedTable, finalData);
+                toast.success("New row inserted successfully");
+            }
+            setShowRowModal(false);
         } catch (error) {
-            console.error('Insert failed:', error);
+            console.error('Operation failed:', error);
         } finally {
-            setIsInserting(false);
+            setIsSaving(false);
         }
     };
 
@@ -779,13 +817,22 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                                  key={row.id}
                                  className={`group bg-white/[0.02] hover:bg-white/[0.05] border-l-2 border-transparent hover:border-l-primary/40 transition-all ${selectedRows.has(row.id) ? 'bg-primary/[0.04] border-l-primary' : ''}`}
                              >
-                                <td className="px-6 py-4 w-12 text-center">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedRows.has(row.id)}
-                                        onChange={() => toggleRow(row.id)}
-                                        className="accent-primary w-3.5 h-3.5 rounded border-white/10 bg-white/5"
-                                    />
+                                 <td className="px-6 py-4 w-12 text-center">
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedRows.has(row.id)}
+                                            onChange={() => toggleRow(row.id)}
+                                            className="accent-primary w-3.5 h-3.5 rounded border-white/10 bg-white/5"
+                                        />
+                                        <button 
+                                            onClick={() => handleOpenUpdateModal(row)}
+                                            className="p-1 rounded opacity-0 group-hover:opacity-100 bg-white/5 text-zinc-500 hover:text-white hover:bg-primary/20 transition-all border border-transparent hover:border-primary/20"
+                                            title="Update Row"
+                                        >
+                                            <Maximize2 className="h-2.5 w-2.5" />
+                                        </button>
+                                    </div>
                                 </td>
                                 {Object.keys(row).map((col) => {
                                     const isEditing = editingCell?.rowId === row.id && editingCell?.colName === col;
@@ -845,19 +892,22 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                 </table>
             </div>
 
-            {/* Insert Row Modal */}
-            {showInsertModal && (
+            {/* Insert/Update Row Modal */}
+            {showRowModal && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-end bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="w-full max-w-xl h-full bg-[#021016] border-l border-white/10 shadow-2xl flex flex-col animate-in slide-in-from-right duration-500 ease-out">
                         <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
                             <div>
                                 <h3 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-3">
-                                    <Plus className="h-5 w-5 text-primary" />
-                                    Insert New Row
+                                    {isEditMode ? <ArrowUpDown className="h-5 w-5 text-primary rotate-45" /> : <Plus className="h-5 w-5 text-primary" />}
+                                    {isEditMode ? 'Update Row' : 'Insert New Row'}
                                 </h3>
-                                <p className="text-[10px] text-zinc-500 font-bold tracking-widest mt-1">Adding to <span className="text-white">{selectedTable}</span></p>
+                                <p className="text-[10px] text-zinc-500 font-bold tracking-widest mt-1">
+                                    {isEditMode ? 'Modifying existing data in ' : 'Adding to '} 
+                                    <span className="text-white">{selectedTable}</span>
+                                </p>
                             </div>
-                            <button onClick={() => setShowInsertModal(false)} className="p-2.5 hover:bg-white/5 rounded-xl text-zinc-500 hover:text-white transition-all group">
+                            <button onClick={() => setShowRowModal(false)} className="p-2.5 hover:bg-white/5 rounded-xl text-zinc-500 hover:text-white transition-all group">
                                 <X className="h-5 w-5 group-hover:rotate-90 transition-transform duration-300" />
                             </button>
                         </div>
@@ -870,9 +920,9 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                                     ))}
                                 </div>
                             ) : (
-                                <form id="insert-form" className="space-y-6" onSubmit={(e) => {
+                                <form id="row-form" className="space-y-6" onSubmit={(e) => {
                                     e.preventDefault();
-                                    handleInsert();
+                                    handleSubmit();
                                 }}>
                                     {tableColumns.map((col) => {
                                         const isNull = nullFields.has(col.name);
@@ -920,7 +970,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                                                 <div className={`relative transition-all duration-300 ${isNull ? 'opacity-100' : ''}`}>
                                                     {col.referencedTable && col.referencedColumn ? (
                                                         <CustomFKSelect
-                                                            value={isNull ? "NULL" : (insertData[col.name] ?? "")}
+                                                            value={isNull ? "NULL" : (formData[col.name] ?? "")}
                                                             onChange={(val) => handleInputChange(col.name, val)}
                                                             referencedTable={col.referencedTable}
                                                             referencedColumn={col.referencedColumn}
@@ -930,7 +980,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                                                         />
                                                     ) : isBoolean ? (
                                                         <CustomSelect
-                                                            value={isNull ? "NULL" : (insertData[col.name] ?? true)}
+                                                            value={isNull ? "NULL" : (formData[col.name] ?? true)}
                                                             onChange={(val) => handleInputChange(col.name, val)}
                                                             options={[
                                                                 ...(col.nullable === 'YES' ? [{ label: 'NULL (Unset)', value: 'NULL' }] : []),
@@ -942,7 +992,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                                                         />
                                                     ) : enumOptions ? (
                                                         <CustomSelect
-                                                            value={isNull ? "NULL" : (insertData[col.name] ?? "")}
+                                                            value={isNull ? "NULL" : (formData[col.name] ?? "")}
                                                             onChange={(val) => handleInputChange(col.name, val)}
                                                             options={[
                                                                 ...(col.nullable === 'YES' ? [{ label: 'NULL (Unset)', value: 'NULL' }] : []),
@@ -953,7 +1003,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                                                         />
                                                     ) : isDate || isDateTime ? (
                                                         <CustomDatePicker
-                                                            value={isNull ? "" : (insertData[col.name] ?? "")}
+                                                            value={isNull ? "" : (formData[col.name] ?? "")}
                                                             onChange={(val) => handleInputChange(col.name, val)}
                                                             isDateTime={isDateTime}
                                                             disabled={isDisabled}
@@ -965,7 +1015,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                                                                 name={col.name}
                                                                 type={isNull ? 'text' : (lowerType.includes('int') || lowerType === 'decimal' ? 'number' : 'text')}
                                                                 placeholder={col.defaultValue || (col.nullable === 'YES' ? 'NULL' : `Enter ${col.name}...`)}
-                                                                value={isNull ? "NULL" : (insertData[col.name] ?? "")}
+                                                                value={isNull ? "NULL" : (formData[col.name] ?? "")}
                                                                 readOnly={isNull}
                                                                 onChange={(e) => handleInputChange(col.name, e.target.value)}
                                                                 className={`w-full border rounded-xl px-4 py-3 text-sm font-medium transition-all ${
@@ -997,26 +1047,26 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
 
                         <div className="px-8 py-6 bg-white/[0.01] border-t border-white/5 flex items-center justify-end gap-4">
                             <button 
-                                onClick={() => setShowInsertModal(false)}
+                                onClick={() => setShowRowModal(false)}
                                 className="px-6 py-2.5 rounded-xl text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all"
                             >
                                 Cancel
                             </button>
                             <button 
-                                form="insert-form"
+                                form="row-form"
                                 type="submit"
-                                disabled={isInserting}
+                                disabled={isSaving}
                                 className="flex items-center gap-3 px-8 py-2.5 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:shadow-[0_0_20px_rgba(0,237,100,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100"
                             >
-                                {isInserting ? (
+                                {isSaving ? (
                                     <>
                                         <div className="h-3 w-3 border-2 border-primary-foreground/30 border-t-primary-foreground animate-spin rounded-full"></div>
-                                        Inserting...
+                                        {isEditMode ? 'Updating...' : 'Inserting...'}
                                     </>
                                 ) : (
                                     <>
-                                        <Plus className="h-4 w-4" />
-                                        Insert Row
+                                        {isEditMode ? <ArrowUpDown className="h-4 w-4 rotate-45" /> : <Plus className="h-4 w-4" />}
+                                        {isEditMode ? 'Update Row' : 'Insert Row'}
                                     </>
                                 )}
                             </button>

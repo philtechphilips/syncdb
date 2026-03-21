@@ -27,7 +27,7 @@ const FKTablePickerModal = ({
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
     const [totalRows, setTotalRows] = useState(0);
-    const limit = 20;
+    const limit = 100;
 
     const fetchData = async () => {
         setIsLoading(true);
@@ -42,8 +42,13 @@ const FKTablePickerModal = ({
             const dataRes = await api.get(`/v1/clusters/${clusterId}/tables/${referencedTable}`, {
                 params: { page, limit }
             });
-            setData(dataRes.data || []);
-            // For now we don't have totalRows from API, but we could try to get it if backend supports it
+            
+            // Handle paginated response format { data, total, page, limit }
+            const records = dataRes.data?.data || dataRes.data || [];
+            const total = dataRes.data?.total || records.length || 0;
+            
+            setData(records);
+            setTotalRows(total);
         } catch (error) {
             console.error("Failed to fetch FK table data:", error);
         } finally {
@@ -164,13 +169,18 @@ const FKTablePickerModal = ({
                 {/* Footer / Pagination */}
                 <div className="px-6 py-4 border-t border-white/5 bg-white/[0.01] flex items-center justify-between">
                     <p className="text-[10px] text-zinc-600 font-black uppercase tracking-widest">
-                        Showing results for page {page}
+                        Showing page {page} of {Math.ceil(totalRows / limit) || 1} ({totalRows} records)
                     </p>
                     
                     <div className="flex items-center gap-2">
                         <button 
+                            type="button"
                             disabled={page === 1}
-                            onClick={() => setPage(page - 1)}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setPage(page - 1);
+                            }}
                             className="p-2 rounded-lg bg-white/5 border border-white/5 text-zinc-400 hover:text-white hover:bg-white/10 disabled:opacity-20 transition-all font-black"
                         >
                             <ChevronLeft className="h-4 w-4" />
@@ -179,8 +189,13 @@ const FKTablePickerModal = ({
                             <span className="text-xs font-bold text-white">{page}</span>
                         </div>
                         <button 
-                            disabled={data.length < limit}
-                            onClick={() => setPage(page + 1)}
+                            type="button"
+                            disabled={page * limit >= totalRows}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setPage(page + 1);
+                            }}
                             className="p-2 rounded-lg bg-white/5 border border-white/5 text-zinc-400 hover:text-white hover:bg-white/10 disabled:opacity-20 transition-all"
                         >
                             <ChevronRight className="h-4 w-4" />

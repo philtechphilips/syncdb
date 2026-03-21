@@ -55,7 +55,8 @@ const CustomFKSelect = ({
             const response = await api.get(`/v1/clusters/${clusterId}/tables/${referencedTable}`, {
                 params: { page: pageNum, limit: 50 }
             });
-            const newData = response.data || [];
+            // Handle paginated response format { data, total, page, limit }
+            const newData = response.data?.data || response.data || [];
             
             if (isSearch || pageNum === 1) {
                 setOptions(newData);
@@ -174,7 +175,9 @@ const CustomFKSelect = ({
                                 </div>
                                 <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">{error}</span>
                                 <button 
+                                    type="button"
                                     onClick={(e) => {
+                                        e.preventDefault();
                                         e.stopPropagation();
                                         fetchOptions(1);
                                     }}
