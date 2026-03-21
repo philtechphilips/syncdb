@@ -14,10 +14,17 @@ import {
     Grid3X3,
     Minimize2,
     Loader2,
-    Eye
+    Eye,
+    Download,
+    FileImage,
+    FileText,
+    ChevronDown as DropdownIcon
 } from "lucide-react";
 import { useClusterStore } from "@/store/useClusterStore";
 import { useMemo } from "react";
+import { toPng, toJpeg } from 'html-to-image';
+import jsPDF from 'jspdf';
+import { toast } from "sonner";
 
 interface Node {
     id: string;
@@ -41,13 +48,77 @@ const ERDiagram = () => {
     const [activeTableId, setActiveTableId] = useState<string | null>(null);
     const [zoom, setZoom] = useState(1);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
     const [nodes, setNodes] = useState<Node[]>([]);
     const [edges, setEdges] = useState<Edge[]>([]);
+    const diagramRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
+
+    const exportDiagram = async (format: 'png' | 'jpeg' | 'pdf') => {
+        if (!contentRef.current) return;
+        
+        setIsExporting(true);
+        const toastId = toast.loading(`Preparing Full ${format.toUpperCase()} export...`);
+        
+        try {
+            // Find nodes bounding box to capture exactly what exists
+            const activeNodes = filteredNodes.length > 0 ? filteredNodes : nodes;
+            if (activeNodes.length === 0) {
+                toast.error("No tables to export", { id: toastId });
+                return;
+            }
+            
+            // Calculate content boundaries
+            const minX = Math.min(...activeNodes.map(n => n.x)) - 100;
+            const minY = Math.min(...activeNodes.map(n => n.y)) - 100;
+            const maxX = Math.max(...activeNodes.map(n => n.x)) + 350; 
+            const maxY = Math.max(...activeNodes.map(n => n.y)) + 500; 
+            
+            const width = maxX - minX;
+            const height = maxY - minY;
+
+            const options = {
+                pixelRatio: 2, 
+                bgcolor: '#ffffff',
+                width,
+                height,
+                style: {
+                    transform: `translate(${-minX}px, ${-minY}px) scale(1)`,
+                    transformOrigin: 'top left',
+                    width: `${width}px`,
+                    height: `${height}px`,
+                }
+            };
+
+            const dataUrl = format === 'jpeg' 
+                ? await toJpeg(contentRef.current, options)
+                : await toPng(contentRef.current, options);
+                
+            if (format === 'pdf') {
+                const orientation = width > height ? 'l' : 'p';
+                const pdf = new jsPDF(orientation, 'px', [width, height]);
+                pdf.addImage(dataUrl, 'PNG', 0, 0, width, height);
+                pdf.save(`ER-Diagram-Full-${selectedCluster?.name}.pdf`);
+            } else {
+                const link = document.createElement('a');
+                link.download = `ER-Diagram-Full-${selectedCluster?.name}.${format}`;
+                link.href = dataUrl;
+                link.click();
+            }
+            toast.success(`Full ER Diagram exported`, { id: toastId });
+        } catch (err) {
+            console.error("Export failed", err);
+            toast.error("Export failed. The schema might be too large for browser memory.", { id: toastId });
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     useEffect(() => {
         if (!selectedCluster) return;
 
         const loadSchema = async () => {
+            if (!selectedCluster) return;
             setIsLoading(true);
             try {
                 const schema = await fetchSchema(selectedCluster.id);
@@ -164,7 +235,7 @@ const ERDiagram = () => {
     }, [edges, filteredNodes]);
 
     const toggleAll = (expanded: boolean) => {
-        setNodes(prev => prev.map(n => ({ ...n, isExpanded: expanded })));
+        setNodes(prev => prev.map((n: Node) => ({ ...n, isExpanded: expanded })));
     };
 
     const [draggingNode, setDraggingNode] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
@@ -193,7 +264,7 @@ const ERDiagram = () => {
 
     const handleMouseMove = (e: React.MouseEvent) => {
         if (draggingNode) {
-            setNodes(prev => prev.map(n =>
+            setNodes((prev: Node[]) => prev.map((n: Node) =>
                 n.id === draggingNode.id
                     ? { ...n, x: (e.clientX / zoom) - draggingNode.offsetX, y: (e.clientY / zoom) - draggingNode.offsetY }
                     : n
@@ -212,7 +283,7 @@ const ERDiagram = () => {
     };
 
     const toggleExpand = (nodeId: string) => {
-        setNodes(prev => prev.map(n =>
+        setNodes((prev: Node[]) => prev.map((n: Node) =>
             n.id === nodeId ? { ...n, isExpanded: !n.isExpanded } : n
         ));
     };
@@ -221,10 +292,10 @@ const ERDiagram = () => {
         if (e.ctrlKey || e.metaKey) {
             // Zoom on Ctrl/Cmd + Scroll
             const zoomAmount = -e.deltaY * 0.001;
-            setZoom(prev => Math.min(3, Math.max(0.3, prev + zoomAmount)));
+            setZoom((prev: number) => Math.min(3, Math.max(0.3, prev + zoomAmount)));
         } else {
             // Pan on regular Scroll
-            setCanvasOffset(prev => ({
+            setCanvasOffset((prev: {x: number, y: number}) => ({
                 x: prev.x - e.deltaX,
                 y: prev.y - e.deltaY
             }));
@@ -320,6 +391,32 @@ const ERDiagram = () => {
                         <button onClick={() => toggleAll(true)} className="px-2 py-1 text-[9px] font-black uppercase tracking-tighter hover:bg-background rounded transition-all">Expand All</button>
                         <button onClick={() => toggleAll(false)} className="px-2 py-1 text-[9px] font-black uppercase tracking-tighter hover:bg-background rounded transition-all">Collapse All</button>
                     </div>
+                    <div className="h-4 w-px bg-border mx-1"></div>
+                    <div className="flex items-center gap-1 bg-muted/50 rounded-lg border border-border p-0.5">
+                        <button 
+                            disabled={isExporting}
+                            onClick={() => exportDiagram('png')} 
+                            className="px-2 py-1 text-[9px] font-black uppercase tracking-tighter hover:bg-background rounded transition-all flex items-center gap-1.5 text-zinc-600 hover:text-primary disabled:opacity-50"
+                        >
+                            <Download className="h-2.5 w-2.5" />
+                            PNG
+                        </button>
+                        <button 
+                            disabled={isExporting}
+                            onClick={() => exportDiagram('jpeg')} 
+                            className="px-2 py-1 text-[9px] font-black uppercase tracking-tighter hover:bg-background rounded transition-all flex items-center gap-1.5 text-zinc-600 hover:text-primary disabled:opacity-50"
+                        >
+                            JPEG
+                        </button>
+                        <button 
+                            disabled={isExporting}
+                            onClick={() => exportDiagram('pdf')} 
+                            className="px-2 py-1 text-[9px] font-black uppercase tracking-tighter hover:bg-background rounded transition-all flex items-center gap-1.5 text-zinc-600 hover:text-primary disabled:opacity-50"
+                        >
+                            <FileText className="h-2.5 w-2.5" />
+                            PDF
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -328,6 +425,7 @@ const ERDiagram = () => {
                 className="relative flex-1 overflow-hidden p-8 bg-zinc-50 dark:bg-zinc-950/20"
                 onMouseDown={handleCanvasMouseDown}
                 onWheel={handleWheel}
+                ref={diagramRef}
             >
                 {isLoading && (
                     <div className="absolute inset-0 z-[100] bg-background/50 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
@@ -347,6 +445,7 @@ const ERDiagram = () => {
 
                 {/* Transformable Area */}
                 <div
+                    ref={contentRef}
                     className="absolute inset-0 h-[20000px] w-[20000px]"
                     style={{
                         transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px) scale(${zoom})`,
@@ -366,22 +465,33 @@ const ERDiagram = () => {
                             
                             const isActive = activeTableId === edge.source || activeTableId === edge.target;
 
-                            // Improved Bezier curve for column-to-table flow
-                            const dx = Math.abs(end.x - start.x);
-                            const curveIntensity = Math.min(dx * 0.5, 200);
+                            // Manhattan (Orthogonal) path routing with rounded corners
+                            // To prevent lines from "sleeping on themselves", we add a unique offset to the mid-channel
+                            const midXOffset = (i % 10) * 12 - 60;
+                            const midX = start.x + (end.x - start.x) / 2 + midXOffset;
                             
-                            const cp1x = start.x + curveIntensity;
-                            const cp1y = start.y;
-                            const cp2x = end.x - curveIntensity;
-                            const cp2y = end.y;
+                            const dy = end.y - start.y;
+                            const radius = 8;
+                            const ry = dy > 0 ? radius : -radius;
+                            // Clamp radius
+                            const currentRy = Math.abs(dy) < radius * 2 ? dy / 2 : ry;
+
+                            const path = `
+                                M ${start.x} ${start.y}
+                                L ${midX - 10} ${start.y}
+                                Q ${midX} ${start.y} ${midX} ${start.y + currentRy}
+                                L ${midX} ${end.y - currentRy}
+                                Q ${midX} ${end.y} ${midX + 10} ${end.y}
+                                L ${end.x} ${end.y}
+                            `;
 
                             return (
                                 <g key={i} className="transition-opacity duration-300">
                                     <path
-                                        d={`M ${start.x} ${start.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${end.x} ${end.y}`}
+                                        d={path}
                                         stroke="currentColor"
-                                        strokeWidth={isActive ? "2.5" : "1.5"}
-                                        className={`${isActive ? 'text-primary' : 'text-primary/40'} transition-all`}
+                                        strokeWidth={isActive ? "2" : "1"}
+                                        className={`${isActive ? 'text-primary' : 'text-primary/20'} transition-all`}
                                         fill="none"
                                         markerEnd="url(#arrowhead)"
                                     />
