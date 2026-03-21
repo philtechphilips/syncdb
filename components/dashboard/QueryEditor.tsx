@@ -9,21 +9,24 @@ import {
     Terminal,
     X,
     Sparkles,
-    Wand2,
-    Command,
     Loader2,
     Play,
     AlignLeft,
-    History,
+    History as HistoryIcon,
     Clock,
     CheckCircle2,
     AlertCircle,
-    Eraser
+    Eraser,
+    HelpCircle,
+    Zap,
+    Lightbulb,
+    ChevronDown
 } from "lucide-react";
 import Editor, { useMonaco } from "@monaco-editor/react";
 import { format } from "sql-formatter";
 import { useClusterStore } from "@/store/useClusterStore";
 import { toast } from "sonner";
+import api from "@/lib/api";
 import DataTable from "./DataTable";
 
 const QueryEditor = () => {
@@ -218,19 +221,40 @@ const QueryEditor = () => {
     const [isAiOpen, setIsAiOpen] = useState(false);
     const [aiPrompt, setAiPrompt] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
+    const [aiMode, setAiMode] = useState<"generate" | "explain" | "optimize">("generate");
+    const [explainLevel, setExplainLevel] = useState<"simple" | "advanced">("simple");
+    const [aiOutput, setAiOutput] = useState<string | null>(null);
 
-    const handleAskAi = () => {
-        if (!aiPrompt.trim()) return;
+    const handleAskAi = async () => {
+        if (aiMode === "generate" && !aiPrompt.trim()) return;
+        if (!selectedCluster) return;
 
         setIsGenerating(true);
-        // Simulate AI thinking and generating
-        setTimeout(() => {
-            const mockSql = `-- Generated from: ${aiPrompt}\nSELECT \n    u.name, \n    COUNT(o.id) as total_orders\nFROM users u\nLEFT JOIN orders o ON u.id = o.user_id\nWHERE u.active = true\nGROUP BY u.name\nHAVING total_orders > 0\nORDER BY total_orders DESC;`;
-            handleUpdateCode(mockSql);
+        setAiOutput(null);
+
+        try {
+            if (aiMode === "generate") {
+                const response = await api.post(`/v1/ai/${selectedCluster.id}/generate`, { prompt: aiPrompt });
+                handleUpdateCode(response.data.sql);
+                setIsAiOpen(false);
+                setAiPrompt("");
+                toast.success("SQL generated from prompt");
+            } else if (aiMode === "explain") {
+                const response = await api.post(`/v1/ai/explain`, { sql: activeQuery.code, mode: explainLevel });
+                setAiOutput(response.data.explanation);
+                setBottomTab("results");
+                setQueryResults(null); // Clear query results to show AI output
+            } else if (aiMode === "optimize") {
+                const response = await api.post(`/v1/ai/${selectedCluster.id}/optimize`, { sql: activeQuery.code });
+                setAiOutput(response.data.suggestions);
+                setBottomTab("results");
+                setQueryResults(null);
+            }
+        } catch (error) {
+            toast.error("AI service failed. Please try again.");
+        } finally {
             setIsGenerating(false);
-            setIsAiOpen(false);
-            setAiPrompt("");
-        }, 2000);
+        }
     };
 
     const handleCopy = () => {
@@ -284,72 +308,84 @@ const QueryEditor = () => {
                 </div>
             </div>
 
-            {/* AI Generation Bar */}
-            {isAiOpen && (
-                <div className="w-full bg-zinc-900 border-b border-primary/20 animate-in slide-in-from-top duration-300">
-                    <div className="max-w-5xl mx-auto px-6 py-3 flex items-center gap-4 group/ai">
-                        <div className="flex items-center gap-2 shrink-0">
-                            <Sparkles className={`h-4 w-4 text-primary ${isGenerating ? 'animate-spin' : ''}`} />
-                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Ask AI</span>
-                        </div>
-                        <input
-                            value={aiPrompt}
-                            onChange={(e) => setAiPrompt(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleAskAi()}
-                            placeholder="e.g. 'Show me top 5 customers with most orders from last year'"
-                            className="flex-1 bg-transparent border-none outline-none text-[12px] font-medium text-zinc-200 placeholder:text-zinc-500"
-                            autoFocus
-                        />
-                        <div className="flex items-center gap-4">
-                            {isGenerating ? (
-                                <div className="flex items-center gap-2 text-[10px] font-bold text-primary animate-pulse">
-                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                    ENGINEERING SQL...
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-2">
-                                    <span className="text-[9px] font-black text-zinc-400 border border-white/10 px-2 py-1 rounded uppercase tracking-tighter bg-white/[0.02]">Enter to Generate</span>
-                                    <button
-                                        onClick={() => setIsAiOpen(false)}
-                                        className="p-1 hover:text-white text-zinc-400 transition-colors"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+
 
             {/* AI Generation Bar */}
             {isAiOpen && (
-                <div className="w-full bg-zinc-900 border-b border-primary/20 animate-in slide-in-from-top duration-300">
-                    <div className="max-w-5xl mx-auto px-6 py-3 flex items-center gap-4 group/ai">
+                <div className="w-full bg-[#030d12] border-y border-primary/20 animate-in slide-in-from-top duration-300">
+                    <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-6">
                         <div className="flex items-center gap-2 shrink-0">
-                            <Sparkles className={`h-4 w-4 text-primary ${isGenerating ? 'animate-spin' : ''}`} />
-                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Ask AI</span>
+                            <div className="flex items-center bg-white/[0.03] p-1 rounded-lg border border-white/5">
+                                {(["generate", "explain", "optimize"] as const).map((mode) => (
+                                    <button
+                                        key={mode}
+                                        onClick={() => {
+                                            setAiMode(mode);
+                                            setAiOutput(null);
+                                        }}
+                                        className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-widest transition-all ${aiMode === mode ? 'bg-primary text-black shadow-[0_0_15px_rgba(0,237,100,0.3)]' : 'text-zinc-500 hover:text-zinc-300'}`}
+                                    >
+                                        {mode}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                        <input
-                            value={aiPrompt}
-                            onChange={(e) => setAiPrompt(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleAskAi()}
-                            placeholder="e.g. 'Show me top 5 customers with most orders from last year'"
-                            className="flex-1 bg-transparent border-none outline-none text-[12px] font-medium text-zinc-200 placeholder:text-zinc-500"
-                            autoFocus
-                        />
-                        <div className="flex items-center gap-4">
+
+                        <div className="h-4 w-px bg-white/10 shrink-0"></div>
+
+                        {aiMode === "generate" ? (
+                            <div className="flex-1 flex items-center gap-4">
+                                <Sparkles className={`h-4 w-4 text-primary shrink-0 ${isGenerating ? 'animate-spin' : ''}`} />
+                                <input
+                                    value={aiPrompt}
+                                    onChange={(e) => setAiPrompt(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleAskAi()}
+                                    placeholder="e.g. 'Get all users who signed up last week'"
+                                    className="flex-1 bg-transparent border-none outline-none text-[12px] font-medium text-zinc-200 placeholder:text-zinc-500"
+                                    autoFocus
+                                />
+                            </div>
+                        ) : aiMode === "explain" ? (
+                            <div className="flex-1 flex items-center gap-6">
+                                <div className="flex items-center gap-3 shrink-0">
+                                    <HelpCircle className="h-4 w-4 text-primary" />
+                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Explain Mode:</span>
+                                    <select 
+                                        value={explainLevel}
+                                        onChange={(e: any) => setExplainLevel(e.target.value)}
+                                        className="bg-black/40 border border-white/10 text-zinc-300 text-[9px] px-2 py-1 rounded outline-none focus:border-primary/50 transition-colors uppercase font-bold"
+                                    >
+                                        <option value="simple">Simple</option>
+                                        <option value="advanced">Advanced</option>
+                                    </select>
+                                </div>
+                                <p className="text-[10px] text-zinc-500 font-medium italic truncate">AI will analyze the current SQL in your editor...</p>
+                            </div>
+                        ) : (
+                            <div className="flex-1 flex items-center gap-4">
+                                <Zap className={`h-4 w-4 text-primary shrink-0 ${isGenerating ? 'animate-pulse' : ''}`} />
+                                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Optimization Audit:</span>
+                                <p className="text-[10px] text-zinc-500 font-medium italic truncate">AI will scan for missing indexes and inefficient joins...</p>
+                            </div>
+                        )}
+
+                        <div className="flex items-center gap-4 shrink-0">
                             {isGenerating ? (
                                 <div className="flex items-center gap-2 text-[10px] font-bold text-primary animate-pulse">
                                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                    ENGINEERING SQL...
+                                    {(aiMode === "generate" ? "ENGINEERING SQL..." : aiMode === "explain" ? "ANALYZING..." : "AUDITING PERFORMANCE...")}
                                 </div>
                             ) : (
-                                <div className="flex items-center gap-2">
-                                    <span className="text-[9px] font-black text-zinc-400 border border-white/10 px-2 py-1 rounded uppercase tracking-tighter bg-white/[0.02]">Enter to Generate</span>
+                                <div className="flex items-center gap-3">
+                                    <button 
+                                        onClick={handleAskAi}
+                                        className="px-4 py-1.5 bg-white/5 border border-white/10 rounded-lg text-[9px] font-black text-primary uppercase tracking-widest hover:bg-primary hover:text-black transition-all shadow-sm"
+                                    >
+                                        Run AI {aiMode}
+                                    </button>
                                     <button
                                         onClick={() => setIsAiOpen(false)}
-                                        className="p-1 hover:text-white text-zinc-400 transition-colors"
+                                        className="p-1.5 hover:text-white text-zinc-500 hover:bg-white/5 rounded-lg transition-all"
                                     >
                                         <X className="h-4 w-4" />
                                     </button>
@@ -444,7 +480,7 @@ const QueryEditor = () => {
                                 onClick={() => setBottomTab("history")}
                                 className={`flex items-center gap-3 py-1 transition-all relative ${bottomTab === "history" ? 'text-primary' : 'text-zinc-500 hover:text-zinc-300'}`}
                             >
-                                <History className="h-3.5 w-3.5" />
+                                <HistoryIcon className="h-3.5 w-3.5" />
                                 <span className="text-[10px] font-black uppercase tracking-widest">History</span>
                                 {bottomTab === "history" && <div className="absolute -bottom-[9px] left-0 right-0 h-0.5 bg-primary shadow-[0_0_8px_rgba(0,237,100,0.5)]" />}
                             </button>
@@ -460,8 +496,38 @@ const QueryEditor = () => {
                         </button>
                     </div>
                     
-                    <div className="flex-1 overflow-auto bg-black/5">
-                        {bottomTab === "results" ? (
+                    <div className="flex-1 overflow-auto bg-black/5 min-h-0">
+                        {aiOutput ? (
+                            <div className="p-8 max-w-4xl animate-in fade-in duration-500">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                                        {aiMode === "explain" ? <HelpCircle className="h-5 w-5 text-primary" /> : <Lightbulb className="h-5 w-5 text-primary" />}
+                                    </div>
+                                    <div>
+                                        <h3 className="text-zinc-200 font-bold text-xs uppercase tracking-widest">
+                                            {aiMode === "explain" ? "Query Intelligence Report" : "Optimization Suggestions"}
+                                        </h3>
+                                        <p className="text-[9px] text-zinc-500 uppercase font-black tracking-tighter">Generated by GPT-4o Agent</p>
+                                    </div>
+                                    <button 
+                                        onClick={() => setAiOutput(null)}
+                                        className="ml-auto text-[10px] font-black text-zinc-500 hover:text-white uppercase tracking-widest flex items-center gap-2"
+                                    >
+                                        <X className="h-4 w-4" />
+                                        Close
+                                    </button>
+                                </div>
+                                <div className="prose prose-invert prose-sm max-w-none text-zinc-400 leading-relaxed font-sans whitespace-pre-wrap selection:bg-primary/20">
+                                    {aiOutput}
+                                </div>
+                                {aiMode === "optimize" && (
+                                    <div className="mt-8 flex items-center gap-4 p-4 rounded-xl border border-white/5 bg-white/[0.02]">
+                                        <Zap className="h-4 w-4 text-primary" />
+                                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Apply these changes to see significant performance gains.</span>
+                                    </div>
+                                )}
+                            </div>
+                        ) : bottomTab === "results" ? (
                             Array.isArray(queryResults) && queryResults.length > 0 ? (
                                 <table className="w-full text-left border-collapse text-[11px]">
                                     <thead className="sticky top-0 bg-zinc-900 z-10 shadow-sm">
@@ -559,7 +625,7 @@ const QueryEditor = () => {
                                     </table>
                                 ) : (
                                     <div className="flex-1 flex flex-col items-center justify-center text-zinc-600 p-10 text-center gap-4">
-                                        <History className="h-10 w-10 opacity-20" />
+                                        <HistoryIcon className="h-10 w-10 opacity-20" />
                                         <div className="max-w-xs">
                                             <h3 className="text-zinc-400 font-bold text-[11px] uppercase tracking-widest mb-1">No History Yet</h3>
                                             <p className="text-[10px] uppercase tracking-wider leading-relaxed opacity-60">
