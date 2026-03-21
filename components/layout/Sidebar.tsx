@@ -13,7 +13,9 @@ import {
     Terminal,
     History,
     LayoutGrid,
-    Layout
+    Layout,
+    PowerOff,
+    X
 } from "lucide-react";
 
 interface SidebarProps {
@@ -41,6 +43,24 @@ const Sidebar = ({
     const [isConnectionDropdownOpen, setIsConnectionDropdownOpen] = React.useState(false);
     const [contextMenu, setContextMenu] = React.useState<{ x: number, y: number, table: string | null } | null>(null);
     const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false);
+    const { deleteCluster } = useClusterStore();
+    const [confirmDisconnect, setConfirmDisconnect] = React.useState<string | null>(null);
+
+    const handleDisconnectCluster = async (e: React.MouseEvent, clusterId: string) => {
+        e.stopPropagation();
+        if (confirmDisconnect === clusterId) {
+            try {
+                await deleteCluster(clusterId);
+                setConfirmDisconnect(null);
+            } catch (error) {
+                console.error("Failed to disconnect cluster:", error);
+            }
+        } else {
+            setConfirmDisconnect(clusterId);
+            // Auto reset after 3 seconds
+            setTimeout(() => setConfirmDisconnect(null), 3000);
+        }
+    };
 
     const handleContextMenu = (e: React.MouseEvent, tableName: string) => {
         e.preventDefault();
@@ -100,25 +120,44 @@ const Sidebar = ({
                         </div>
                         <div className="max-h-60 overflow-y-auto scrollbar-hide">
                             {clusters.map((cluster) => (
-                                <button
+                                <div
                                     key={cluster.id}
-                                    onClick={() => {
-                                        selectCluster(cluster);
-                                        setIsConnectionDropdownOpen(false);
-                                    }}
-                                    className={`flex w-full items-center gap-3 px-3 py-2 text-xs font-semibold transition-colors hover:bg-white/5 ${selectedCluster?.id === cluster.id ? 'text-primary' : 'text-zinc-400'}`}
+                                    className="flex w-full items-center gap-3 px-3 py-2 text-xs font-semibold transition-colors hover:bg-white/5"
                                 >
-                                    <div className={`h-6 w-6 rounded flex items-center justify-center text-[10px] font-black ${selectedCluster?.id === cluster.id ? 'bg-primary/20 text-primary' : 'bg-zinc-800 text-zinc-500'}`}>
-                                        {cluster.name[0].toUpperCase()}
+                                    <div 
+                                        onClick={() => {
+                                            selectCluster(cluster);
+                                            setIsConnectionDropdownOpen(false);
+                                        }}
+                                        className={`flex-1 flex items-center gap-3 transition-colors cursor-pointer ${selectedCluster?.id === cluster.id ? 'text-primary' : 'text-zinc-400'}`}
+                                    >
+                                        <div className={`h-6 w-6 rounded flex items-center justify-center text-[10px] font-black ${selectedCluster?.id === cluster.id ? 'bg-primary/20 text-primary' : 'bg-zinc-800 text-zinc-500'}`}>
+                                            {cluster.name[0].toUpperCase()}
+                                        </div>
+                                        <div className="flex flex-col items-start translate-y-[-1px]">
+                                            <span>{cluster.name}</span>
+                                            <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-tighter">{cluster.type}</span>
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col items-start translate-y-[-1px]">
-                                        <span>{cluster.name}</span>
-                                        <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-tighter">{cluster.type}</span>
+
+                                    <div className="flex items-center gap-2">
+                                        {selectedCluster?.id === cluster.id && (
+                                            <div className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(0,237,100,0.5)]"></div>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={(e) => handleDisconnectCluster(e, cluster.id)}
+                                            className={`p-1.5 rounded-lg transition-all border ${
+                                                confirmDisconnect === cluster.id 
+                                                ? 'bg-red-500/20 text-red-500 border-red-500/30' 
+                                                : 'bg-white/5 text-zinc-600 hover:text-red-500 hover:bg-red-500/10 border-transparent'
+                                            }`}
+                                            title={confirmDisconnect === cluster.id ? "Click again to confirm" : "Disconnect Cluster"}
+                                        >
+                                            {confirmDisconnect === cluster.id ? <X className="h-3 w-3" /> : <PowerOff className="h-2.5 w-2.5" />}
+                                        </button>
                                     </div>
-                                    {selectedCluster?.id === cluster.id && (
-                                        <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(0,237,100,0.5)]"></div>
-                                    )}
-                                </button>
+                                </div>
                             ))}
                         </div>
                         <div className="h-px bg-white/5 my-2"></div>
