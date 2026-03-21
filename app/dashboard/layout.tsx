@@ -108,7 +108,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 />
 
                 {/* Main Content Area */}
-                <div className="flex flex-1 flex-col pl-64 min-w-0 max-w-full relative">
+                <div className="flex h-screen flex-1 flex-col pl-64 min-w-0 max-w-full relative overflow-hidden">
                     {/* Top Navbar */}
                     <Navbar onOpenConnect={() => setIsConnectOpen(true)} />
 

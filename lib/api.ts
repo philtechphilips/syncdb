@@ -36,42 +36,65 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Show toast for critical errors (excluding some statuses if needed)
-    if (error.response?.status !== 401) {
-        toast.error(getErrorMessage(error));
-    }
-
-    // If the error is 401 and not a retry, try to refresh the token
+    // Handle 401 errors
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      try {
-        const refreshToken = localStorage.getItem('refresh_token');
-        if (refreshToken) {
-          const response = await axios.post(`${API_URL}/v1/auth/refresh`, {
-            refresh_token: refreshToken,
-          });
+      const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;
+      
+      if (!refreshToken) {
+        console.error('No refresh token available, forcing logout');
+        handleLogout();
+        return Promise.reject(error);
+      }
 
-          const { access_token } = response.data;
+      try {
+        console.log('Attempting to refresh access token...');
+        const response = await axios.post(`${API_URL}/v1/auth/refresh`, {
+          refresh_token: refreshToken,
+        });
+
+        const { access_token, refresh_token: newRefreshToken } = response.data;
+        
+        if (access_token) {
           localStorage.setItem('access_token', access_token);
+          if (newRefreshToken) {
+            localStorage.setItem('refresh_token', newRefreshToken);
+          }
 
           // Retry the original request with the new token
           originalRequest.headers.Authorization = `Bearer ${access_token}`;
           return api(originalRequest);
         }
       } catch (refreshError) {
-        // If refresh fails, logout
-        toast.error("Session expired. Please login again.");
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user');
-        window.location.href = '/auth/login';
+        console.error('Token refresh failed:', refreshError);
+        handleLogout("Session expired. Please login again.");
+        return Promise.reject(refreshError);
       }
+    }
+
+    // Show toast for other critical errors
+    if (error.response?.status !== 401) {
+        toast.error(getErrorMessage(error));
     }
 
     return Promise.reject(error);
   }
 );
+
+// Helper to handle forced logout
+function handleLogout(message?: string) {
+    if (typeof window !== 'undefined') {
+        if (message) toast.error(message);
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user');
+        // Prevent infinite redirect loops if already on login page
+        if (window.location.pathname !== '/auth/login') {
+            window.location.href = '/auth/login';
+        }
+    }
+}
 
 
 export default api;

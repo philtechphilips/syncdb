@@ -46,6 +46,9 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
         fetchTableData, 
         updateRow, 
         tableData, 
+        totalRows,
+        currentPage,
+        rowsPerPage,
         isDataLoading: isLoading,
         fetchTableColumns,
         insertRow,
@@ -298,6 +301,20 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
         }
     };
 
+    const handleNextPage = () => {
+        if (!selectedCluster || !selectedTable) return;
+        if (currentPage * rowsPerPage < totalRows) {
+            fetchTableData(selectedCluster.id, selectedTable, currentPage + 1, rowsPerPage);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (!selectedCluster || !selectedTable) return;
+        if (currentPage > 1) {
+            fetchTableData(selectedCluster.id, selectedTable, currentPage - 1, rowsPerPage);
+        }
+    };
+
     if (!selectedTable) {
         return (
             <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)] text-zinc-600 gap-4 animate-in fade-in duration-1000">
@@ -522,7 +539,9 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                     </div>
                     <div className="flex items-center gap-2">
                         <History className="h-3.5 w-3.5 text-zinc-500" />
-                        <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">{rows.length} rows returned</span>
+                        <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest whitespace-nowrap">
+                            {totalRows > 0 ? `${totalRows.toLocaleString()} total rows` : `${rows.length} rows returned`}
+                        </span>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -1008,16 +1027,32 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
 
             {/* Pagination Footer */}
             <div className="px-6 py-3 border-t border-white/5 bg-[#021016]/30 flex items-center justify-between">
-                <div className="flex items-center gap-4 text-[10px] font-black text-zinc-700 uppercase tracking-widest">
+                <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
                     <div className="flex items-center gap-2">
-                        <button className="p-1.5 rounded-md border border-white/5 bg-white/[0.02] text-zinc-500 disabled:opacity-20 translate-y-[-1px]" disabled>
+                        <button 
+                            onClick={handlePrevPage}
+                            disabled={currentPage <= 1 || isLoading}
+                            className="p-1.5 rounded-md border border-white/5 bg-zinc-900/50 text-zinc-500 hover:text-white hover:border-white/20 disabled:opacity-20 translate-y-[-1px] transition-all"
+                        >
                             <ArrowUpDown className="h-3 w-3 rotate-90" />
                         </button>
-                        <span>Page 1 of 1</span>
-                        <button className="p-1.5 rounded-md border border-white/5 bg-white/[0.02] text-zinc-500 disabled:opacity-20 translate-y-[-1px]" disabled>
+                        <span className="min-w-[100px] text-center">
+                            Page <span className="text-white font-black">{currentPage}</span> of <span className="text-zinc-300">{Math.ceil(totalRows / rowsPerPage) || 1}</span>
+                        </span>
+                        <button 
+                            onClick={handleNextPage}
+                            disabled={currentPage >= Math.ceil(totalRows / rowsPerPage) || isLoading}
+                            className="p-1.5 rounded-md border border-white/5 bg-zinc-900/50 text-zinc-500 hover:text-white hover:border-white/20 disabled:opacity-20 translate-y-[-1px] transition-all"
+                        >
                             <ArrowUpDown className="h-3 w-3 -rotate-90" />
                         </button>
                     </div>
+                </div>
+
+                <div className="hidden sm:flex items-center gap-4 text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em]">
+                    <span>
+                        Showing <span className="text-zinc-300 font-bold">{Math.min(((currentPage - 1) * rowsPerPage) + 1, totalRows).toLocaleString()}-{Math.min(currentPage * rowsPerPage, totalRows).toLocaleString()}</span> of <span className="text-white font-black">{totalRows.toLocaleString()}</span>
+                    </span>
                 </div>
             </div>
         </div>

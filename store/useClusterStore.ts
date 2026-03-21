@@ -22,6 +22,9 @@ interface ClusterState {
   error: string | null;
   tables: any[];
   tableData: any[];
+  totalRows: number;
+  currentPage: number;
+  rowsPerPage: number;
   activeTab: "query" | "er" | "table" | "logs";
   selectedTable: string;
   fetchClusters: () => Promise<Cluster[]>;
@@ -47,6 +50,9 @@ export const useClusterStore = create<ClusterState>()(
       selectedCluster: null,
       tables: [],
       tableData: [],
+      totalRows: 0,
+      currentPage: 1,
+      rowsPerPage: 100,
       isLoading: false,
       isTablesLoading: false,
       isDataLoading: false,
@@ -108,10 +114,19 @@ export const useClusterStore = create<ClusterState>()(
         set({ isDataLoading: true, error: null });
         try {
           const response = await api.get(`/v1/clusters/${clusterId}/tables/${tableName}?page=${page}&limit=${limit}`);
-          set({ tableData: response.data, isDataLoading: false });
-          return response.data;
+          // New paginated format: { data, total, page, limit }
+          const { data, total, page: resPage, limit: resLimit } = response.data;
+          
+          set({ 
+            tableData: data, 
+            totalRows: total, 
+            currentPage: resPage, 
+            rowsPerPage: resLimit, 
+            isDataLoading: false 
+          });
+          return data;
         } catch (error: any) {
-          set({ isDataLoading: false, error: getErrorMessage(error), tableData: [] });
+          set({ isDataLoading: false, error: getErrorMessage(error), tableData: [], totalRows: 0 });
           throw error;
         }
       },
@@ -141,6 +156,7 @@ export const useClusterStore = create<ClusterState>()(
           const newRow = res.data;
           set((state) => ({ 
             tableData: [newRow, ...state.tableData],
+            totalRows: state.totalRows + 1,
             isDataLoading: false 
           }));
         } catch (error) {
@@ -153,13 +169,18 @@ export const useClusterStore = create<ClusterState>()(
       deleteRows: async (clusterId, tableName, where) => {
         set({ isDataLoading: true, error: null });
         try {
-          await api.delete(`/v1/clusters/${clusterId}/tables/${tableName}/rows`, { data: { where } });
+          const res = await api.delete(`/v1/clusters/${clusterId}/tables/${tableName}/rows`, { data: { where } });
+          const deletedCount = res.data?.affected || 1; // Backend might return affected rows
           const { tableData } = get();
           const filteredData = tableData.filter(row => {
             const match = Object.keys(where).every(key => row[key] === where[key]);
             return !match;
           });
-          set({ tableData: filteredData, isDataLoading: false });
+          set((state) => ({ 
+            tableData: filteredData, 
+            totalRows: Math.max(0, state.totalRows - deletedCount),
+            isDataLoading: false 
+          }));
         } catch (error) {
           const message = getErrorMessage(error);
           set({ error: message, isDataLoading: false });
@@ -168,7 +189,7 @@ export const useClusterStore = create<ClusterState>()(
       },
 
       selectCluster: (cluster) => {
-        set({ selectedCluster: cluster, tables: [], tableData: [] });
+        set({ selectedCluster: cluster, tables: [], tableData: [], totalRows: 0, currentPage: 1 });
         if (cluster) {
           get().fetchTables(cluster.id);
         }
