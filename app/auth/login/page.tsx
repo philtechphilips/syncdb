@@ -45,7 +45,7 @@ export default function LoginPage() {
                 <div className="text-center mb-10">
                     <Link href="/" className="inline-flex items-center group mb-8">
                         <SynqLogo className="h-8 w-8 text-primary translate-y-[1px]" />
-                        <span className="text-xl font-serif tracking-tight text-white -ml-0.5">ynqDB</span>
+                        <span className="text-xl font-serif tracking-tight text-white -ml-0.5 italic">ynqDB</span>
                     </Link>
                     <h1 className="text-3xl font-serif text-white mb-2">Welcome back</h1>
                     <p className="text-zinc-500 font-medium whitespace-nowrap">Sign in to manage your data clusters.</p>
@@ -142,7 +142,7 @@ export default function LoginPage() {
 
                         <button 
                             disabled={isLoading}
-                            className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-black text-lg shadow-[0_0_20px_rgba(0,237,100,0.2)] hover:shadow-[0_0_30px_rgba(0,237,100,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-black text-lg transition-all active:scale-95 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isLoading ? (
                                 <Loader2 className="h-5 w-5 animate-spin" />

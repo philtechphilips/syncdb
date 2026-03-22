@@ -1,83 +1,69 @@
 "use client";
 
 import React from "react";
-import { Check, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 export const Pricing = () => {
-    const plans = [
-        {
-            name: "Community",
-            price: "Free",
-            description: "Perfect for individual developers and open source projects.",
-            features: [
-                "Unlimited local connections",
-                "Community SQL editor",
-                "Visual ER diagrams",
-                "Standard query console"
-            ],
-            cta: "Get Started",
-            highlighted: false
-        },
-        {
-            name: "Enterprise",
-            price: "Custom",
-            description: "Advanced features and support for high-scale organizations.",
-            features: [
-                "Everything in Community",
-                "SSO & RBAC security",
-                "Advanced data obfuscation",
-                "24/7 Priority support",
-                "Custom visual reporting"
-            ],
-            cta: "Contact Sales",
-            highlighted: true
-        }
-    ];
-
     return (
-        <section id="pricing" className="py-32 bg-background relative">
+        <section id="pricing" className="py-32 bg-background relative overflow-hidden">
             <div className="max-w-7xl mx-auto px-6">
-                <div className="text-center max-w-3xl mx-auto mb-20">
-                    <h2 className="text-4xl md:text-5xl font-serif text-white mb-6">Simple, transparent pricing.</h2>
-                    <p className="text-xl text-zinc-500 font-medium">Choose the plan that fits your team's scale. Start for free, upgrade as you grow.</p>
+                <div className="mb-24 max-w-4xl">
+                    <span className="text-primary text-xs font-black tracking-[0.4em] uppercase">Pricing</span>
+                    <h2 className="text-4xl md:text-5xl font-serif text-white mt-8 leading-[0.9] tracking-tighter">
+                        Simple <br />
+                        <span className="text-primary italic">Pricing.</span>
+                    </h2>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-                    {plans.map((plan, i) => (
-                        <div
-                            key={i}
-                            className={`p-12 rounded-[2.5rem] border transition-all duration-500 flex flex-col ${plan.highlighted
-                                    ? "bg-primary/5 border-primary/20 shadow-[0_0_50px_rgba(0,237,100,0.1)] scale-105 z-10"
-                                    : "bg-white/[0.01] border-white/5 hover:border-white/10"
-                                }`}
-                        >
-                            <div className="mb-10">
-                                <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
-                                <div className="text-4xl font-serif text-white mb-4">{plan.price}</div>
-                                <p className="text-zinc-500 font-medium">{plan.description}</p>
-                            </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-24">
+                    {/* Community Plan */}
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="p-12 border-t border-white/10 space-y-12"
+                    >
+                         <h3 className="text-2xl font-bold text-white tracking-tight">Community</h3>
+                         <div className="text-4xl md:text-5xl font-serif text-zinc-500 leading-none tracking-tighter">Free</div>
+                         <p className="text-xl text-zinc-500 leading-relaxed max-w-xs">
+                            Essential performance for individual developers and small teams.
+                         </p>
+                         <ul className="space-y-6 text-zinc-400 font-medium">
+                             <li>• Unlimited Local Clusters</li>
+                             <li>• AI Copilot Integration</li>
+                             <li>• Visual Schema Explorer</li>
+                         </ul>
+                         <button className="flex items-center gap-4 text-primary font-black uppercase tracking-[0.3em] group text-xs mt-12 transition-all">
+                             Get Started Now
+                         </button>
+                    </motion.div>
 
-                            <div className="space-y-4 mb-12 flex-1">
-                                {plan.features.map((feature, j) => (
-                                    <div key={j} className="flex items-center gap-3">
-                                        <div className="h-5 w-5 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                                            <Check className="h-3 w-3 text-primary" />
-                                        </div>
-                                        <span className="text-zinc-400 font-medium">{feature}</span>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <button className={`w-full py-4 rounded-xl font-bold text-lg transition-all active:scale-95 flex items-center justify-center gap-2 group ${plan.highlighted
-                                    ? "bg-primary text-primary-foreground hover:bg-opacity-90"
-                                    : "bg-white/5 text-white border border-white/10 hover:bg-white/10"
-                                }`}>
-                                {plan.cta}
-                            </button>
-                        </div>
-                    ))}
+                    {/* Enterprise Plan */}
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.2 }}
+                        className="p-12 border-t border-primary/40 bg-primary/[0.02] space-y-12"
+                    >
+                         <h3 className="text-2xl font-bold text-white tracking-tight">Enterprise</h3>
+                         <div className="text-4xl md:text-5xl font-serif text-primary leading-none tracking-tighter italic">Custom</div>
+                         <p className="text-xl text-zinc-500 leading-relaxed max-w-xs">
+                            Unparalleled scale, security, and dedicated infrastructure support.
+                         </p>
+                         <ul className="space-y-6 text-zinc-400 font-medium">
+                             <li>• SSO / RBAC Security</li>
+                             <li>• Compliance Guardrails</li>
+                             <li>• 24/7 Priority Mesh</li>
+                         </ul>
+                         <button className="flex items-center gap-4 text-primary font-black uppercase tracking-[0.3em] group text-xs mt-12 transition-all">
+                             Contact Sales
+                         </button>
+                    </motion.div>
                 </div>
             </div>
         </section>
     );
 };
+

@@ -15,7 +15,7 @@ export const Footer = () => {
                     <div className="col-span-1 md:col-span-1">
                         <div className="flex items-center mb-6 cursor-pointer">
                             <SynqLogo className="h-6 w-6 text-primary translate-y-[1px]" />
-                            <span className="text-xl font-serif tracking-tight text-white -ml-0.5">ynqDB</span>
+                            <span className="text-xl font-serif tracking-tight text-white -ml-0.5 italic">ynqDB</span>
                         </div>
                         <p className="text-zinc-500 text-sm font-medium leading-relaxed">
                             The industry standard for multi-cloud database orchestration and management.

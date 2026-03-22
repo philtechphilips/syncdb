@@ -82,7 +82,7 @@ const Sidebar = ({
     }, [selectedCluster?.id, fetchTables]);
 
     return (
-        <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-border bg-background flex flex-col font-sans">
+        <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-white/10 bg-background flex flex-col font-sans">
             {/* Logo Area */}
             <div className="px-6 py-6 flex items-center gap-3">
                 <div className="h-9 w-9 bg-primary/10 rounded-xl border border-primary/20 flex items-center justify-center overflow-hidden text-primary">
@@ -95,7 +95,7 @@ const Sidebar = ({
             </div>
 
             {/* Workspace Switcher */}
-            <div className="p-4 pt-0 border-b border-border relative">
+            <div className="p-4 pt-0 border-b border-white/10 relative">
                 <div
                     onClick={() => setIsConnectionDropdownOpen(!isConnectionDropdownOpen)}
                     className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
@@ -114,8 +114,8 @@ const Sidebar = ({
 
                 {/* Connection Dropdown */}
                 {isConnectionDropdownOpen && (
-                    <div className="absolute left-4 top-[calc(100%-8px)] z-50 w-[calc(100%-32px)] bg-zinc-900 border border-white/5 rounded-xl shadow-2xl py-2 animate-in fade-in zoom-in-95 duration-150">
-                        <div className="px-3 py-1.5 mb-1.5 border-b border-white/5">
+                    <div className="absolute left-4 top-[calc(100%-8px)] z-50 w-[calc(100%-32px)] bg-zinc-900 border border-white/10 rounded-xl shadow-2xl py-2 animate-in fade-in zoom-in-95 duration-150">
+                        <div className="px-3 py-1.5 mb-1.5 border-b border-white/10">
                             <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Switch Connection</span>
                         </div>
                         <div className="max-h-60 overflow-y-auto scrollbar-hide">
@@ -160,7 +160,7 @@ const Sidebar = ({
                                 </div>
                             ))}
                         </div>
-                        <div className="h-px bg-white/5 my-2"></div>
+                        <div className="h-px bg-white/10 my-2"></div>
                         <button
                             onClick={() => {
                                 onOpenConnect();
@@ -228,7 +228,7 @@ const Sidebar = ({
                                         key={table.name}
                                         onClick={() => onTableSelect(table.name)}
                                         onContextMenu={(e) => handleContextMenu(e, table.name)}
-                                        className={`flex items-center gap-3 ml-6 mr-1 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer group/item hover:bg-white/[0.03] ${selectedTable === table.name ? 'text-primary bg-primary/5' : 'text-zinc-400 hover:text-zinc-200'}`}
+                                        className={`flex items-center gap-3 ml-6 mr-1 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer group/item hover:bg-white/[0.05] ${selectedTable === table.name ? 'text-primary bg-primary/10' : 'text-zinc-300 hover:text-white'}`}
                                     >
                                         <div className={`h-1 w-1 rounded-full ${selectedTable === table.name ? 'bg-primary shadow-[0_0_8px_rgba(0,237,100,0.5)]' : 'bg-zinc-700'}`}></div>
                                         <span className="truncate">{table.name}</span>
@@ -261,7 +261,7 @@ const Sidebar = ({
             </div>
 
             {/* User Footer with Logout */}
-            <div className="p-4 border-t border-border mt-auto bg-zinc-950/20 relative">
+            <div className="p-4 border-t border-white/10 mt-auto bg-zinc-950/20 relative">
                 <div 
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                     className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
@@ -284,8 +284,8 @@ const Sidebar = ({
                 </div>
 
                 {isUserMenuOpen && (
-                    <div className="absolute bottom-[calc(100%-8px)] left-4 right-4 z-50 bg-zinc-900 border border-white/5 rounded-xl shadow-2xl py-2 animate-in slide-in-from-bottom-2 duration-200">
-                        <div className="px-3 py-1.5 border-b border-white/5 mb-2">
+                    <div className="absolute bottom-[calc(100%-8px)] left-4 right-4 z-50 bg-zinc-900 border border-white/10 rounded-xl shadow-2xl py-2 animate-in slide-in-from-bottom-2 duration-200">
+                        <div className="px-3 py-1.5 border-b border-white/10 mb-2">
                             <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Account Settings</span>
                         </div>
                         <button className="flex w-full items-center gap-3 px-3 py-2 text-xs font-bold text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">
@@ -307,10 +307,10 @@ const Sidebar = ({
             {/* Context Menu */}
             {contextMenu && (
                 <div
-                    className="fixed z-[100] w-48 bg-zinc-900 border border-white/5 rounded-xl shadow-2xl py-1.5 shadow-black/50 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+                    className="fixed z-[100] w-48 bg-zinc-900 border border-white/10 rounded-xl shadow-2xl py-1.5 shadow-black/50 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
                     style={{ left: contextMenu.x, top: contextMenu.y }}
                 >
-                    <div className="px-3 py-1.5 border-b border-white/5 mb-1.5">
+                    <div className="px-3 py-1.5 border-b border-white/10 mb-1.5">
                         <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">{contextMenu.table}</span>
                     </div>
 

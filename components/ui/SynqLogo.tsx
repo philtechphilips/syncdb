@@ -10,58 +10,70 @@ export const SynqLogo = ({ className = "h-8 w-8", animate = true }: { className?
             xmlns="http://www.w3.org/2000/svg"
             className={className}
         >
-            {/* Minimalist 'S' Sync Icon */}
-            {/* Top half of S */}
+            {/* Architectural Diamond Frame - Subtle Background */}
             <motion.path
-                d="M75 30C75 30 70 15 50 15C30 15 25 30 25 30L25 45"
+                d="M50 10 L85 45 L50 80 L15 45 Z"
                 stroke="currentColor"
-                strokeWidth="10"
-                strokeLinecap="round"
-                initial={animate ? { pathLength: 0 } : {}}
-                animate={animate ? { pathLength: 1 } : {}}
-                transition={{ duration: 0.8, ease: "easeInOut" }}
+                strokeWidth="1.5"
+                opacity="0.1"
+                initial={animate ? { pathLength: 0, opacity: 0 } : {}}
+                animate={animate ? { pathLength: 1, opacity: 0.1 } : {}}
+                transition={{ duration: 1.5, ease: "easeInOut" }}
             />
             
-            {/* Connection / Middle of S */}
+            {/* The Gateway Chevrons (Interlocking Sync) */}
+            {/* Left Layer (Source) */}
             <motion.path
-                d="M25 45C25 45 25 55 50 55C75 55 75 45 75 45"
+                d="M42 30 L22 50 L42 70"
                 stroke="currentColor"
                 strokeWidth="10"
                 strokeLinecap="round"
-                initial={animate ? { opacity: 0 } : {}}
-                animate={animate ? { opacity: 1 } : {}}
-                transition={{ delay: 0.6 }}
+                strokeLinejoin="round"
+                initial={animate ? { x: -20, opacity: 0 } : {}}
+                animate={animate ? { x: 0, opacity: 1 } : {}}
+                transition={{ duration: 0.8, ease: "easeOut" }}
             />
-
-            {/* Bottom half of S */}
+            
+            {/* Right Layer (Interface) */}
             <motion.path
-                d="M75 55L75 70C75 70 70 85 50 85C30 85 25 70 25 70"
+                d="M58 30 L78 50 L58 70"
                 stroke="currentColor"
                 strokeWidth="10"
                 strokeLinecap="round"
-                initial={animate ? { pathLength: 0 } : {}}
-                animate={animate ? { pathLength: 1 } : {}}
-                transition={{ duration: 0.8, delay: 0.8, ease: "easeInOut" }}
+                strokeLinejoin="round"
+                opacity="0.3"
+                initial={animate ? { x: 20, opacity: 0 } : {}}
+                animate={animate ? { x: 0, opacity: 0.3 } : {}}
+                transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
             />
 
-            {/* Sync arrow heads (optional for sync feel, keep minimal) */}
-            <motion.circle
-                cx="25"
-                cy="30"
-                r="5"
+            {/* The Core Sync Node */}
+            <motion.rect
+                x="47" y="32" width="6" height="36"
+                rx="3"
                 fill="currentColor"
-                initial={animate ? { scale: 0 } : {}}
-                animate={animate ? { scale: 1 } : {}}
-                transition={{ delay: 1.6 }}
+                initial={animate ? { scaleY: 0, opacity: 0 } : {}}
+                animate={animate ? { scaleY: 1, opacity: 1 } : {}}
+                transition={{ duration: 0.6, delay: 0.6, ease: "backOut" }}
+                className="origin-center"
             />
+            
+            {/* Dynamic Pulse Detail */}
             <motion.circle
-                cx="75"
-                cy="70"
-                r="5"
+                cx="50"
+                cy="50"
+                r="3"
                 fill="currentColor"
-                initial={animate ? { scale: 0 } : {}}
-                animate={animate ? { scale: 1 } : {}}
-                transition={{ delay: 1.8 }}
+                animate={animate ? {
+                    scale: [1, 2, 1],
+                    opacity: [1, 0, 1]
+                } : {}}
+                transition={{ 
+                    duration: 2, 
+                    repeat: Infinity, 
+                    ease: "easeInOut",
+                    delay: 1.2
+                }}
             />
         </svg>
     );

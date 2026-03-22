@@ -5,33 +5,33 @@
   --font-mono: var(--font-geist-mono);
   --font-serif: var(--font-serif);
 
-  --color-background: #06161c; /* Deep MongoDB dark */
-  --color-foreground: #f1f5f9;
+  --color-background: #040d12; /* Slightly deeper dark for higher contrast */
+  --color-foreground: #f8fafc;
   
-  --color-card: #0c1c24;
-  --color-card-foreground: #f1f5f9;
+  --color-card: #08161c;
+  --color-card-foreground: #f8fafc;
   
-  --color-popover: #06161c;
-  --color-popover-foreground: #f1f5f9;
+  --color-popover: #040d12;
+  --color-popover-foreground: #f8fafc;
   
-  --color-primary: #00ed64; /* Sharp MongoDB Green */
-  --color-primary-foreground: #021a21;
+  --color-primary: #277955; /* Refined Forest Green */
+  --color-primary-foreground: #ffffff;
   
   --color-secondary: #00684a; /* MongoDB Deep Green */
-  --color-secondary-foreground: #f1f5f9;
+  --color-secondary-foreground: #f8fafc;
   
-  --color-muted: #11272f;
-  --color-muted-foreground: #94a3b8;
+  --color-muted: #0d1e25;
+  --color-muted-foreground: #cbd5e1; /* Higher contrast muted text */
   
-  --color-accent: #00ed64;
-  --color-accent-foreground: #021a21;
+  --color-accent: #277955;
+  --color-accent-foreground: #ffffff;
   
   --color-destructive: #ff4d4d;
   --color-destructive-foreground: #ffffff;
   
-  --color-border: #1a2e35;
-  --color-input: #11272f;
-  --color-ring: #00ed64;
+  --color-border: #1e3a44; /* More visible border */
+  --color-input: #0d1e25;
+  --color-ring: #277955;
   
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
@@ -50,16 +50,12 @@
   .glass {
     @apply bg-white/[0.03] backdrop-blur-xl border border-white/10;
   }
-  
-  .glow-primary {
-    @apply shadow-[0_0_40px_-10px_rgba(0,237,100,0.5)];
-  }
 
   .mesh-gradient {
     background-image: 
-      radial-gradient(at 0% 0%, rgba(0, 237, 100, 0.08) 0px, transparent 50%),
+      radial-gradient(at 0% 0%, rgba(39, 121, 85, 0.08) 0px, transparent 50%),
       radial-gradient(at 100% 0%, rgba(0, 104, 74, 0.1) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(0, 237, 100, 0.05) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(39, 121, 85, 0.05) 0px, transparent 50%),
       radial-gradient(at 0% 100%, rgba(0, 104, 74, 0.1) 0px, transparent 50%);
   }
 

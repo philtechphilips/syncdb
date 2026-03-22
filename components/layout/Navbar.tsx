@@ -42,7 +42,7 @@ const Navbar = ({ onOpenConnect }: NavbarProps) => {
             {/* Actions */}
             <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2 border-r border-border pr-4 mr-2">
-                    <button className="flex items-center gap-2 rounded-md bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-95">
+                    <button className="flex items-center gap-2 rounded-md bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground transition-all hover:bg-primary/90 active:scale-95">
                         <Play className="h-3 w-3 fill-primary-foreground" />
                         Run Query
                     </button>

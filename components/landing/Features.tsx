@@ -9,103 +9,94 @@ import {
     LayoutGrid,
     Search
 } from "lucide-react";
-import { motion, Variants } from "framer-motion";
+import { motion } from "framer-motion";
 
 export const Features = () => {
     const features = [
         {
-            title: "AI SQL Copilot",
-            description: "Translate natural language to optimized SQL instantly with our integrated neural engine.",
-            icon: <Sparkles className="h-6 w-6 text-primary" />,
+            title: "Engine-Aware AI",
+            description: "Neural SQL engine that understands T-SQL, PL/pgSQL, and MySQL dialects for precise generation.",
+            icon: <Sparkles className="h-5 w-5" />,
         },
         {
-            title: "Visual ER Diagrams",
-            description: "Visualize and organize your schema with interactive, draggable table relationships and auto-layout.",
-            icon: <LayoutGrid className="h-6 w-6 text-primary" />,
+            title: "Data Explorer",
+            description: "High-performance exploration with 10-operator server-side filtering for massive datasets.",
+            icon: <LayoutGrid className="h-5 w-5" />,
         },
         {
-            title: "Unified Multi-DB Explorer",
-            description: "Manage Postgres, MySQL, MSSQL, and SQLite simultaneously from a single, high-performance sidebar.",
-            icon: <Globe2 className="h-6 w-6 text-primary" />,
+            title: "Schema Intel",
+            description: "Deep introspection of foreign keys and automated relationship mapping across all engines.",
+            icon: <Globe2 className="h-5 w-5" />,
         },
         {
-            title: "Minimalist Performance Controls",
-            description: "A noise-free interface designed for deep focus and extreme database management speed.",
-            icon: <Zap className="h-6 w-6 text-primary" />,
+            title: "Zero-Trust",
+            description: "AES-256 bit-level encryption for all connection metadata, ensuring industrial-grade security.",
+            icon: <Zap className="h-5 w-5" />,
         },
         {
-            title: "Smart Query Logs",
-            description: "Review and re-run historical queries with grouped date views and instant execution stats.",
-            icon: <Search className="h-6 w-6 text-primary" />,
+            title: "Smart Logs",
+            description: "Review and re-exec historical queries with execution stats and engine-specific metrics.",
+            icon: <Search className="h-5 w-5" />,
         },
         {
-            title: "One-Click Migration",
-            description: "Zero-downtime migrations between database instances with built-in schema synchronization.",
-            icon: <MousePointerClick className="h-6 w-6 text-primary" />,
+            title: "Visual ER",
+            description: "Interact with database architecture using draggable relationships and automated layouts.",
+            icon: <MousePointerClick className="h-5 w-5" />,
         }
     ];
 
-    const containerVariants: Variants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.1
-            }
-        }
-    };
-
-    const itemVariants: Variants = {
-        hidden: { opacity: 0, y: 20 },
-        visible: {
-            opacity: 1,
-            y: 0,
-            transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
-        }
-    };
-
     return (
         <section id="features" className="py-32 bg-background relative overflow-hidden">
-            <div className="absolute inset-0 tech-grid opacity-[0.05]"></div>
-
             <div className="max-w-7xl mx-auto px-6 relative z-10">
-                <motion.div 
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.8 }}
-                    className="max-w-3xl mb-24"
-                >
-                    <h2 className="text-4xl md:text-6xl font-serif text-white mb-6">Built for the modern <br />developer.</h2>
-                    <p className="text-xl text-zinc-400 font-medium">The same power you expect from industry leaders, with a developer experience that actually makes sense.</p>
-                </motion.div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-32 mb-40">
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        className="space-y-8"
+                    >
+                        <span className="text-primary text-xs font-black tracking-[0.4em] uppercase">Top Features</span>
+                        <h2 className="text-4xl md:text-5xl font-serif text-white leading-[0.9] tracking-tighter">
+                            Made for <br />
+                            <span className="text-primary italic">Developers.</span>
+                        </h2>
+                    </motion.div>
+                    
+                    <div className="flex items-end">
+                        <p className="text-2xl text-zinc-500 font-medium leading-relaxed max-w-lg mb-4">
+                            Get all the power you need with a tool that's actually easy to use. Built for speed and made to help you work faster.
+                        </p>
+                    </div>
+                </div>
 
-                <motion.div 
-                    variants={containerVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: "-100px" }}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/5 border border-white/5 rounded-3xl overflow-hidden"
-                >
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-20">
                     {features.map((f, i) => (
                         <motion.div
                             key={i}
-                            variants={itemVariants}
-                            className="group p-10 bg-background hover:bg-white/[0.02] transition-all duration-300 relative overflow-hidden"
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: i * 0.1 }}
+                            className="group space-y-8"
                         >
-                            <div className="absolute inset-0 bg-primary/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-in-out"></div>
-                            
-                            <div className="relative z-10">
-                                <div className="mb-8 p-3 w-max rounded-lg bg-primary/10 border border-primary/20 group-hover:scale-110 transition-transform duration-300">
+                            <div className="flex items-center gap-4">
+                                <div className="h-10 w-10 rounded-full border border-white/10 flex items-center justify-center text-primary/60 group-hover:text-primary group-hover:border-primary/40 transition-all duration-500">
                                     {f.icon}
                                 </div>
-                                <h3 className="text-2xl font-bold text-white mb-4">{f.title}</h3>
-                                <p className="text-zinc-500 text-lg font-medium leading-relaxed group-hover:text-zinc-300 transition-colors">{f.description}</p>
+                                <div className="h-[1px] flex-1 bg-white/5 group-hover:bg-primary/20 transition-all duration-500" />
+                            </div>
+                            
+                            <div className="space-y-4">
+                                <h3 className="text-3xl font-serif text-white group-hover:text-primary transition-colors duration-500">{f.title}</h3>
+                                <p className="text-lg text-zinc-500 leading-relaxed font-medium group-hover:text-zinc-300 transition-colors duration-500">
+                                    {f.description}
+                                </p>
                             </div>
                         </motion.div>
                     ))}
-                </motion.div>
+                </div>
             </div>
         </section>
     );
 };
+
