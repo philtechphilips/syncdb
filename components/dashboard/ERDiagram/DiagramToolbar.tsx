@@ -35,8 +35,8 @@ const DiagramToolbar = ({
     isExporting
 }: DiagramToolbarProps) => {
     return (
-        <div className={`flex items-center justify-between border-b border-white/5 bg-[#021016] px-4 py-2 ${isFullscreen ? 'h-14 px-8' : ''}`}>
-            <div className="flex items-center gap-4 text-[11px] font-bold text-zinc-500">
+        <div className={`flex items-center justify-between border-b border-white/10 bg-[#021016] px-4 py-2 ${isFullscreen ? 'h-14 px-8' : ''}`}>
+            <div className="flex items-center gap-4 text-[11px] font-bold text-zinc-400">
                 <div className="flex items-center gap-2 text-primary">
                     <MousePointer2 className="h-3.5 w-3.5" />
                     <span>INTERACTIVE CANVAS</span>
@@ -54,30 +54,30 @@ const DiagramToolbar = ({
                 )}
                 <div className="h-4 w-px bg-white/10"></div>
                 <div className="relative">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-500" />
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-400" />
                     <input 
                         value={search}
                         onChange={(e) => onSearchChange(e.target.value)}
                         placeholder="Find Table..."
-                        className="bg-white/5 border border-white/10 rounded-md pl-8 pr-3 py-1 text-[10px] focus:outline-none focus:ring-1 focus:ring-primary/30 w-40 transition-all font-medium text-zinc-300"
+                        className="bg-white/10 border border-white/15 rounded-md pl-8 pr-3 py-1 text-[10px] focus:outline-none focus:ring-1 focus:ring-primary/40 w-40 transition-all font-medium text-zinc-200"
                     />
                 </div>
             </div>
             <div className="flex items-center gap-1.5">
-                <div className="flex items-center bg-white/5 rounded-lg border border-white/10 p-0.5">
-                    <button onClick={onZoomOut} className="rounded p-1 hover:bg-white/10 transition-colors text-zinc-400 hover:text-white"><ZoomOut className="h-3.5 w-3.5" /></button>
-                    <span className="text-[10px] font-mono w-10 text-center text-zinc-300">{Math.round(zoom * 100)}%</span>
-                    <button onClick={onZoomIn} className="rounded p-1 hover:bg-white/10 transition-colors text-zinc-400 hover:text-white"><ZoomIn className="h-3.5 w-3.5" /></button>
+                <div className="flex items-center bg-white/10 rounded-lg border border-white/15 p-0.5">
+                    <button onClick={onZoomOut} className="rounded p-1 hover:bg-white/10 transition-colors text-zinc-300 hover:text-white"><ZoomOut className="h-3.5 w-3.5" /></button>
+                    <span className="text-[10px] font-mono w-10 text-center text-zinc-100">{Math.round(zoom * 100)}%</span>
+                    <button onClick={onZoomIn} className="rounded p-1 hover:bg-white/10 transition-colors text-zinc-300 hover:text-white"><ZoomIn className="h-3.5 w-3.5" /></button>
                 </div>
                 <button
                     onClick={onResetView}
-                    className="rounded-lg border border-white/10 bg-white/5 p-1.5 shadow-sm hover:bg-white/10 transition-colors text-zinc-400 hover:text-white" title="Reset View"
+                    className="rounded-lg border border-white/15 bg-white/10 p-1.5 shadow-sm hover:bg-white/20 transition-colors text-zinc-200 hover:text-white" title="Reset View"
                 >
                     <RefreshCcw className="h-3.5 w-3.5" />
                 </button>
                 <button
                     onClick={onToggleFullscreen}
-                    className="rounded-lg border border-white/10 bg-white/5 p-1.5 shadow-sm hover:bg-white/10 transition-colors text-zinc-400 hover:text-white"
+                    className="rounded-lg border border-white/15 bg-white/10 p-1.5 shadow-sm hover:bg-white/20 transition-colors text-zinc-200 hover:text-white"
                 >
                     {isFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
                 </button>

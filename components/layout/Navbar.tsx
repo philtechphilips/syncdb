@@ -20,7 +20,7 @@ const Navbar = ({ onOpenConnect }: NavbarProps) => {
     const { selectedCluster } = useClusterStore();
 
     return (
-        <nav className="fixed right-0 top-0 z-30 flex h-14 w-[calc(100%-16rem)] items-center justify-between border-b border-white/5 bg-background px-6 font-sans overflow-hidden">
+        <nav className="fixed right-0 top-0 z-30 flex h-14 w-[calc(100%-16rem)] items-center justify-between border-b border-white/10 bg-background px-6 font-sans overflow-hidden">
             {/* Breadcrumbs */}
             <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 text-[11px] font-medium text-zinc-400">

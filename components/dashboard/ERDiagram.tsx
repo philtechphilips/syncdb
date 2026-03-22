@@ -219,7 +219,7 @@ const ERDiagram = () => {
 
     return (
         <div
-            className={`flex flex-col overflow-hidden rounded-xl border border-white/5 bg-[#021016]/10 backdrop-blur-sm select-none transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-[100] h-screen w-screen bg-black rounded-none border-none' : 'h-full min-h-[600px]'}`}
+            className={`flex flex-col overflow-hidden rounded-xl border border-white/10 bg-[#021016]/10 backdrop-blur-sm select-none transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-[100] h-screen w-screen bg-black rounded-none border-none' : 'h-full min-h-[600px]'}`}
             onMouseMove={handleMouseMove}
             onMouseUp={() => { setDraggingNode(null); setPanning(null); }}
             onMouseLeave={() => { setDraggingNode(null); setPanning(null); }}

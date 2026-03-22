@@ -60,7 +60,7 @@ const DataTableBody = ({
                     {filteredRows.map((row) => (
                         <tr
                             key={row.id}
-                            className={`group bg-white/[0.02] hover:bg-white/[0.05] border-l-2 border-transparent hover:border-l-primary/40 transition-all ${selectedRows.has(row.id) ? 'bg-primary/[0.04] border-l-primary' : ''}`}
+                            className={`group bg-white/[0.04] hover:bg-white/[0.08] border-l-2 border-transparent hover:border-l-primary/60 transition-all ${selectedRows.has(row.id) ? 'bg-primary/20 border-l-primary' : ''}`}
                         >
                             <td className="px-6 py-4 w-12 text-center">
                                 <div className="flex items-center gap-2">
@@ -68,11 +68,11 @@ const DataTableBody = ({
                                         type="checkbox"
                                         checked={selectedRows.has(row.id)}
                                         onChange={() => onToggleRow(row.id)}
-                                        className="accent-primary w-3.5 h-3.5 rounded border-white/10 bg-white/5"
+                                        className="accent-primary w-3.5 h-3.5 rounded border-white/20 bg-white/10"
                                     />
                                     <button
                                         onClick={() => onOpenUpdateModal(row)}
-                                        className="p-1 rounded opacity-0 group-hover:opacity-100 bg-white/5 text-zinc-500 hover:text-white hover:bg-primary/20 transition-all border border-transparent hover:border-primary/20"
+                                        className="p-1 rounded opacity-0 group-hover:opacity-100 bg-white/10 text-zinc-400 hover:text-white hover:bg-primary/30 transition-all border border-transparent hover:border-primary/30"
                                         title="Update Row"
                                     >
                                         <Maximize2 className="h-2.5 w-2.5" />
@@ -86,9 +86,9 @@ const DataTableBody = ({
                                         key={col}
                                         onContextMenu={(e) => onContextMenu(e, row.id, col)}
                                         onDoubleClick={() => col !== "id" && onStartEdit(row.id, col, String(row[col]))}
-                                        className={`px-6 py-4 text-xs font-medium border-r border-white/[0.02] last:border-0 relative transition-all ${col === "id" ? 'font-mono text-zinc-500' : 'text-zinc-300'
+                                        className={`px-6 py-4 text-xs font-semibold border-r border-white/5 last:border-0 relative transition-all ${col === "id" ? 'font-mono text-zinc-500' : 'text-zinc-200'
                                             } ${row[col] === "NULL" ? 'italic text-zinc-600' : ''} ${activeCell?.rowId === row.id && activeCell?.colName === col
-                                                ? 'outline outline-1 outline-primary/50 bg-primary/[0.02] z-20 shadow-[0_0_15px_rgba(0,237,100,0.1)]'
+                                                ? 'outline outline-1 outline-primary/60 bg-primary/10 z-20 shadow-[0_0_15px_rgba(0,237,100,0.15)]'
                                                 : ''
                                             }`}
                                     >
