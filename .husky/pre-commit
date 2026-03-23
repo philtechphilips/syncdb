@@ -1,0 +1,37 @@
+#!/usr/bin/env sh
+echo '🚀 Husky pre-commit hook is running...'
+
+echo '📝 Formatting Document'
+pnpm run format
+
+# No automated tests for the frontend yet, but we can add placeholders if needed.
+# echo '🧪 Running tests...'
+# pnpm run test ||
+# {
+#     echo '❌ Tests are failing, please review and fix your code before committing';
+#     exit 1;
+# }
+
+echo '✨ Checking Prettier standards...'
+pnpm run check-format ||
+{
+    echo '❌ Bad code styling, please review and fix';
+    exit 1;
+}
+
+# echo '🔍 Checking ESLint standards...'
+# pnpm run lint ||
+# {
+#     echo '❌ ESLint errors found, please review and fix';
+#     exit 1; 
+# }
+
+# echo '📘 Checking TypeScript types...'
+# pnpm run check-types ||
+# {
+#     echo '❌ Type check failed. Please fix TypeScript errors.';
+#     exit 1;
+# }
+
+# If everything passes... Now we can commit
+echo '✅ All checks passed! Committing now...'

@@ -20,7 +20,8 @@ const dmSerif = DM_Serif_Display({
 
 export const metadata: Metadata = {
   title: "SynqDB | The Professional Database Management Platform",
-  description: "Industry-standard database management for modern engineering teams. Scale your data infrastructure with zero friction.",
+  description:
+    "Industry-standard database management for modern engineering teams. Scale your data infrastructure with zero friction.",
 };
 
 import { Toaster } from "sonner";

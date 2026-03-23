@@ -1,22 +1,22 @@
-import axios from 'axios';
+import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 if (!API_URL) {
-  console.warn('NEXT_PUBLIC_API_URL is not defined in environment variables.');
+  console.warn("NEXT_PUBLIC_API_URL is not defined in environment variables.");
 }
 
 const api = axios.create({
   baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 // Add a request interceptor to add the auth token to every request
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem("access_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -24,7 +24,7 @@ api.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 import { toast } from "sonner";
@@ -40,26 +40,29 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;
-      
+      const refreshToken =
+        typeof window !== "undefined"
+          ? localStorage.getItem("refresh_token")
+          : null;
+
       if (!refreshToken) {
-        console.error('No refresh token available, forcing logout');
+        console.error("No refresh token available, forcing logout");
         handleLogout();
         return Promise.reject(error);
       }
 
       try {
-        console.log('Attempting to refresh access token...');
+        console.log("Attempting to refresh access token...");
         const response = await axios.post(`${API_URL}/v1/auth/refresh`, {
           refresh_token: refreshToken,
         });
 
         const { access_token, refresh_token: newRefreshToken } = response.data;
-        
+
         if (access_token) {
-          localStorage.setItem('access_token', access_token);
+          localStorage.setItem("access_token", access_token);
           if (newRefreshToken) {
-            localStorage.setItem('refresh_token', newRefreshToken);
+            localStorage.setItem("refresh_token", newRefreshToken);
           }
 
           // Retry the original request with the new token
@@ -67,7 +70,7 @@ api.interceptors.response.use(
           return api(originalRequest);
         }
       } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
+        console.error("Token refresh failed:", refreshError);
         handleLogout("Session expired. Please login again.");
         return Promise.reject(refreshError);
       }
@@ -75,26 +78,25 @@ api.interceptors.response.use(
 
     // Show toast for other critical errors
     if (error.response?.status !== 401) {
-        toast.error(getErrorMessage(error));
+      toast.error(getErrorMessage(error));
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 // Helper to handle forced logout
 function handleLogout(message?: string) {
-    if (typeof window !== 'undefined') {
-        if (message) toast.error(message);
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user');
-        // Prevent infinite redirect loops if already on login page
-        if (window.location.pathname !== '/auth/login') {
-            window.location.href = '/auth/login';
-        }
+  if (typeof window !== "undefined") {
+    if (message) toast.error(message);
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
+    // Prevent infinite redirect loops if already on login page
+    if (window.location.pathname !== "/auth/login") {
+      window.location.href = "/auth/login";
     }
+  }
 }
-
 
 export default api;

@@ -5,15 +5,15 @@ import { useClusterStore } from "@/store/useClusterStore";
 import { useEffect } from "react";
 
 export default function ERPage() {
-    const { setActiveTab } = useClusterStore();
+  const { setActiveTab } = useClusterStore();
 
-    useEffect(() => {
-        setActiveTab("er");
-    }, []);
+  useEffect(() => {
+    setActiveTab("er");
+  }, []);
 
-    return (
-        <div className="flex-1 p-8 bg-background/50 h-full overflow-hidden">
-            <ERDiagram />
-        </div>
-    );
+  return (
+    <div className="flex-1 p-8 bg-background/50 h-full overflow-hidden">
+      <ERDiagram />
+    </div>
+  );
 }

@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 interface ModalOptions {
   title: string;
@@ -7,7 +7,7 @@ interface ModalOptions {
   onCancel?: () => void;
   confirmLabel?: string;
   cancelLabel?: string;
-  type?: 'danger' | 'warning' | 'info';
+  type?: "danger" | "warning" | "info";
   isAlert?: boolean;
   confirmValue?: string;
 }
@@ -20,7 +20,7 @@ interface ModalState {
   onCancel?: () => void;
   confirmLabel: string;
   cancelLabel: string;
-  type: 'danger' | 'warning' | 'info';
+  type: "danger" | "warning" | "info";
   isAlert: boolean;
   confirmValue?: string;
   open: (options: ModalOptions) => void;
@@ -29,25 +29,27 @@ interface ModalState {
 
 export const useModalStore = create<ModalState>((set) => ({
   isOpen: false,
-  title: '',
-  message: '',
+  title: "",
+  message: "",
   onConfirm: () => {},
-  confirmLabel: 'Confirm',
-  cancelLabel: 'Cancel',
-  type: 'info',
+  confirmLabel: "Confirm",
+  cancelLabel: "Cancel",
+  type: "info",
   isAlert: false,
   confirmValue: undefined,
-  open: (options) => set({ 
-    isOpen: true, 
-    title: options.title,
-    message: options.message,
-    onConfirm: options.onConfirm || (() => {}),
-    onCancel: options.onCancel,
-    confirmLabel: options.confirmLabel || (options.isAlert ? 'OK' : 'Confirm'),
-    cancelLabel: options.cancelLabel || 'Cancel',
-    type: options.type || 'info',
-    isAlert: !!options.isAlert,
-    confirmValue: options.confirmValue
-  }),
+  open: (options) =>
+    set({
+      isOpen: true,
+      title: options.title,
+      message: options.message,
+      onConfirm: options.onConfirm || (() => {}),
+      onCancel: options.onCancel,
+      confirmLabel:
+        options.confirmLabel || (options.isAlert ? "OK" : "Confirm"),
+      cancelLabel: options.cancelLabel || "Cancel",
+      type: options.type || "info",
+      isAlert: !!options.isAlert,
+      confirmValue: options.confirmValue,
+    }),
   close: () => set({ isOpen: false }),
 }));
