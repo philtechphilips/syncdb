@@ -11,13 +11,15 @@ import {
 } from "lucide-react";
 
 import { useClusterStore } from "@/store/useClusterStore";
+import { useQueryStore } from "@/store/useQueryStore";
 
 interface NavbarProps {
     onOpenConnect: () => void;
 }
 
 const Navbar = ({ onOpenConnect }: NavbarProps) => {
-    const { selectedCluster } = useClusterStore();
+    const { selectedCluster, activeTab } = useClusterStore();
+    const { requestRun } = useQueryStore();
 
     return (
         <nav className="fixed right-0 top-0 z-30 flex h-14 w-[calc(100%-16rem)] items-center justify-between border-b border-white/10 bg-background px-6 font-sans overflow-hidden">
@@ -42,10 +44,15 @@ const Navbar = ({ onOpenConnect }: NavbarProps) => {
             {/* Actions */}
             <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2 border-r border-border pr-4 mr-2">
-                    <button className="flex items-center gap-2 rounded-md bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground transition-all hover:bg-primary/90 active:scale-95">
-                        <Play className="h-3 w-3 fill-primary-foreground" />
-                        Run Query
-                    </button>
+                    {activeTab === 'query' && (
+                        <button 
+                            onClick={requestRun}
+                            className="flex items-center gap-2 rounded-md bg-primary px-4 py-1.5 text-xs font-bold text-white transition-all hover:bg-primary/90 active:scale-95"
+                        >
+                            <Play className="h-3 w-3 fill-white" />
+                            Run Query
+                        </button>
+                    )}
                     <button className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-4 py-1.5 text-xs font-bold text-foreground hover:bg-muted transition-all" onClick={onOpenConnect}>
                         <Database className="h-3 w-3" />
                         Connect

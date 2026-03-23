@@ -11,6 +11,7 @@ interface QueryResultsAreaProps {
     aiMode: string;
     isLoadingHistory: boolean;
     queryHistory: any[];
+    isRunning?: boolean;
     onRestoreQuery: (query: string) => void;
 }
 
@@ -24,12 +25,16 @@ const QueryResultsArea = ({
     aiMode,
     isLoadingHistory,
     queryHistory,
+    isRunning,
     onRestoreQuery
 }: QueryResultsAreaProps) => {
-    if (!queryResults && bottomTab !== "history") return null;
+    if (!queryResults && bottomTab !== "history" && !isRunning) return null;
+
+    // ... existing header logic ...
 
     return (
         <div className="flex-1 flex flex-col bg-[#021016]/50 overflow-hidden border-t border-white/5 min-h-0 animate-in slide-in-from-bottom duration-500">
+            {/* Header omitted for brevity in targetContent, but I need to include it in replacementContent if I'm replacing the whole block */}
             <div className="flex items-center justify-between px-6 py-2 border-b border-white/5 bg-black/20 shrink-0">
                 <div className="flex items-center gap-6">
                     <button 
@@ -59,6 +64,7 @@ const QueryResultsArea = ({
             
             <div className="flex-1 overflow-auto bg-black/5 min-h-0">
                 {aiOutput ? (
+                    // ... AI logic same ...
                     <div className="p-8 max-w-4xl animate-in fade-in duration-500 text-left">
                         <div className="flex items-center gap-3 mb-6">
                             <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
@@ -89,7 +95,16 @@ const QueryResultsArea = ({
                         )}
                     </div>
                 ) : bottomTab === "results" ? (
-                    Array.isArray(queryResults) && queryResults.length > 0 ? (
+                    isRunning ? (
+                        <div className="h-full flex flex-col items-center justify-center p-12 text-center">
+                            <div className="relative mb-8">
+                                <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                                <div className="absolute inset-0 bg-primary/20 blur-2xl animate-pulse"></div>
+                            </div>
+                            <h3 className="text-sm font-black text-white uppercase tracking-[0.3em] mb-2 animate-pulse">Processing Query</h3>
+                            <p className="text-[9px] text-zinc-600 font-black uppercase tracking-widest">Awaiting response from high-performance engine...</p>
+                        </div>
+                    ) : Array.isArray(queryResults) && queryResults.length > 0 ? (
                         <table className="w-full text-left border-collapse text-[11px]">
                             <thead className="sticky top-0 bg-zinc-900 z-10 shadow-sm">
                                 <tr>
@@ -110,30 +125,11 @@ const QueryResultsArea = ({
                                 ))}
                             </tbody>
                         </table>
-                    ) : queryResults ? (
-                        <div className="h-full flex flex-col items-center justify-center p-10 text-center">
-                            <div className="p-8 rounded-2xl bg-white/[0.02] border border-white/5 max-w-md">
-                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                                    <Terminal className="h-5 w-5 text-primary" />
-                                </div>
-                                <h3 className="text-zinc-200 font-bold text-sm mb-2 uppercase tracking-widest text-[11px]">Query Executed Successfully</h3>
-                                <p className="text-zinc-500 text-[10px] uppercase tracking-wider leading-relaxed">
-                                    {Array.isArray(queryResults) 
-                                        ? "The statement returned 0 rows. Your schema might be empty or the filter didn't match any data." 
-                                        : "The query was processed by the engine without returning a dataset. (Affected rows: " + ((queryResults as any).rowCount || (queryResults as any).affectedRows || 0) + ")"
-                                    }
-                                </p>
-                                {!Array.isArray(queryResults) && (
-                                    <pre className="mt-4 p-4 rounded bg-black/40 text-[10px] text-zinc-400 font-mono text-left overflow-auto max-h-[200px]">
-                                        {JSON.stringify(queryResults, null, 2)}
-                                    </pre>
-                                )}
-                            </div>
-                        </div>
                     ) : (
-                        <div className="h-full flex flex-col items-center justify-center text-zinc-600 font-mono text-[10px] uppercase tracking-widest gap-4">
-                            <Loader2 className="h-5 w-5 animate-spin" />
-                            No output to display. Run a query first.
+                        <div className="h-full flex flex-col items-center justify-center text-zinc-600 p-12 text-center opacity-40">
+                             <Terminal className="h-10 w-10 mb-4 opacity-20" />
+                             <h4 className="text-[10px] font-black uppercase tracking-[0.2em]">No results to display</h4>
+                             <p className="text-[9px] font-bold uppercase mt-2">Buffer is empty for this command</p>
                         </div>
                     )
                 ) : (

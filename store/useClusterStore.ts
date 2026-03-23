@@ -25,7 +25,7 @@ interface ClusterState {
   totalRows: number;
   currentPage: number;
   rowsPerPage: number;
-  activeTab: "query" | "er" | "table" | "logs";
+  activeTab: "query" | "er" | "table" | "logs" | "sync";
   selectedTable: string;
   fetchClusters: () => Promise<Cluster[]>;
   fetchTables: (clusterId: string) => Promise<any[]>;
@@ -34,16 +34,18 @@ interface ClusterState {
   updateRow: (clusterId: string, tableName: string, data: any, where: any) => Promise<void>;
   insertRow: (clusterId: string, tableName: string, data: any) => Promise<void>;
   deleteRows: (clusterId: string, tableName: string, where: any) => Promise<void>;
+  deleteRowsBulk: (clusterId: string, tableName: string, rows: any[]) => Promise<void>;
   selectCluster: (cluster: Cluster | null) => void;
   createCluster: (data: any) => Promise<Cluster>;
   testConnection: (data: any) => Promise<any>;
   deleteCluster: (id: string) => Promise<void>;
-  setActiveTab: (tab: "query" | "er" | "table" | "logs") => void;
+  setActiveTab: (tab: "query" | "er" | "table" | "logs" | "sync") => void;
   setSelectedTable: (tableName: string) => void;
   clearError: () => void;
   fetchSchema: (clusterId: string) => Promise<any[]>;
   executeQuery: (clusterId: string, query: string) => Promise<any>;
   fetchQueryLogs: (clusterId: string) => Promise<any[]>;
+  dropTable: (clusterId: string, tableName: string) => Promise<void>;
 }
 
 export const useClusterStore = create<ClusterState>()(
@@ -170,8 +172,7 @@ export const useClusterStore = create<ClusterState>()(
       deleteRows: async (clusterId, tableName, where) => {
         set({ isDataLoading: true, error: null });
         try {
-          const res = await api.delete(`/v1/clusters/${clusterId}/tables/${tableName}/rows`, { data: { where } });
-          const deletedCount = res.data?.affected || 1; // Backend might return affected rows
+          await api.delete(`/v1/clusters/${clusterId}/tables/${tableName}/rows`, { data: { where } });
           const { tableData } = get();
           const filteredData = tableData.filter(row => {
             const match = Object.keys(where).every(key => row[key] === where[key]);
@@ -179,7 +180,35 @@ export const useClusterStore = create<ClusterState>()(
           });
           set((state) => ({ 
             tableData: filteredData, 
-            totalRows: Math.max(0, state.totalRows - deletedCount),
+            totalRows: Math.max(0, state.totalRows - 1),
+            isDataLoading: false 
+          }));
+        } catch (error) {
+          const message = getErrorMessage(error);
+          set({ error: message, isDataLoading: false });
+          throw error;
+        }
+      },
+
+      deleteRowsBulk: async (clusterId: string, tableName: string, selectedRows: any[]) => {
+        if (selectedRows.length === 0) return;
+        set({ isDataLoading: true, error: null });
+        try {
+          // Send all deletes in parallel
+          // In a real production app, we would have a dedicated bulk DELETE endpoint
+          await Promise.all(selectedRows.map((row: any) => 
+            api.delete(`/v1/clusters/${clusterId}/tables/${tableName}/rows`, { 
+              data: { where: { id: row.id } } 
+            })
+          ));
+
+          const idsToDelete = selectedRows.map((r: any) => r.id);
+          const { tableData } = get();
+          const filteredData = tableData.filter(row => !idsToDelete.includes(row.id));
+          
+          set((state) => ({ 
+            tableData: filteredData, 
+            totalRows: Math.max(0, state.totalRows - idsToDelete.length),
             isDataLoading: false 
           }));
         } catch (error) {
@@ -272,6 +301,22 @@ export const useClusterStore = create<ClusterState>()(
         } catch (error: any) {
           const message = getErrorMessage(error);
           set({ error: message });
+          throw error;
+        }
+      },
+      
+      dropTable: async (clusterId: string, tableName: string) => {
+        set({ isTablesLoading: true, error: null });
+        try {
+          await api.delete(`/v1/clusters/${clusterId}/tables/${tableName}`);
+          set((state) => ({
+            tables: state.tables.filter((t) => t.name !== tableName),
+            selectedTable: state.selectedTable === tableName ? "" : state.selectedTable,
+            isTablesLoading: false
+          }));
+        } catch (error: any) {
+          const message = getErrorMessage(error);
+          set({ error: message, isTablesLoading: false });
           throw error;
         }
       },

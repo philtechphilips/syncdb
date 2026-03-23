@@ -85,6 +85,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         if (pathname.includes("/dashboard/er")) return "er";
         if (pathname.includes("/dashboard/table")) return "table";
         if (pathname.includes("/dashboard/logs")) return "logs";
+        if (pathname.includes("/dashboard/sync")) return "sync";
         return activeTab;
     };
 

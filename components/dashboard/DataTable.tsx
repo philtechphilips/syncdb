@@ -37,7 +37,9 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
         isDataLoading: isLoading,
         fetchTableColumns,
         insertRow,
-        deleteRows
+        deleteRows,
+        deleteRowsBulk,
+        dropTable
     } = useClusterStore();
 
     // Core Data State
@@ -177,13 +179,30 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
         if (!selectedCluster || !selectedTable) return;
         try {
             await deleteRows(selectedCluster.id, selectedTable, { id: id });
-            setRows(deleteTableRow(rows, id));
+            setRows(prev => deleteTableRow(prev, id));
             const next = new Set(selectedRows);
             next.delete(id);
             setSelectedRows(next);
             toast.success("Row deleted successfully");
         } catch (error) {
             console.error('Failed to delete row:', error);
+        }
+    };
+
+    const handleDeleteSelected = async () => {
+        if (!selectedCluster || !selectedTable || selectedRows.size === 0) return;
+        
+        const count = selectedRows.size;
+        const rowsToDelete = rows.filter(r => selectedRows.has(r.id));
+        
+        try {
+            await deleteRowsBulk(selectedCluster.id, selectedTable, rowsToDelete);
+            setRows(prev => prev.filter(r => !selectedRows.has(r.id)));
+            setSelectedRows(new Set());
+            toast.success(`${count} row${count > 1 ? 's' : ''} deleted successfully`);
+        } catch (error) {
+            console.error('Failed to delete rows:', error);
+            toast.error("Failed to delete selected rows");
         }
     };
 
@@ -240,6 +259,16 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
             toast.success("Cell updated");
         } catch (error) {
             console.error('Failed to update cell:', error);
+        }
+    };
+
+    const handleDropTable = async () => {
+        if (!selectedCluster || !selectedTable) return;
+        try {
+            await dropTable(selectedCluster.id, selectedTable);
+            toast.success("Table dropped successfully");
+        } catch (error) {
+            toast.error("Failed to drop table");
         }
     };
 
@@ -337,7 +366,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                 onCopyRow={(format, rid) => handleCopy(format, rid === -1 ? rows.filter(r => selectedRows.has(r.id)) : [rows.find(r => r.id === rid)])}
                 onCloneRow={cloneRow}
                 onDeleteRow={deleteRow}
-                onDeleteSelected={() => selectedRows.forEach(deleteRow)}
+                onDeleteSelected={handleDeleteSelected}
                 onFilterSelected={() => setShowSelectedOnly(true)}
                 selectedRowsCount={selectedRows.size}
             />
@@ -357,7 +386,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                 totalRows={totalRows}
                 rowsCount={rows.length}
                 selectedRowsCount={selectedRows.size}
-                onDeleteSelected={() => selectedRows.forEach(deleteRow)}
+                onDeleteSelected={handleDeleteSelected}
                 showCopyDropdown={showCopyDropdown}
                 setShowCopyDropdown={setShowCopyDropdown}
                 lastCopiedFormat={lastCopiedFormat}
@@ -382,6 +411,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
                 showGlobalExportDropdown={showGlobalExportDropdown}
                 setShowGlobalExportDropdown={setShowGlobalExportDropdown}
                 onOpenInsertModal={handleOpenInsertModal}
+                onDropTable={handleDropTable}
             />
 
             <DataTableBody 

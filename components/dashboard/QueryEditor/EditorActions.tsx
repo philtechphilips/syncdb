@@ -26,9 +26,9 @@ const EditorActions = ({
                 <button
                     onClick={onRun}
                     disabled={isRunning || !clusterSelected}
-                    className="flex items-center gap-2 px-6 py-2 bg-primary text-[#021016] text-[10px] font-black uppercase tracking-[0.2em] rounded-lg hover:bg-primary/95 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
+                    className="flex items-center gap-2 px-6 py-2 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-lg hover:bg-primary/95 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
                 >
-                    {isRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-3.5 w-3.5 fill-current" />}
+                    {isRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-3.5 w-3.5 fill-white" />}
                     Run Query
                 </button>
                 <button

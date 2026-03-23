@@ -24,6 +24,7 @@ export const metadata: Metadata = {
 };
 
 import { Toaster } from "sonner";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
 
 export default function RootLayout({
   children,
@@ -36,6 +37,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${dmSerif.variable} antialiased`}
       >
         <Toaster position="top-right" theme="dark" richColors closeButton />
+        <ConfirmationModal />
         {children}
       </body>
     </html>

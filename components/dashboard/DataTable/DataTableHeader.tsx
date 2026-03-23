@@ -1,5 +1,6 @@
 import React from "react";
 import { Table, History, Trash2, Copy, Download, Filter, Plus } from "lucide-react";
+import { useModalStore } from "@/store/useModalStore";
 
 interface DataTableHeaderProps {
     selectedTable?: string;
@@ -28,6 +29,7 @@ interface DataTableHeaderProps {
     showGlobalExportDropdown: boolean;
     setShowGlobalExportDropdown: (val: boolean) => void;
     onOpenInsertModal: () => void;
+    onDropTable?: () => void;
 }
 
 const DataTableHeader = ({
@@ -56,16 +58,39 @@ const DataTableHeader = ({
     rows,
     showGlobalExportDropdown,
     setShowGlobalExportDropdown,
-    onOpenInsertModal
+    onOpenInsertModal,
+    onDropTable
 }: DataTableHeaderProps) => {
+    const { open: openModal } = useModalStore();
     return (
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#021016]/50">
             <div className="flex items-center gap-6">
                 <div className="flex items-center gap-3">
-                    <Table className="h-4 w-4 text-primary" />
                     <span className="text-[10px] font-black text-white tracking-widest">
                         {selectedTable || "Query Results"}
                     </span>
+                    {onDropTable && selectedTable && (
+                        <button 
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                openModal({
+                                    title: "Drop Table",
+                                    message: `Are you sure you want to PERMANENTLY delete table "${selectedTable}"? This action cannot be undone and all data will be lost.`,
+                                    type: "danger",
+                                    confirmLabel: "Drop Table",
+                                    confirmValue: selectedTable,
+                                    onConfirm: () => onDropTable!()
+                                });
+                            }}
+                            className="ml-2 p-1 rounded hover:bg-red-500/10 text-zinc-600 hover:text-red-500 transition-colors group relative"
+                            title="Drop Table"
+                        >
+                            <Trash2 className="h-3 w-3" />
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-2 py-1 bg-zinc-900 border border-white/10 rounded text-[8px] font-black uppercase text-red-500 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+                                Danger Zone: Drop Table
+                            </div>
+                        </button>
+                    )}
                 </div>
                 <div className="flex items-center gap-2">
                     <History className="h-3.5 w-3.5 text-zinc-400" />

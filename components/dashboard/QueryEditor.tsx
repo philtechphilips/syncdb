@@ -6,6 +6,8 @@ import { format } from "sql-formatter";
 import { toast } from "sonner";
 import { useClusterStore } from "@/store/useClusterStore";
 import api from "@/lib/api";
+import { useModalStore } from "@/store/useModalStore";
+import { useQueryStore } from "@/store/useQueryStore";
 
 // Sub-components
 import QueryTabs from "./QueryEditor/QueryTabs";
@@ -15,17 +17,10 @@ import QueryResultsArea from "./QueryEditor/QueryResultsArea";
 
 const QueryEditor = () => {
     const { selectedCluster, executeQuery, fetchSchema, fetchQueryLogs } = useClusterStore();
+    const { open: openModal } = useModalStore();
     const monaco = useMonaco();
     
-    // Core State
-    const [queries, setQueries] = useState([
-        {
-            id: 1,
-            name: "query_1.sql",
-            code: "-- Select all active users\nSELECT * FROM users LIMIT 10;"
-        }
-    ]);
-    const [activeQueryId, setActiveQueryId] = useState(1);
+    const { queries, activeQueryId, setActiveQueryId, setQueries, updateActiveQueryCode, addQuery, removeQuery, runRequested } = useQueryStore();
     const [queryResults, setQueryResults] = useState<any[] | null>(null);
     const [isRunning, setIsRunning] = useState(false);
     const [schemaMetadata, setSchemaMetadata] = useState<any[]>([]);
@@ -90,12 +85,43 @@ const QueryEditor = () => {
         if (bottomTab === "history" && selectedCluster) loadHistory();
     }, [bottomTab, selectedCluster?.id]);
 
+    useEffect(() => {
+        if (runRequested > 0) {
+            handleRunQuery();
+        }
+    }, [runRequested]);
+
     // -------------------------------------------------------------------------
     // Handlers
     // -------------------------------------------------------------------------
 
     const handleUpdateCode = (newCode: string) => {
-        setQueries(queries.map(q => q.id === activeQueryId ? { ...q, code: newCode } : q));
+        updateActiveQueryCode(newCode);
+    };
+
+    const proceedWithExecution = async (sql: string) => {
+        setIsRunning(true);
+        setQueryResults(null);
+        try {
+            const results = await executeQuery(selectedCluster!.id, sql);
+            const isSelect = Array.isArray(results);
+            const count = isSelect ? results.length : (results.rowCount ?? results.affectedRows ?? 0);
+
+            setQueryResults(results);
+            setBottomTab("results");
+            
+            toast.success(isSelect ? "Query successful" : "Command successful", {
+                description: isSelect ? `${count} rows returned.` : `${count} rows affected.`
+            });
+            
+            if (bottomTab === "history") loadHistory();
+        } catch (err: any) {
+            toast.error("Execution failed", {
+                description: err.message || "An unknown error occurred during execution."
+            });
+        } finally {
+            setIsRunning(false);
+        }
     };
 
     const handleRunQuery = async () => {
@@ -108,21 +134,19 @@ const QueryEditor = () => {
         if (lowerSql.includes("drop database")) return toast.error("Strictly prohibited command.");
 
         const destructive = ["drop table", "truncate", "delete", "update", "alter table"].filter(k => lowerSql.includes(k));
-        if (destructive.length > 0 && !window.confirm(`Destructive action warning: ${destructive.join(", ").toUpperCase()}. Proceed?`)) return;
-
-        setIsRunning(true);
-        setQueryResults(null);
-        try {
-            const results = await executeQuery(selectedCluster.id, sql);
-            setQueryResults(results);
-            setBottomTab("results");
-            toast.success("Query executed");
-            if (bottomTab === "history") loadHistory();
-        } catch (err: any) {
-            toast.error(err.message || "Execution failed");
-        } finally {
-            setIsRunning(false);
+        
+        if (destructive.length > 0) {
+            openModal({
+                title: "Destructive Action",
+                message: `Warning: You are about to execute a destructive command (${destructive.join(", ").toUpperCase()}). Proceed with caution.`,
+                type: "warning",
+                confirmLabel: "Execute Anyway",
+                onConfirm: () => proceedWithExecution(sql)
+            });
+            return;
         }
+
+        await proceedWithExecution(sql);
     };
 
     const handleAskAi = async () => {
@@ -250,6 +274,7 @@ const QueryEditor = () => {
                 aiMode={aiMode}
                 isLoadingHistory={isLoadingHistory}
                 queryHistory={queryHistory}
+                isRunning={isRunning}
                 onRestoreQuery={(sql) => { handleUpdateCode(sql); toast.success("Query loaded"); }}
             />
         </div>

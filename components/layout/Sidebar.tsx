@@ -15,19 +15,23 @@ import {
     LayoutGrid,
     Layout,
     PowerOff,
-    X
+    X,
+    Zap,
+    Trash2
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface SidebarProps {
     onOpenConnect: () => void;
-    activeTab: "query" | "er" | "table" | "logs";
-    onTabChange: (tab: "query" | "er" | "logs") => void;
+    activeTab: "query" | "er" | "table" | "logs" | "sync";
+    onTabChange: (tab: "query" | "er" | "logs" | "sync") => void;
     onTableSelect: (tableName: string) => void;
     selectedTable: string;
 }
 
 import { useAuthStore } from "@/store/useAuthStore";
 import { useClusterStore } from "@/store/useClusterStore";
+import { useModalStore } from "@/store/useModalStore";
 import { SynqLogo } from "@/components/ui/SynqLogo";
 
 const Sidebar = ({
@@ -38,7 +42,8 @@ const Sidebar = ({
     selectedTable
 }: SidebarProps) => {
     const { user, logout } = useAuthStore();
-    const { clusters, selectedCluster, selectCluster, fetchClusters, tables, fetchTables } = useClusterStore();
+    const { clusters, selectedCluster, selectCluster, fetchClusters, tables, fetchTables, dropTable } = useClusterStore();
+    const { open: openModal } = useModalStore();
     const [isTablesExpanded, setIsTablesExpanded] = React.useState(true);
     const [isConnectionDropdownOpen, setIsConnectionDropdownOpen] = React.useState(false);
     const [contextMenu, setContextMenu] = React.useState<{ x: number, y: number, table: string | null } | null>(null);
@@ -65,6 +70,26 @@ const Sidebar = ({
     const handleContextMenu = (e: React.MouseEvent, tableName: string) => {
         e.preventDefault();
         setContextMenu({ x: e.clientX, y: e.clientY, table: tableName });
+    };
+
+    const handleDropTable = async (tableName: string) => {
+        if (!selectedCluster) return;
+        
+        openModal({
+            title: "Drop Table",
+            message: `Are you sure you want to PERMANENTLY delete table "${tableName}"? This action cannot be undone and all data will be lost.`,
+            type: "danger",
+            confirmLabel: "Drop Table",
+            confirmValue: tableName,
+            onConfirm: async () => {
+                try {
+                    await dropTable(selectedCluster.id, tableName);
+                    toast.success("Table Dropped", { description: `${tableName} was successfully deleted.` });
+                } catch (error) {
+                    toast.error("Failed to delete table");
+                }
+            }
+        });
     };
 
     React.useEffect(() => {
@@ -193,6 +218,13 @@ const Sidebar = ({
                             <LayoutGrid className="h-4 w-4" />
                             ER Diagrams
                         </button>
+                        <button
+                            onClick={() => onTabChange("sync")}
+                            className={`flex w-full items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-all ${activeTab === "sync" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"}`}
+                        >
+                            <Zap className="h-4 w-4" />
+                            Database Sync
+                        </button>
                     </nav>
                 </div>
 
@@ -231,7 +263,17 @@ const Sidebar = ({
                                         className={`flex items-center gap-3 ml-6 mr-1 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer group/item hover:bg-white/[0.05] ${selectedTable === table.name ? 'text-primary bg-primary/10' : 'text-zinc-300 hover:text-white'}`}
                                     >
                                         <div className={`h-1 w-1 rounded-full ${selectedTable === table.name ? 'bg-primary shadow-[0_0_8px_rgba(0,237,100,0.5)]' : 'bg-zinc-700'}`}></div>
-                                        <span className="truncate">{table.name}</span>
+                                        <span className="truncate flex-1">{table.name}</span>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDropTable(table.name);
+                                            }}
+                                            className="opacity-0 group-hover/item:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-500 rounded transition-all"
+                                            title="Drop Table"
+                                        >
+                                            <Trash2 className="h-3 w-3" />
+                                        </button>
                                     </div>
                                 ))}
                             </div>
@@ -315,19 +357,23 @@ const Sidebar = ({
                     </div>
 
                     {[
-                        { label: "View Data", color: "text-primary" },
-                        { label: "View Structure", color: "text-zinc-400" },
+                        { label: "View Data", color: "text-primary", onClick: () => onTableSelect(contextMenu.table!) },
+                        { label: "View Structure", color: "text-zinc-400", onClick: () => { onTableSelect(contextMenu.table!); onTabChange("query"); } },
                         { label: "Export Schema", color: "text-zinc-400" },
                         { separator: true },
                         { label: "Truncate Table", color: "text-amber-500" },
-                        { label: "Drop Table", color: "text-red-500" },
-                    ].map((item, i) => (
+                        { label: "Drop Table", color: "text-red-500", onClick: () => handleDropTable(contextMenu.table!) },
+                    ].map((item: any, i) => (
                         item.separator ? (
                             <div key={i} className="h-px bg-white/5 my-1.5"></div>
                         ) : (
                             <button
                                 key={i}
-                                className="flex w-full items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-400 hover:text-white hover:bg-white/5 transition-colors group"
+                                onClick={() => {
+                                    item.onClick?.();
+                                    setContextMenu(null);
+                                }}
+                                className={`flex w-full items-center gap-3 px-3 py-2 text-[11px] font-bold transition-colors group ${item.color || 'text-zinc-400'} hover:text-white hover:bg-white/5`}
                             >
                                 <span>{item.label}</span>
                             </button>
