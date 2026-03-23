@@ -32,7 +32,7 @@ const StatusBar = () => {
         : "Disconnected";
 
     return (
-        <div className="flex h-8 w-full shrink-0 items-center justify-between border-t border-white/10 bg-[#021016] px-6 text-[11px] font-medium text-zinc-300 backdrop-blur-md">
+        <div className="hidden sm:flex h-8 w-full shrink-0 items-center justify-between border-t border-white/10 bg-[#021016] px-6 text-[11px] font-medium text-zinc-300 backdrop-blur-md">
             <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2 group cursor-default">
                     <DatabaseIcon className={`h-3.5 w-3.5 ${selectedCluster ? 'text-primary' : 'text-zinc-500'}`} />

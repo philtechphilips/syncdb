@@ -46,6 +46,8 @@ interface ClusterState {
   executeQuery: (clusterId: string, query: string) => Promise<any>;
   fetchQueryLogs: (clusterId: string) => Promise<any[]>;
   dropTable: (clusterId: string, tableName: string) => Promise<void>;
+  backup: (clusterId: string, format: 'sql' | 'csv' | 'json') => Promise<any>;
+  restore: (clusterId: string, format: 'sql' | 'csv' | 'json', data: any) => Promise<void>;
 }
 
 export const useClusterStore = create<ClusterState>()(
@@ -317,6 +319,32 @@ export const useClusterStore = create<ClusterState>()(
         } catch (error: any) {
           const message = getErrorMessage(error);
           set({ error: message, isTablesLoading: false });
+          throw error;
+        }
+      },
+
+      backup: async (clusterId: string, format: 'sql' | 'csv' | 'json') => {
+        set({ isDataLoading: true, error: null });
+        try {
+          const response = await api.get(`/v1/clusters/${clusterId}/backup`, { params: { format } });
+          set({ isDataLoading: false });
+          return response.data;
+        } catch (error: any) {
+          const message = getErrorMessage(error);
+          set({ error: message, isDataLoading: false });
+          throw error;
+        }
+      },
+
+      restore: async (clusterId: string, format: 'sql' | 'csv' | 'json', data: any) => {
+        set({ isDataLoading: true, error: null });
+        try {
+          await api.post(`/v1/clusters/${clusterId}/restore`, { format, data });
+          await get().fetchTables(clusterId);
+          set({ isDataLoading: false });
+        } catch (error: any) {
+          const message = getErrorMessage(error);
+          set({ error: message, isDataLoading: false });
           throw error;
         }
       },

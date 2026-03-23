@@ -63,10 +63,10 @@ const DataTableHeader = ({
 }: DataTableHeaderProps) => {
     const { open: openModal } = useModalStore();
     return (
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#021016]/50">
-            <div className="flex items-center gap-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between px-4 lg:px-6 py-4 border-b border-white/10 bg-[#021016]/50 gap-4">
+            <div className="flex flex-wrap items-center gap-4 lg:gap-6">
                 <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-black text-white tracking-widest">
+                    <span className="text-[10px] font-black text-white tracking-widest uppercase">
                         {selectedTable || "Query Results"}
                     </span>
                     {onDropTable && selectedTable && (
@@ -99,16 +99,16 @@ const DataTableHeader = ({
                     </span>
                 </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
                 {selectedRowsCount > 0 && (
                     <div className="flex items-center gap-2 pr-3 border-r border-white/10 mr-1 animate-in slide-in-from-left-4 duration-200">
                         <span className="text-[9px] font-black text-primary uppercase tracking-widest mr-2">{selectedRowsCount} selected</span>
                         
                         <button 
                             onClick={onDeleteSelected} 
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-red-500/10 text-red-500 hover:bg-red-500/20 text-[9px] font-black uppercase tracking-widest transition-all"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-red-500/10 text-white hover:bg-red-500/20 text-[9px] font-black uppercase tracking-widest transition-all"
                         >
-                            <Trash2 className="h-3 w-3" />
+                            <Trash2 className="h-3 w-3 text-white" />
                             Delete
                         </button>
 
@@ -116,9 +116,9 @@ const DataTableHeader = ({
                         <div className="relative">
                             <button 
                                 onClick={() => setShowCopyDropdown(!showCopyDropdown)}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest transition-all ${lastCopiedFormat ? 'bg-primary/20 text-primary' : 'bg-white/[0.03] text-zinc-400 hover:bg-white/[0.08] hover:text-white'}`}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest transition-all ${lastCopiedFormat ? 'bg-primary/20 text-white font-black' : 'bg-white/[0.03] text-white hover:bg-white/[0.08]'}`}
                             >
-                                <Copy className="h-3 w-3" />
+                                <Copy className="h-3 w-3 text-white" />
                                 {lastCopiedFormat ? `Copied ${lastCopiedFormat}` : 'Copy'}
                             </button>
                             {showCopyDropdown && (
@@ -140,9 +140,9 @@ const DataTableHeader = ({
                         <div className="relative">
                             <button 
                                 onClick={() => setShowExportDropdown(!showExportDropdown)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white/[0.03] text-zinc-400 hover:bg-white/[0.08] hover:text-white text-[9px] font-black uppercase tracking-widest transition-all"
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white/[0.03] text-white hover:bg-white/[0.08] text-[9px] font-black uppercase tracking-widest transition-all"
                             >
-                                <Download className="h-3 w-3" />
+                                <Download className="h-3 w-3 text-white" />
                                 Export
                             </button>
                             {showExportDropdown && (
@@ -166,14 +166,14 @@ const DataTableHeader = ({
                         onClick={() => setShowFilterPopover(!showFilterPopover)}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all uppercase tracking-widest text-[10px] font-black ${
                             activeFiltersCount > 0 
-                            ? 'bg-primary/10 border-primary text-primary' 
-                            : 'bg-white/[0.02] border-white/5 text-zinc-400 hover:text-white hover:border-white/20'
+                            ? 'bg-primary/10 border-primary text-white' 
+                            : 'bg-white/[0.02] border-white/5 text-white hover:border-white/20'
                         }`}
                     >
-                        <Filter className="h-3 w-3" />
+                        <Filter className="h-3 w-3 text-white" />
                         Filters
                         {activeFiltersCount > 0 && (
-                            <span className="ml-1 bg-primary text-primary-foreground h-3.5 w-3.5 flex items-center justify-center rounded-full text-[8px] font-black">
+                            <span className="ml-1 bg-primary text-white h-3.5 w-3.5 flex items-center justify-center rounded-full text-[8px] font-black">
                                 {activeFiltersCount}
                             </span>
                         )}
@@ -252,9 +252,9 @@ const DataTableHeader = ({
                             <div className="flex items-center justify-between border-t border-white/5 pt-4">
                                 <button 
                                     onClick={onAddFilter}
-                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 text-[9px] font-black uppercase tracking-widest transition-all"
+                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 text-white hover:bg-primary/20 text-[9px] font-black uppercase tracking-widest transition-all"
                                 >
-                                    <Plus className="h-3 w-3" />
+                                    <Plus className="h-3 w-3 text-white" />
                                     Add Condition
                                 </button>
                                 <button 
@@ -271,9 +271,9 @@ const DataTableHeader = ({
                 <div className="relative">
                     <button
                         onClick={() => setShowGlobalExportDropdown(!showGlobalExportDropdown)}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/5 bg-white/[0.02] text-[10px] font-black text-zinc-400 hover:text-white hover:border-white/20 transition-all uppercase tracking-widest"
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/5 bg-white/[0.02] text-[10px] font-black text-white hover:border-white/20 transition-all uppercase tracking-widest"
                     >
-                        <Download className="h-3 w-3" />
+                        <Download className="h-3 w-3 text-white" />
                         Export
                     </button>
                     {showGlobalExportDropdown && (
@@ -296,9 +296,9 @@ const DataTableHeader = ({
 
                 <button
                     onClick={onOpenInsertModal}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-lg text-[10px] font-black text-primary hover:bg-primary/20 transition-all uppercase tracking-widest"
+                    className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-lg text-[10px] font-black text-white hover:bg-primary/20 transition-all uppercase tracking-widest"
                 >
-                    <Plus className="h-3 w-3" />
+                    <Plus className="h-3 w-3 text-white" />
                     Insert Row
                 </button>
             </div>

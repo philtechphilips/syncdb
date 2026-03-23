@@ -146,14 +146,14 @@ export default function SyncPage() {
     return (
         <div className="flex-1 flex flex-col h-full bg-[#040d12]">
             {/* Workbench Header */}
-            <div className="px-10 py-8 border-b border-[#1e3a44] bg-[#040d12]">
-                <div className="flex items-center justify-between mb-8">
+            <div className="px-4 lg:px-10 py-6 lg:py-8 border-b border-[#1e3a44] bg-[#040d12]">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-6">
                     <div>
                         <div className="flex items-center gap-3 mb-2">
                             <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-[0_0_20px_rgba(39,121,85,0.1)]">
                                 <Zap className="h-6 w-6" />
                             </div>
-                            <h1 className="text-2xl font-black text-white tracking-tight">SYNC WORKBENCH</h1>
+                            <h1 className="text-xl lg:text-2xl font-black text-white tracking-tight">SYNC WORKBENCH</h1>
                         </div>
                         <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.2em]">Automated Schema & Data Alignment</p>
                     </div>
@@ -162,7 +162,7 @@ export default function SyncPage() {
                         <button
                             onClick={handleCompare}
                             disabled={isComparing || !sourceId || !targetId}
-                            className={`flex items-center gap-3 px-8 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${isComparing || !sourceId || !targetId ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_30px_rgba(39,121,85,0.2)]'}`}
+                            className={`w-full lg:w-auto flex items-center justify-center gap-3 px-8 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${isComparing || !sourceId || !targetId ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary/90 shadow-[0_0_30px_rgba(39,121,85,0.2)]'}`}
                         >
                             {isComparing ? (
                                 <RefreshCw className="h-4 w-4 animate-spin" />
@@ -174,8 +174,8 @@ export default function SyncPage() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-[1fr,auto,1fr] items-center gap-8 bg-black/40 p-6 rounded-2xl border border-white/5 shadow-inner">
-                    <div className="space-y-2">
+                <div className="flex flex-col lg:grid lg:grid-cols-[1fr,auto,1fr] items-center gap-4 lg:gap-8 bg-black/40 p-4 lg:p-6 rounded-2xl border border-white/5 shadow-inner">
+                    <div className="space-y-2 w-full">
                         <div className="flex items-center justify-between px-1">
                             <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Source Instance</span>
                             {sourceCluster && <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase">{sourceCluster.type}</span>}
@@ -196,11 +196,11 @@ export default function SyncPage() {
                         </div>
                     </div>
 
-                    <div className="h-10 w-10 rounded-full bg-[#1e3a44]/20 border border-[#1e3a44]/30 flex items-center justify-center">
+                    <div className="h-10 w-10 rounded-full bg-[#1e3a44]/20 border border-[#1e3a44]/30 flex items-center justify-center rotate-90 lg:rotate-0">
                         <ArrowRight className="h-5 w-5 text-zinc-500" />
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 w-full">
                         <div className="flex items-center justify-between px-1">
                             <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Target Instance</span>
                             {targetCluster && <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase">{targetCluster.type}</span>}
@@ -267,26 +267,31 @@ export default function SyncPage() {
                 {diff && (
                     <div className="flex-1 flex flex-col h-full overflow-hidden">
                         {/* Status Tabs */}
-                        <div className="flex items-center gap-2 px-10 py-6 border-b border-[#1e3a44] bg-[#0b1215]/30">
-                            {[
-                                { id: "mismatches", label: "Structural Mismatches", count: diff.tableMismatches.length, color: "text-blue-500", bg: "bg-blue-500/10" },
-                                { id: "missing", label: "Missing in Target", count: diff.missingInTarget.length, color: "text-rose-500", bg: "bg-rose-500/10" },
-                                { id: "matching", label: "Matching Perfectly", count: diff.matchingTables.length, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-                                { id: "extra", label: "Extra in Target", count: (diff as any).missingInSource.length, color: "text-zinc-400", bg: "bg-white/5" }
-                            ].map((tab) => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveCategory(tab.id as any)}
-                                    className={`flex items-center gap-3 px-6 py-3 rounded-xl border transition-all ${activeCategory === tab.id 
-                                        ? `border-${tab.color.split('-')[1]}-500/50 ${tab.bg} ${tab.color}` 
-                                        : 'border-white/5 bg-white/[0.02] text-zinc-500 hover:text-zinc-300 hover:border-white/10'}`}
-                                >
-                                    <span className="text-[11px] font-black uppercase tracking-widest leading-none">{tab.label}</span>
-                                    <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black bg-black/40 border border-white/10`}>{tab.count}</span>
-                                </button>
-                            ))}
+                        <div className="flex flex-col lg:flex-row lg:items-center gap-4 px-4 lg:px-10 py-6 border-b border-[#1e3a44] bg-[#0b1215]/30">
+                            <div className="flex flex-wrap items-center gap-2">
+                                {[
+                                    { id: "mismatches", label: "Mismatches", fullLabel: "Structural Mismatches", count: diff.tableMismatches.length, color: "text-blue-500", bg: "bg-blue-500/10" },
+                                    { id: "missing", label: "Missing", fullLabel: "Missing in Target", count: diff.missingInTarget.length, color: "text-rose-500", bg: "bg-rose-500/10" },
+                                    { id: "matching", label: "Matching", fullLabel: "Matching Perfectly", count: diff.matchingTables.length, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+                                    { id: "extra", label: "Extra", fullLabel: "Extra in Target", count: (diff as any).missingInSource.length, color: "text-zinc-400", bg: "bg-white/5" }
+                                ].map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveCategory(tab.id as any)}
+                                        className={`flex items-center gap-2 lg:gap-3 px-3 lg:px-6 py-2.5 lg:py-3 rounded-xl border transition-all ${activeCategory === tab.id 
+                                            ? `border-${tab.color.split('-')[1]}-500/50 ${tab.bg} ${tab.color}` 
+                                            : 'border-white/5 bg-white/[0.02] text-zinc-500 hover:text-zinc-300 hover:border-white/10'}`}
+                                    >
+                                        <span className="text-[10px] lg:text-[11px] font-black uppercase tracking-widest leading-none">
+                                            <span className="hidden sm:inline">{tab.fullLabel}</span>
+                                            <span className="sm:hidden">{tab.label}</span>
+                                        </span>
+                                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black bg-black/40 border border-white/10`}>{tab.count}</span>
+                                    </button>
+                                ))}
+                            </div>
                             
-                            <div className="ml-auto flex items-center gap-4 pl-8 border-l border-white/5">
+                            <div className="lg:ml-auto flex items-center gap-4 lg:pl-8 lg:border-l border-white/5">
                                 <div className="flex items-center gap-2 bg-[#0b1215] border border-white/5 px-4 py-2.5 rounded-xl">
                                     <input 
                                         type="checkbox" 
@@ -295,22 +300,22 @@ export default function SyncPage() {
                                         onChange={(e) => setWithData(e.target.checked)}
                                         className="accent-primary w-4 h-4 cursor-pointer"
                                     />
-                                    <label htmlFor="withDataMain" className="text-[10px] font-black text-zinc-400 uppercase tracking-widest cursor-pointer hover:text-white transition-colors">Migrate Data</label>
+                                    <label htmlFor="withDataMain" className="text-[10px] font-black text-zinc-400 uppercase tracking-widest cursor-pointer hover:text-white transition-colors">Data</label>
                                 </div>
 
                                 <button
                                     onClick={handleSync}
                                     disabled={isSyncing || selectedTables.length === 0}
-                                    className={`flex items-center gap-3 px-8 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${isSyncing || selectedTables.length === 0 ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' : 'bg-emerald-500 text-emerald-950 hover:bg-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.2)]'}`}
+                                    className={`flex-1 lg:flex-none flex items-center justify-center gap-3 px-8 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${isSyncing || selectedTables.length === 0 ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' : 'bg-emerald-500 text-white hover:bg-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.2)]'}`}
                                 >
-                                    {isSyncing ? <RefreshCw className="h-4 w-4 animate-spin text-emerald-950" /> : <ShieldCheck className="h-4 w-4" />}
-                                    {isSyncing ? "Running..." : `Sync ${selectedTables.length} Tables`}
+                                    {isSyncing ? <RefreshCw className="h-4 w-4 animate-spin text-white" /> : <ShieldCheck className="h-4 w-4" />}
+                                    <span className="whitespace-nowrap">{isSyncing ? "Running..." : `Sync ${selectedTables.length} Tables`}</span>
                                 </button>
                             </div>
                         </div>
 
                         {/* Detailed View */}
-                        <div className="flex-1 overflow-y-auto p-10 scrollbar-hide">
+                        <div className="flex-1 overflow-y-auto p-4 lg:p-10 scrollbar-hide">
                             <div className="max-w-5xl mx-auto space-y-6">
                                 {/* Bulk Action Bar */}
                                 <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5">

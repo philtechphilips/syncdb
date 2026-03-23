@@ -16,6 +16,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const { clusters, selectedCluster, fetchClusters, selectCluster, isLoading: isClustersLoading } = useClusterStore();
     const [isConnectOpen, setIsConnectOpen] = useState(false);
     const [isInitialized, setIsInitialized] = useState(false);
+    const [isSidebarMobileOpen, setIsSidebarMobileOpen] = useState(false);
     
     const pathname = usePathname();
     const router = useRouter();
@@ -86,6 +87,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         if (pathname.includes("/dashboard/table")) return "table";
         if (pathname.includes("/dashboard/logs")) return "logs";
         if (pathname.includes("/dashboard/sync")) return "sync";
+        if (pathname.includes("/dashboard/backup")) return "backup";
         return activeTab;
     };
 
@@ -98,20 +100,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     activeTab={getActiveTab() as any}
                     onTabChange={(tab: any) => {
                         setActiveTab(tab);
+                        setIsSidebarMobileOpen(false);
                         router.push(`/dashboard/${tab}`);
                     }}
                     onTableSelect={(name) => {
                         setSelectedTable(name);
-                        setActiveTab("table");
+                    //    setActiveTab("table");
+                        setIsSidebarMobileOpen(false);
                         router.push(`/dashboard/table/${name}`);
                     }}
                     selectedTable={selectedTable}
+                    isMobileOpen={isSidebarMobileOpen}
+                    onCloseMobile={() => setIsSidebarMobileOpen(false)}
                 />
 
+                {isSidebarMobileOpen && (
+                    <div 
+                        className="fixed inset-0 z-30 bg-background/80 backdrop-blur-sm lg:hidden h-full w-full" 
+                        onClick={() => setIsSidebarMobileOpen(false)}
+                    />
+                )}
+
                 {/* Main Content Area */}
-                <div className="flex h-screen flex-1 flex-col pl-64 min-w-0 max-w-full relative overflow-hidden">
+                <div className="flex h-screen flex-1 flex-col lg:pl-64 min-w-0 max-w-full relative overflow-hidden">
                     {/* Top Navbar */}
-                    <Navbar onOpenConnect={() => setIsConnectOpen(true)} />
+                    <Navbar onOpenConnect={() => setIsConnectOpen(true)} onOpenSidebar={() => setIsSidebarMobileOpen(true)} />
 
                     {/* Workspace */}
                     <main className="flex flex-1 flex-col pt-14 pb-0 bg-background transition-all overflow-hidden">

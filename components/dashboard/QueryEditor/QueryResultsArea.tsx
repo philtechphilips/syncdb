@@ -35,28 +35,28 @@ const QueryResultsArea = ({
     return (
         <div className="flex-1 flex flex-col bg-[#021016]/50 overflow-hidden border-t border-white/5 min-h-0 animate-in slide-in-from-bottom duration-500">
             {/* Header omitted for brevity in targetContent, but I need to include it in replacementContent if I'm replacing the whole block */}
-            <div className="flex items-center justify-between px-6 py-2 border-b border-white/5 bg-black/20 shrink-0">
-                <div className="flex items-center gap-6">
+            <div className="flex items-center justify-between px-4 lg:px-6 py-2 border-b border-white/5 bg-black/20 shrink-0">
+                <div className="flex items-center gap-4 lg:gap-6">
                     <button 
                         onClick={() => onSetTab("results")}
-                        className={`flex items-center gap-3 py-1 transition-all relative ${bottomTab === "results" ? 'text-primary' : 'text-zinc-500 hover:text-zinc-300'}`}
+                        className={`flex items-center gap-2 lg:gap-3 py-1 transition-all relative ${bottomTab === "results" ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
                     >
-                        <Terminal className="h-3.5 w-3.5" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Query Output</span>
+                        <Terminal className="h-3.5 w-3.5 text-white" />
+                        <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Query Output</span>
                         {bottomTab === "results" && <div className="absolute -bottom-[9px] left-0 right-0 h-0.5 bg-primary shadow-[0_0_8px_rgba(0,237,100,0.5)]" />}
                     </button>
                     <button 
                         onClick={() => onSetTab("history")}
-                        className={`flex items-center gap-3 py-1 transition-all relative ${bottomTab === "history" ? 'text-primary' : 'text-zinc-500 hover:text-zinc-300'}`}
+                        className={`flex items-center gap-2 lg:gap-3 py-1 transition-all relative ${bottomTab === "history" ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
                     >
-                        <HistoryIcon className="h-3.5 w-3.5" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">History</span>
+                        <HistoryIcon className="h-3.5 w-3.5 text-white" />
+                        <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">History</span>
                         {bottomTab === "history" && <div className="absolute -bottom-[9px] left-0 right-0 h-0.5 bg-primary shadow-[0_0_8px_rgba(0,237,100,0.5)]" />}
                     </button>
                 </div>
                 <button 
                     onClick={onClose}
-                    className="p-1 hover:text-white text-zinc-600 transition-colors"
+                    className="p-1 hover:text-white text-white transition-colors"
                 >
                     <X className="h-4 w-4" />
                 </button>
@@ -105,26 +105,28 @@ const QueryResultsArea = ({
                             <p className="text-[9px] text-zinc-600 font-black uppercase tracking-widest">Awaiting response from high-performance engine...</p>
                         </div>
                     ) : Array.isArray(queryResults) && queryResults.length > 0 ? (
-                        <table className="w-full text-left border-collapse text-[11px]">
-                            <thead className="sticky top-0 bg-zinc-900 z-10 shadow-sm">
-                                <tr>
-                                    {Object.keys(queryResults[0]).map((key) => (
-                                        <th key={key} className="px-4 py-2 font-bold text-zinc-500 border-b border-white/5">{key}</th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {queryResults.map((row, i) => (
-                                    <tr key={i} className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors">
-                                        {Object.values(row).map((val: any, j) => (
-                                            <td key={j} className="px-4 py-2 font-mono text-zinc-400 truncate max-w-[300px]">
-                                                {val === null ? <span className="font-italic text-zinc-600">NULL</span> : String(val)}
-                                            </td>
+                        <div className="overflow-x-auto w-full scrollbar-hide">
+                            <table className="w-full text-left border-collapse text-[11px] min-w-[600px]">
+                                <thead className="sticky top-0 bg-zinc-900 z-10 shadow-sm">
+                                    <tr>
+                                        {Object.keys(queryResults[0]).map((key) => (
+                                            <th key={key} className="px-4 py-2 font-bold text-zinc-500 border-b border-white/5 whitespace-nowrap">{key}</th>
                                         ))}
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {queryHistory.length > 0 && queryResults.map((row, i) => (
+                                        <tr key={i} className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors">
+                                            {Object.values(row).map((val: any, j) => (
+                                                <td key={j} className="px-4 py-2 font-mono text-zinc-400 truncate max-w-[300px]">
+                                                    {val === null ? <span className="font-italic text-zinc-600">NULL</span> : String(val)}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center text-zinc-600 p-12 text-center opacity-40">
                              <Terminal className="h-10 w-10 mb-4 opacity-20" />
@@ -141,42 +143,44 @@ const QueryResultsArea = ({
                                 <span className="text-[10px] font-black uppercase tracking-widest">Retrieving audit logs...</span>
                             </div>
                         ) : queryHistory.length > 0 ? (
-                            <table className="w-full text-left border-collapse text-[11px]">
-                                <thead className="sticky top-0 bg-zinc-900 z-10 shadow-sm">
-                                    <tr>
-                                        <th className="px-6 py-3 font-bold text-zinc-500 border-b border-white/5 w-16 uppercase tracking-tighter text-[9px]">Status</th>
-                                        <th className="px-6 py-3 font-bold text-zinc-500 border-b border-white/5 uppercase tracking-tighter text-[9px]">SQL Query</th>
-                                        <th className="px-6 py-3 font-bold text-zinc-500 border-b border-white/5 w-24 uppercase tracking-tighter text-[9px]">Duration</th>
-                                        <th className="px-6 py-3 font-bold text-zinc-500 border-b border-white/5 w-40 uppercase tracking-tighter text-[9px]">Timestamp</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {queryHistory.map((log) => (
-                                        <tr 
-                                            key={log.id} 
-                                            className="border-b border-white/[0.02] hover:bg-white/[0.04] transition-colors cursor-pointer group/row text-left"
-                                            onClick={() => onRestoreQuery(log.query)}
-                                        >
-                                            <td className="px-6 py-3">
-                                                {log.success ? (
-                                                    <CheckCircle2 className="h-4 w-4 text-primary" />
-                                                ) : (
-                                                    <AlertCircle className="h-4 w-4 text-red-500" />
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-3 font-mono text-zinc-300">
-                                                <div className="truncate max-w-[500px]">{log.query}</div>
-                                            </td>
-                                            <td className="px-6 py-3 font-mono text-zinc-500 text-[10px]">
-                                                {log.executionTimeMs}ms
-                                            </td>
-                                            <td className="px-6 py-3 text-zinc-600 text-[10px] whitespace-nowrap">
-                                                {new Date(log.createdAt).toLocaleString()}
-                                            </td>
+                            <div className="overflow-x-auto w-full scrollbar-hide">
+                                <table className="w-full text-left border-collapse text-[11px] min-w-[700px]">
+                                    <thead className="sticky top-0 bg-zinc-900 z-10 shadow-sm">
+                                        <tr>
+                                            <th className="px-4 lg:px-6 py-3 font-bold text-zinc-500 border-b border-white/5 w-16 uppercase tracking-tighter text-[9px]">Status</th>
+                                            <th className="px-4 lg:px-6 py-3 font-bold text-zinc-500 border-b border-white/5 uppercase tracking-tighter text-[9px]">SQL Query</th>
+                                            <th className="px-4 lg:px-6 py-3 font-bold text-zinc-500 border-b border-white/5 w-24 uppercase tracking-tighter text-[9px]">Duration</th>
+                                            <th className="px-4 lg:px-6 py-3 font-bold text-zinc-500 border-b border-white/5 w-40 uppercase tracking-tighter text-[9px]">Timestamp</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {queryHistory.map((log) => (
+                                            <tr 
+                                                key={log.id} 
+                                                className="border-b border-white/[0.02] hover:bg-white/[0.04] transition-colors cursor-pointer group/row text-left"
+                                                onClick={() => onRestoreQuery(log.query)}
+                                            >
+                                                <td className="px-4 lg:px-6 py-3">
+                                                    {log.success ? (
+                                                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                                                    ) : (
+                                                        <AlertCircle className="h-4 w-4 text-red-500" />
+                                                    )}
+                                                </td>
+                                                <td className="px-4 lg:px-6 py-3 font-mono text-zinc-300">
+                                                    <div className="truncate max-w-[200px] sm:max-w-md lg:max-w-[500px]">{log.query}</div>
+                                                </td>
+                                                <td className="px-4 lg:px-6 py-3 font-mono text-zinc-500 text-[10px]">
+                                                    {log.executionTimeMs}ms
+                                                </td>
+                                                <td className="px-4 lg:px-6 py-3 text-zinc-600 text-[10px] whitespace-nowrap">
+                                                    {new Date(log.createdAt).toLocaleString()}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         ) : (
                             <div className="flex-1 flex flex-col items-center justify-center text-zinc-600 p-10 text-center gap-4">
                                 <HistoryIcon className="h-10 w-10 opacity-20" />

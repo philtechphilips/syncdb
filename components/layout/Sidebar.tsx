@@ -17,16 +17,19 @@ import {
     PowerOff,
     X,
     Zap,
-    Trash2
+    Trash2,
+    HardDrive
 } from "lucide-react";
 import { toast } from "sonner";
 
 interface SidebarProps {
     onOpenConnect: () => void;
-    activeTab: "query" | "er" | "table" | "logs" | "sync";
-    onTabChange: (tab: "query" | "er" | "logs" | "sync") => void;
+    activeTab: "query" | "er" | "table" | "logs" | "sync" | "backup";
+    onTabChange: (tab: "query" | "er" | "logs" | "sync" | "backup") => void;
     onTableSelect: (tableName: string) => void;
     selectedTable: string;
+    isMobileOpen?: boolean;
+    onCloseMobile?: () => void;
 }
 
 import { useAuthStore } from "@/store/useAuthStore";
@@ -39,7 +42,9 @@ const Sidebar = ({
     activeTab,
     onTabChange,
     onTableSelect,
-    selectedTable
+    selectedTable,
+    isMobileOpen,
+    onCloseMobile
 }: SidebarProps) => {
     const { user, logout } = useAuthStore();
     const { clusters, selectedCluster, selectCluster, fetchClusters, tables, fetchTables, dropTable } = useClusterStore();
@@ -107,16 +112,24 @@ const Sidebar = ({
     }, [selectedCluster?.id, fetchTables]);
 
     return (
-        <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-white/10 bg-background flex flex-col font-sans">
-            {/* Logo Area */}
-            <div className="px-6 py-6 flex items-center gap-3">
-                <div className="h-9 w-9 bg-primary/10 rounded-xl border border-primary/20 flex items-center justify-center overflow-hidden text-primary">
-                    <SynqLogo className="h-6 w-6" />
+        <aside className={`fixed left-0 top-0 z-50 h-screen w-64 border-r border-white/10 bg-background flex flex-col font-sans transition-transform duration-300 transform lg:translate-x-0 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            {/* Logo Area & Mobile Close */}
+            <div className="px-6 py-6 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 bg-primary/10 rounded-xl border border-primary/20 flex items-center justify-center overflow-hidden text-primary">
+                        <SynqLogo className="h-4 w-4" />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-sm font-black text-foreground tracking-tight">SynqDB</span>
+                        <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em] opacity-80 leading-tight">Professional</span>
+                    </div>
                 </div>
-                <div className="flex flex-col">
-                    <span className="text-sm font-black text-foreground tracking-tight">SynqDB</span>
-                    <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em] opacity-80 leading-tight">Professional</span>
-                </div>
+                <button 
+                    onClick={onCloseMobile}
+                    className="lg:hidden p-2 hover:bg-white/5 rounded-lg transition-colors text-white"
+                >
+                    <X className="h-5 w-5" />
+                </button>
             </div>
 
             {/* Workspace Switcher */}
@@ -125,7 +138,7 @@ const Sidebar = ({
                     onClick={() => setIsConnectionDropdownOpen(!isConnectionDropdownOpen)}
                     className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
                 >
-                    <div className="h-8 w-8 rounded bg-primary flex items-center justify-center text-primary-foreground font-black text-xs shadow-lg shadow-primary/20 transition-transform group-hover:scale-105">
+                    <div className="h-8 w-8 rounded bg-primary flex items-center justify-center text-white font-black text-xs shadow-lg shadow-primary/20 transition-transform group-hover:scale-105">
                         {selectedCluster?.name?.[0].toUpperCase() || "C"}
                     </div>
                     <div className="flex flex-col">
@@ -154,9 +167,9 @@ const Sidebar = ({
                                             selectCluster(cluster);
                                             setIsConnectionDropdownOpen(false);
                                         }}
-                                        className={`flex-1 flex items-center gap-3 transition-colors cursor-pointer ${selectedCluster?.id === cluster.id ? 'text-primary' : 'text-zinc-400'}`}
+                                        className={`flex-1 flex items-center gap-3 transition-colors cursor-pointer ${selectedCluster?.id === cluster.id ? 'text-white' : 'text-zinc-400'}`}
                                     >
-                                        <div className={`h-6 w-6 rounded flex items-center justify-center text-[10px] font-black ${selectedCluster?.id === cluster.id ? 'bg-primary/20 text-primary' : 'bg-zinc-800 text-zinc-500'}`}>
+                                        <div className={`h-6 w-6 rounded flex items-center justify-center text-[10px] font-black ${selectedCluster?.id === cluster.id ? 'bg-primary/20 text-white' : 'bg-zinc-800 text-zinc-500'}`}>
                                             {cluster.name[0].toUpperCase()}
                                         </div>
                                         <div className="flex flex-col items-start translate-y-[-1px]">
@@ -206,24 +219,31 @@ const Sidebar = ({
                     <nav className="space-y-1">
                         <button
                             onClick={() => onTabChange("query")}
-                            className={`flex w-full items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-all ${activeTab === "query" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"}`}
+                            className={`flex w-full items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-all ${activeTab === "query" ? "bg-primary/10 text-white" : "text-muted-foreground hover:bg-muted/50 hover:text-white"}`}
                         >
                             <Terminal className="h-4 w-4" />
                             SQL Editor
                         </button>
                         <button
                             onClick={() => onTabChange("er")}
-                            className={`flex w-full items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-all ${activeTab === "er" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"}`}
+                            className={`flex w-full items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-all ${activeTab === "er" ? "bg-primary/10 text-white" : "text-muted-foreground hover:bg-muted/50 hover:text-white"}`}
                         >
                             <LayoutGrid className="h-4 w-4" />
                             ER Diagrams
                         </button>
                         <button
                             onClick={() => onTabChange("sync")}
-                            className={`flex w-full items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-all ${activeTab === "sync" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"}`}
+                            className={`flex w-full items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-all ${activeTab === "sync" ? "bg-primary/10 text-white" : "text-muted-foreground hover:bg-muted/50 hover:text-white"}`}
                         >
                             <Zap className="h-4 w-4" />
                             Database Sync
+                        </button>
+                        <button
+                            onClick={() => onTabChange("backup")}
+                            className={`flex w-full items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-all ${activeTab === "backup" ? "bg-primary/10 text-white" : "text-muted-foreground hover:bg-muted/50 hover:text-white"}`}
+                        >
+                            <HardDrive className="h-4 w-4" />
+                            Backup & Restore
                         </button>
                     </nav>
                 </div>
@@ -260,7 +280,7 @@ const Sidebar = ({
                                         key={table.name}
                                         onClick={() => onTableSelect(table.name)}
                                         onContextMenu={(e) => handleContextMenu(e, table.name)}
-                                        className={`flex items-center gap-3 ml-6 mr-1 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer group/item hover:bg-white/[0.05] ${selectedTable === table.name ? 'text-primary bg-primary/10' : 'text-zinc-300 hover:text-white'}`}
+                                        className={`flex items-center gap-3 ml-6 mr-1 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer group/item hover:bg-white/[0.05] ${selectedTable === table.name ? 'text-white bg-primary/10' : 'text-zinc-400 hover:text-white'}`}
                                     >
                                         <div className={`h-1 w-1 rounded-full ${selectedTable === table.name ? 'bg-primary shadow-[0_0_8px_rgba(0,237,100,0.5)]' : 'bg-zinc-700'}`}></div>
                                         <span className="truncate flex-1">{table.name}</span>
@@ -293,7 +313,7 @@ const Sidebar = ({
                         </button>
                         <button
                             onClick={() => onTabChange("logs")}
-                            className={`flex w-full items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-all ${activeTab === "logs" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"}`}
+                            className={`flex w-full items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-all ${activeTab === "logs" ? "bg-primary/10 text-white" : "text-muted-foreground hover:bg-muted/50 hover:text-white"}`}
                         >
                             <History className="h-4 w-4" />
                             Query Logs

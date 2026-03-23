@@ -35,35 +35,36 @@ const DiagramToolbar = ({
     isExporting
 }: DiagramToolbarProps) => {
     return (
-        <div className={`flex items-center justify-between border-b border-white/10 bg-[#021016] px-4 py-2 ${isFullscreen ? 'h-14 px-8' : ''}`}>
-            <div className="flex items-center gap-4 text-[11px] font-bold text-zinc-400">
+        <div className={`flex flex-col lg:flex-row lg:items-center justify-between border-b border-white/10 bg-[#021016] px-2 lg:px-4 py-2 gap-3 min-h-[3.5rem] lg:min-h-0 ${isFullscreen ? 'lg:h-14 lg:px-8' : ''}`}>
+            <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-[11px] font-bold text-zinc-400">
                 <div className="flex items-center gap-2 text-primary">
                     <MousePointer2 className="h-3.5 w-3.5" />
-                    <span>INTERACTIVE CANVAS</span>
+                    <span className="hidden sm:inline">INTERACTIVE CANVAS</span>
                 </div>
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 whitespace-nowrap">
                     <Grid3X3 className="h-3.5 w-3.5" />
-                    {visibleNodesCount} visible of {nodesCount}
+                    <span className="hidden sm:inline">{visibleNodesCount} visible of {nodesCount}</span>
+                    <span className="sm:hidden">{visibleNodesCount}/{nodesCount}</span>
                 </span>
-                <div className="h-4 w-px bg-white/10"></div>
+                <div className="h-4 w-px bg-white/10 hidden lg:block"></div>
                 {isFiltering && (
                     <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[9px] uppercase font-black tracking-widest flex items-center gap-1.5 animate-pulse">
                         <Eye className="h-2.5 w-2.5" />
-                        Filtering Active
+                        <span className="hidden sm:inline">Filtering Active</span>
                     </span>
                 )}
-                <div className="h-4 w-px bg-white/10"></div>
-                <div className="relative">
+                <div className="h-4 w-px bg-white/10 hidden lg:block"></div>
+                <div className="relative flex-1 lg:flex-none">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-400" />
                     <input 
                         value={search}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        placeholder="Find Table..."
-                        className="bg-white/10 border border-white/15 rounded-md pl-8 pr-3 py-1 text-[10px] focus:outline-none focus:ring-1 focus:ring-primary/40 w-40 transition-all font-medium text-zinc-200"
+                        placeholder="Find..."
+                        className="bg-white/10 border border-white/15 rounded-md pl-8 pr-3 py-1 text-[10px] focus:outline-none focus:ring-1 focus:ring-primary/40 w-full lg:w-40 transition-all font-medium text-zinc-200"
                     />
                 </div>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
                 <div className="flex items-center bg-white/10 rounded-lg border border-white/15 p-0.5">
                     <button onClick={onZoomOut} className="rounded p-1 hover:bg-white/10 transition-colors text-zinc-300 hover:text-white"><ZoomOut className="h-3.5 w-3.5" /></button>
                     <span className="text-[10px] font-mono w-10 text-center text-zinc-100">{Math.round(zoom * 100)}%</span>

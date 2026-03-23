@@ -20,7 +20,7 @@ const ConfirmationModal = () => {
                       (type === 'warning' ? 'text-amber-500 bg-amber-500/10 border-amber-500/20' : 'text-primary bg-primary/10 border-primary/20');
     
     const buttonClass = type === 'danger' ? 'bg-red-500 text-white hover:bg-red-600 shadow-[0_0_20px_rgba(239,68,68,0.3)] disabled:bg-red-500/30 disabled:text-red-300 disabled:shadow-none disabled:cursor-not-allowed' :
-                       (type === 'warning' ? 'bg-amber-500 text-zinc-950 hover:bg-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.3)] disabled:bg-amber-500/30 disabled:text-amber-300 disabled:shadow-none disabled:cursor-not-allowed' : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(0,237,100,0.3)] disabled:bg-primary/30 disabled:text-primary-foreground/50 disabled:shadow-none disabled:cursor-not-allowed');
+                       (type === 'warning' ? 'bg-amber-500 text-white hover:bg-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.3)] disabled:bg-amber-500/30 disabled:text-amber-300 disabled:shadow-none disabled:cursor-not-allowed' : 'bg-primary text-white hover:bg-primary/90 shadow-[0_0_20px_rgba(0,237,100,0.3)] disabled:bg-primary/30 disabled:text-primary-foreground/50 disabled:shadow-none disabled:cursor-not-allowed');
 
     const handleConfirm = async () => {
         if (confirmValue && inputValue !== confirmValue) return;
