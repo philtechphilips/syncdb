@@ -70,7 +70,7 @@ const DataTableHeader = ({
 }: DataTableHeaderProps) => {
   const { open: openModal } = useModalStore();
   return (
-    <div className="flex flex-col lg:flex-row lg:items-center justify-between px-4 lg:px-6 py-4 border-b border-white/10 bg-[#021016]/50 gap-4">
+    <div className="flex flex-col lg:flex-row lg:items-center justify-between px-4 lg:px-6 py-4 border-b border-border bg-[#021016]/50 gap-4">
       <div className="flex flex-wrap items-center gap-4 lg:gap-6">
         <div className="flex items-center gap-3">
           <span className="text-[10px] font-black text-white tracking-widest uppercase">
@@ -93,7 +93,7 @@ const DataTableHeader = ({
               title="Drop Table"
             >
               <Trash2 className="h-3 w-3" />
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-2 py-1 bg-zinc-900 border border-white/10 rounded text-[8px] font-black uppercase text-red-500 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-2 py-1 bg-card border border-border rounded text-[8px] font-black uppercase text-red-500 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
                 Danger Zone: Drop Table
               </div>
             </button>
@@ -110,7 +110,7 @@ const DataTableHeader = ({
       </div>
       <div className="flex flex-wrap items-center gap-3">
         {selectedRowsCount > 0 && (
-          <div className="flex items-center gap-2 pr-3 border-r border-white/10 mr-1 animate-in slide-in-from-left-4 duration-200">
+          <div className="flex items-center gap-2 pr-3 border-r border-border mr-1 animate-in slide-in-from-left-4 duration-200">
             <span className="text-[9px] font-black text-primary uppercase tracking-widest mr-2">
               {selectedRowsCount} selected
             </span>
@@ -133,7 +133,7 @@ const DataTableHeader = ({
                 {lastCopiedFormat ? `Copied ${lastCopiedFormat}` : "Copy"}
               </button>
               {showCopyDropdown && (
-                <div className="absolute top-full mt-2 left-0 z-[100] w-28 bg-zinc-900 border border-white/10 rounded-lg shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute top-full mt-2 left-0 z-[100] w-28 bg-card border border-border rounded-lg shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150">
                   {["CSV", "JSON", "SQL"].map((format) => (
                     <button
                       key={format}
@@ -157,7 +157,7 @@ const DataTableHeader = ({
                 Export
               </button>
               {showExportDropdown && (
-                <div className="absolute top-full mt-2 left-0 z-[100] w-28 bg-zinc-900 border border-white/10 rounded-lg shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute top-full mt-2 left-0 z-[100] w-28 bg-card border border-border rounded-lg shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150">
                   {["CSV", "JSON", "SQL"].map((format) => (
                     <button
                       key={format}
@@ -178,7 +178,7 @@ const DataTableHeader = ({
             className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all uppercase tracking-widest text-[10px] font-black ${
               activeFiltersCount > 0
                 ? "bg-primary/10 border-primary text-white"
-                : "bg-white/[0.02] border-white/5 text-white hover:border-white/20"
+                : "bg-white/[0.02] border-border/50 text-white hover:border-white/20"
             }`}
           >
             <Filter className="h-3 w-3 text-white" />
@@ -192,19 +192,19 @@ const DataTableHeader = ({
 
           {/* Advanced Filter Popover */}
           {showFilterPopover && (
-            <div className="absolute top-full mt-2 right-0 z-[100] w-[450px] bg-zinc-900 border border-white/10 rounded-xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="absolute top-full mt-2 right-0 z-[100] w-[450px] bg-card border border-border rounded-xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-200">
               <div className="flex items-center justify-between mb-4 px-1 text-left">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black text-white uppercase tracking-widest">
                     Active Filters
                   </span>
-                  <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-tight">
+                  <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-tight">
                     Displaying rows where:
                   </span>
                 </div>
                 <button
                   onClick={onClearAllFilters}
-                  className="text-[9px] font-black text-zinc-500 hover:text-red-400 uppercase tracking-widest transition-colors"
+                  className="text-[9px] font-black text-muted-foreground hover:text-red-400 uppercase tracking-widest transition-colors"
                 >
                   Clear All
                 </button>
@@ -212,7 +212,7 @@ const DataTableHeader = ({
 
               <div className="space-y-2 max-h-[300px] overflow-y-auto scrollbar-hide mb-4">
                 {stagedFilters.length === 0 ? (
-                  <div className="py-8 text-center border-2 border-dashed border-white/5 rounded-xl">
+                  <div className="py-8 text-center border-2 border-dashed border-border/50 rounded-xl">
                     <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">
                       No filters applied
                     </p>
@@ -273,7 +273,7 @@ const DataTableHeader = ({
 
                       <button
                         onClick={() => onRemoveFilter(index)}
-                        className="p-1.5 rounded bg-white/5 text-zinc-500 hover:text-red-400 hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100"
+                        className="p-1.5 rounded bg-white/5 text-muted-foreground hover:text-red-400 hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -282,7 +282,7 @@ const DataTableHeader = ({
                 )}
               </div>
 
-              <div className="flex items-center justify-between border-t border-white/5 pt-4">
+              <div className="flex items-center justify-between border-t border-border/50 pt-4">
                 <button
                   onClick={onAddFilter}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 text-white hover:bg-primary/20 text-[9px] font-black uppercase tracking-widest transition-all"
@@ -306,14 +306,14 @@ const DataTableHeader = ({
             onClick={() =>
               setShowGlobalExportDropdown(!showGlobalExportDropdown)
             }
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/5 bg-white/[0.02] text-[10px] font-black text-white hover:border-white/20 transition-all uppercase tracking-widest"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border/50 bg-white/[0.02] text-[10px] font-black text-white hover:border-white/20 transition-all uppercase tracking-widest"
           >
             <Download className="h-3 w-3 text-white" />
             Export
           </button>
           {showGlobalExportDropdown && (
-            <div className="absolute top-full mt-2 right-0 z-[100] w-32 bg-zinc-900 border border-white/10 rounded-lg shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150">
-              <div className="px-4 py-1.5 text-[8px] font-black text-zinc-600 uppercase tracking-tighter border-b border-white/5 mb-1">
+            <div className="absolute top-full mt-2 right-0 z-[100] w-32 bg-card border border-border rounded-lg shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150">
+              <div className="px-4 py-1.5 text-[8px] font-black text-zinc-600 uppercase tracking-tighter border-b border-border/50 mb-1">
                 Table View ({rowsCount})
               </div>
               {["CSV", "JSON", "SQL"].map((format) => (

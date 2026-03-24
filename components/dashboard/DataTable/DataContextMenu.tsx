@@ -49,11 +49,11 @@ const DataContextMenu = ({
 
   return (
     <div
-      className="fixed z-[100] w-64 bg-zinc-900 border border-white/10 rounded-xl shadow-2xl p-1.5 animate-in fade-in zoom-in duration-100"
+      className="fixed z-[100] w-64 bg-card border border-border rounded-xl shadow-2xl p-1.5 animate-in fade-in zoom-in duration-100"
       style={{ top: contextMenu.y, left: contextMenu.x }}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="px-3 py-2 text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] border-b border-white/5 mb-1.5 flex justify-between items-center">
+      <div className="px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] border-b border-border/50 mb-1.5 flex justify-between items-center">
         <span>
           {contextMenu.type === "cell" ? "Targeted Node" : "Batch Actions"}
         </span>
@@ -75,7 +75,7 @@ const DataContextMenu = ({
             }}
             className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all disabled:opacity-30 disabled:hover:bg-transparent text-left"
           >
-            <FileMinus className="h-4 w-4 text-zinc-500" />
+            <FileMinus className="h-4 w-4 text-muted-foreground" />
             Set cell as Null
           </button>
           <button
@@ -85,7 +85,7 @@ const DataContextMenu = ({
             }}
             className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
           >
-            <Copy className="h-4 w-4 text-zinc-500" />
+            <Copy className="h-4 w-4 text-muted-foreground" />
             Copy Cell Value
           </button>
           <button
@@ -95,7 +95,7 @@ const DataContextMenu = ({
             }}
             className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
           >
-            <Filter className="h-4 w-4 text-zinc-500" />
+            <Filter className="h-4 w-4 text-muted-foreground" />
             Filter by this value
           </button>
           <button
@@ -105,7 +105,7 @@ const DataContextMenu = ({
             }}
             className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
           >
-            <FileType className="h-4 w-4 text-zinc-500" />
+            <FileType className="h-4 w-4 text-muted-foreground" />
             Copy Column Name
           </button>
 
@@ -121,7 +121,7 @@ const DataContextMenu = ({
             }}
             className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
           >
-            <FileJson className="h-4 w-4 text-zinc-500" />
+            <FileJson className="h-4 w-4 text-muted-foreground" />
             Copy Row as JSON
           </button>
           <button
@@ -131,7 +131,7 @@ const DataContextMenu = ({
             }}
             className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
           >
-            <FileType className="h-4 w-4 text-zinc-500" />
+            <FileType className="h-4 w-4 text-muted-foreground" />
             Copy Row as CSV
           </button>
           <button
@@ -141,7 +141,7 @@ const DataContextMenu = ({
             }}
             className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
           >
-            <Database className="h-4 w-4 text-zinc-500" />
+            <Database className="h-4 w-4 text-muted-foreground" />
             Copy Row as SQL
           </button>
 
@@ -154,7 +154,7 @@ const DataContextMenu = ({
             }}
             className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
           >
-            <Plus className="h-4 w-4 text-zinc-500" />
+            <Plus className="h-4 w-4 text-muted-foreground" />
             Clone Row
           </button>
           <button
@@ -177,7 +177,7 @@ const DataContextMenu = ({
             }}
             className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
           >
-            <FileJson className="h-4 w-4 text-zinc-500" />
+            <FileJson className="h-4 w-4 text-muted-foreground" />
             Copy Selection as JSON
           </button>
           <button
@@ -187,7 +187,7 @@ const DataContextMenu = ({
             }}
             className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
           >
-            <FileType className="h-4 w-4 text-zinc-500" />
+            <FileType className="h-4 w-4 text-muted-foreground" />
             Copy Selection as CSV
           </button>
           <button
@@ -197,7 +197,7 @@ const DataContextMenu = ({
             }}
             className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
           >
-            <Database className="h-4 w-4 text-zinc-500" />
+            <Database className="h-4 w-4 text-muted-foreground" />
             Copy Selection as SQL
           </button>
 
@@ -223,7 +223,7 @@ const DataContextMenu = ({
             }}
             className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
           >
-            <Filter className="h-4 w-4 text-zinc-500" />
+            <Filter className="h-4 w-4 text-muted-foreground" />
             Filter for Selected Rows
           </button>
         </>

@@ -30,6 +30,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const restorerRef = React.useRef(false);
 
   // Master Handshake
   React.useEffect(() => {
@@ -43,14 +44,19 @@ export default function DashboardLayout({
 
   // Session Restoration (Cluster from URL)
   React.useEffect(() => {
-    if (isInitialized && clusters.length > 0) {
+    if (isInitialized && clusters.length > 0 && !restorerRef.current) {
       const clusterId = searchParams.get("cluster");
-      if (clusterId && (!selectedCluster || selectedCluster.id !== clusterId)) {
+      if (clusterId) {
         const cluster = clusters.find((c) => c.id === clusterId);
-        if (cluster) selectCluster(cluster);
+        if (cluster) {
+           selectCluster(cluster);
+           restorerRef.current = true;
+        }
+      } else {
+        restorerRef.current = true; // No cluster in URL, mark as handled
       }
     }
-  }, [isInitialized, clusters, searchParams, selectedCluster, selectCluster]);
+  }, [isInitialized, clusters, searchParams, selectCluster]);
 
   // Protection logic
   React.useEffect(() => {
@@ -61,15 +67,24 @@ export default function DashboardLayout({
 
   // Sync cluster back to URL if changed via UI
   React.useEffect(() => {
-    if (selectedCluster?.id) {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("cluster") !== selectedCluster.id) {
+    if (selectedCluster?.id && isInitialized) {
+      const currentUrlCluster = searchParams.get("cluster");
+      if (currentUrlCluster !== selectedCluster.id) {
+        const params = new URLSearchParams(searchParams.toString());
         params.set("cluster", selectedCluster.id);
-        const url = `${pathname}${params.toString() ? `?${params.toString()}` : ""}`;
-        window.history.replaceState(null, "", url);
+        const url = `${pathname}?${params.toString()}`;
+        router.replace(url as any, { scroll: false });
       }
     }
-  }, [selectedCluster?.id, pathname]);
+  }, [selectedCluster?.id, pathname, searchParams, router, isInitialized]);
+  // Reset navigation when switching clusters while on a table route
+  React.useEffect(() => {
+    if (selectedCluster?.id && isInitialized) {
+      if (pathname.includes("/dashboard/table/")) {
+        router.push(`/dashboard/query?cluster=${selectedCluster.id}`);
+      }
+    }
+  }, [selectedCluster?.id, isInitialized, router]);
 
   const { activeTab, setActiveTab, selectedTable, setSelectedTable } =
     useClusterStore();

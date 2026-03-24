@@ -48,7 +48,7 @@ const DiagramToolbar = ({
 }: DiagramToolbarProps) => {
   return (
     <div
-      className={`flex flex-col lg:flex-row lg:items-center justify-between border-b border-white/10 bg-[#021016] px-2 lg:px-4 py-2 gap-3 min-h-[3.5rem] lg:min-h-0 ${isFullscreen ? "lg:h-14 lg:px-8" : ""}`}
+      className={`flex flex-col lg:flex-row lg:items-center justify-between border-b border-border bg-[#021016] px-2 lg:px-4 py-2 gap-3 min-h-[3.5rem] lg:min-h-0 ${isFullscreen ? "lg:h-14 lg:px-8" : ""}`}
     >
       <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-[11px] font-bold text-zinc-400">
         <div className="flex items-center gap-2 text-primary">
@@ -118,7 +118,7 @@ const DiagramToolbar = ({
           )}
         </button>
         <div className="h-4 w-px bg-white/10 mx-1"></div>
-        <div className="flex items-center gap-1 bg-white/5 rounded-lg border border-white/10 p-0.5">
+        <div className="flex items-center gap-1 bg-white/5 rounded-lg border border-border p-0.5">
           <button
             onClick={() => onToggleAll(true)}
             className="px-2 py-1 text-[9px] font-black uppercase tracking-tighter hover:bg-white/10 rounded transition-all text-zinc-400 hover:text-white"
@@ -133,11 +133,11 @@ const DiagramToolbar = ({
           </button>
         </div>
         <div className="h-4 w-px bg-white/10 mx-1"></div>
-        <div className="flex items-center gap-1 bg-white/5 rounded-lg border border-white/10 p-0.5">
+        <div className="flex items-center gap-1 bg-white/5 rounded-lg border border-border p-0.5">
           <button
             disabled={isExporting}
             onClick={() => onExport("png")}
-            className="px-2 py-1 text-[9px] font-black uppercase tracking-tighter hover:bg-white/10 rounded transition-all flex items-center gap-1.5 text-zinc-500 hover:text-primary disabled:opacity-50"
+            className="px-2 py-1 text-[9px] font-black uppercase tracking-tighter hover:bg-white/10 rounded transition-all flex items-center gap-1.5 text-muted-foreground hover:text-primary disabled:opacity-50"
           >
             <Download className="h-2.5 w-2.5" />
             PNG
@@ -145,7 +145,7 @@ const DiagramToolbar = ({
           <button
             disabled={isExporting}
             onClick={() => onExport("jpeg")}
-            className="px-2 py-1 text-[9px] font-black uppercase tracking-tighter hover:bg-white/10 rounded transition-all flex items-center gap-1.5 text-zinc-500 hover:text-primary disabled:opacity-50"
+            className="px-2 py-1 text-[9px] font-black uppercase tracking-tighter hover:bg-white/10 rounded transition-all flex items-center gap-1.5 text-muted-foreground hover:text-primary disabled:opacity-50"
           >
             <Download className="h-2.5 w-2.5" />
             JPEG
@@ -153,7 +153,7 @@ const DiagramToolbar = ({
           <button
             disabled={isExporting}
             onClick={() => onExport("pdf")}
-            className="px-2 py-1 text-[9px] font-black uppercase tracking-tighter hover:bg-white/10 rounded transition-all flex items-center gap-1.5 text-zinc-500 hover:text-primary disabled:opacity-50"
+            className="px-2 py-1 text-[9px] font-black uppercase tracking-tighter hover:bg-white/10 rounded transition-all flex items-center gap-1.5 text-muted-foreground hover:text-primary disabled:opacity-50"
           >
             <FileText className="h-2.5 w-2.5" />
             PDF

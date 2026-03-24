@@ -175,7 +175,7 @@ export default function SyncPage() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-6">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-[0_0_20px_rgba(39,121,85,0.1)]">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
                 <Zap className="h-6 w-6" />
               </div>
               <h1 className="text-xl lg:text-2xl font-black text-white tracking-tight">
@@ -191,7 +191,7 @@ export default function SyncPage() {
             <button
               onClick={handleCompare}
               disabled={isComparing || !sourceId || !targetId}
-              className={`w-full lg:w-auto flex items-center justify-center gap-3 px-8 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${isComparing || !sourceId || !targetId ? "bg-zinc-800 text-zinc-500 cursor-not-allowed" : "bg-primary text-white hover:bg-primary/90 shadow-[0_0_30px_rgba(39,121,85,0.2)]"}`}
+              className={`w-full lg:w-auto flex items-center justify-center gap-3 px-8 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${isComparing || !sourceId || !targetId ? "bg-zinc-800 text-zinc-500 cursor-not-allowed" : "bg-primary text-white hover:bg-primary/90"}`}
             >
               {isComparing ? (
                 <RefreshCw className="h-4 w-4 animate-spin" />
@@ -273,7 +273,7 @@ export default function SyncPage() {
         {!diff && !isComparing && (
           <div className="flex-1 flex flex-col items-center justify-center p-20 text-center">
             <div className="relative mb-10">
-              <div className="absolute inset-0 bg-primary/10 blur-3xl rounded-full scale-150 animate-pulse"></div>
+              <div className="absolute inset-0 bg-primary/5 rounded-full scale-150"></div>
               <div className="relative h-24 w-24 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-sm">
                 <Zap className="h-12 w-12 text-zinc-700" />
               </div>
@@ -312,9 +312,9 @@ export default function SyncPage() {
           <div className="flex-1 flex flex-col items-center justify-center">
             <div className="relative mb-8">
               <RefreshCw className="h-16 w-16 text-primary animate-spin" />
-              <div className="absolute inset-0 blur-2xl bg-primary/20 animate-pulse"></div>
+              <div className="absolute inset-0 bg-primary/5 rounded-full"></div>
             </div>
-            <p className="text-[10px] font-black text-primary uppercase tracking-[0.5em] animate-pulse">
+            <p className="text-[10px] font-black text-primary uppercase tracking-[0.5em]">
               Analyzing Schema Structures
             </p>
           </div>
@@ -405,7 +405,7 @@ export default function SyncPage() {
                 <button
                   onClick={handleSync}
                   disabled={isSyncing || selectedTables.length === 0}
-                  className={`flex-1 lg:flex-none flex items-center justify-center gap-3 px-8 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${isSyncing || selectedTables.length === 0 ? "bg-zinc-800 text-zinc-500 cursor-not-allowed" : "bg-emerald-500 text-white hover:bg-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.2)]"}`}
+                  className={`flex-1 lg:flex-none flex items-center justify-center gap-3 px-8 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${isSyncing || selectedTables.length === 0 ? "bg-zinc-800 text-zinc-500 cursor-not-allowed" : "bg-emerald-500 text-white hover:bg-emerald-400"}`}
                 >
                   {isSyncing ? (
                     <RefreshCw className="h-4 w-4 animate-spin text-white" />
@@ -485,7 +485,7 @@ export default function SyncPage() {
                             onClick={() => toggleTableSelection(item.tableName)}
                             className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
                               selectedTables.includes(item.tableName)
-                                ? "bg-blue-500 text-blue-950 shadow-[0_0_20px_rgba(59,130,246,0.2)]"
+                                ? "bg-blue-500 text-blue-950"
                                 : "bg-white/5 text-zinc-500 hover:text-white border border-transparent hover:bg-white/10"
                             }`}
                           >
@@ -566,7 +566,7 @@ export default function SyncPage() {
                           onClick={() => toggleTableSelection(item.tableName)}
                           className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
                             selectedTables.includes(item.tableName)
-                              ? "bg-rose-500 text-rose-950 shadow-[0_0_20px_rgba(244,63,94,0.2)]"
+                              ? "bg-rose-500 text-rose-950"
                               : "bg-white/5 text-zinc-500 hover:text-white border border-transparent hover:bg-white/10"
                           }`}
                         >
@@ -603,7 +603,7 @@ export default function SyncPage() {
                           onClick={() => toggleTableSelection(item.tableName)}
                           className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
                             selectedTables.includes(item.tableName)
-                              ? "bg-emerald-500 text-emerald-950 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                              ? "bg-emerald-500 text-emerald-950"
                               : "bg-white/5 text-zinc-500 hover:text-white border border-transparent hover:bg-white/10"
                           }`}
                         >
@@ -638,7 +638,7 @@ export default function SyncPage() {
                       </div>
                       <button
                         onClick={() => handleDropTable(item.tableName)}
-                        className="px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500 hover:text-rose-950 shadow-[0_0_20px_rgba(244,63,94,0.1)] hover:shadow-[0_0_30px_rgba(244,63,94,0.3)]"
+                        className="px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500 hover:text-rose-950"
                       >
                         Drop Table
                       </button>

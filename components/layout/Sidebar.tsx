@@ -128,7 +128,7 @@ const Sidebar = ({
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-50 h-screen w-64 border-r border-white/10 bg-background flex flex-col font-sans transition-transform duration-300 transform lg:translate-x-0 ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}`}
+      className={`fixed left-0 top-0 z-50 h-screen w-64 border-r border-border bg-background flex flex-col font-sans transition-transform duration-300 transform lg:translate-x-0 ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}`}
     >
       {/* Logo Area & Mobile Close */}
       <div className="px-6 py-6 flex items-center justify-between">
@@ -154,12 +154,12 @@ const Sidebar = ({
       </div>
 
       {/* Workspace Switcher */}
-      <div className="p-4 pt-0 border-b border-white/10 relative">
+      <div className="p-4 pt-0 border-b border-border relative">
         <div
           onClick={() => setIsConnectionDropdownOpen(!isConnectionDropdownOpen)}
           className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
         >
-          <div className="h-8 w-8 rounded bg-primary flex items-center justify-center text-white font-black text-xs shadow-lg shadow-primary/20 transition-transform group-hover:scale-105">
+          <div className="h-8 w-8 rounded bg-primary flex items-center justify-center text-white font-black text-xs transition-transform group-hover:scale-105">
             {selectedCluster?.name?.[0].toUpperCase() || "C"}
           </div>
           <div className="flex flex-col">
@@ -177,9 +177,9 @@ const Sidebar = ({
 
         {/* Connection Dropdown */}
         {isConnectionDropdownOpen && (
-          <div className="absolute left-4 top-[calc(100%-8px)] z-50 w-[calc(100%-32px)] bg-zinc-900 border border-white/10 rounded-xl shadow-2xl py-2 animate-in fade-in zoom-in-95 duration-150">
-            <div className="px-3 py-1.5 mb-1.5 border-b border-white/10">
-              <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+          <div className="absolute left-4 top-[calc(100%-8px)] z-50 w-[calc(100%-32px)] bg-card border border-border rounded-xl shadow-2xl py-2 animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-3 py-1.5 mb-1.5 border-b border-border">
+              <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
                 Switch Connection
               </span>
             </div>
@@ -194,16 +194,16 @@ const Sidebar = ({
                       selectCluster(cluster);
                       setIsConnectionDropdownOpen(false);
                     }}
-                    className={`flex-1 flex items-center gap-3 transition-colors cursor-pointer ${selectedCluster?.id === cluster.id ? "text-white" : "text-zinc-400"}`}
+                    className={`flex-1 flex items-center gap-3 transition-colors cursor-pointer ${selectedCluster?.id === cluster.id ? "text-white" : "text-muted-foreground/80"}`}
                   >
                     <div
-                      className={`h-6 w-6 rounded flex items-center justify-center text-[10px] font-black ${selectedCluster?.id === cluster.id ? "bg-primary/20 text-white" : "bg-zinc-800 text-zinc-500"}`}
+                      className={`h-6 w-6 rounded flex items-center justify-center text-[10px] font-black ${selectedCluster?.id === cluster.id ? "bg-primary/20 text-white" : "bg-zinc-800 text-muted-foreground"}`}
                     >
                       {cluster.name[0].toUpperCase()}
                     </div>
                     <div className="flex flex-col items-start translate-y-[-1px]">
                       <span>{cluster.name}</span>
-                      <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-tighter">
+                      <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-tighter">
                         {cluster.type}
                       </span>
                     </div>
@@ -211,7 +211,7 @@ const Sidebar = ({
 
                   <div className="flex items-center gap-2">
                     {selectedCluster?.id === cluster.id && (
-                      <div className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(0,237,100,0.5)]"></div>
+                      <div className="h-1.5 w-1.5 rounded-full bg-primary"></div>
                     )}
                     <button
                       type="button"
@@ -326,10 +326,10 @@ const Sidebar = ({
                     key={table.name}
                     onClick={() => onTableSelect(table.name)}
                     onContextMenu={(e) => handleContextMenu(e, table.name)}
-                    className={`flex items-center gap-3 ml-6 mr-1 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer group/item hover:bg-white/[0.05] ${selectedTable === table.name ? "text-white bg-primary/10" : "text-zinc-400 hover:text-white"}`}
+                    className={`flex items-center gap-3 ml-6 mr-1 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer group/item hover:bg-white/[0.05] ${selectedTable === table.name ? "text-white bg-primary/10" : "text-muted-foreground/80 hover:text-white"}`}
                   >
                     <div
-                      className={`h-1 w-1 rounded-full ${selectedTable === table.name ? "bg-primary shadow-[0_0_8px_rgba(0,237,100,0.5)]" : "bg-zinc-700"}`}
+                      className={`h-1 w-1 rounded-full ${selectedTable === table.name ? "bg-primary" : "bg-zinc-700"}`}
                     ></div>
                     <span className="truncate flex-1">{table.name}</span>
                     <button
@@ -373,7 +373,7 @@ const Sidebar = ({
       </div>
 
       {/* User Footer with Logout */}
-      <div className="p-4 border-t border-white/10 mt-auto bg-zinc-950/20 relative">
+      <div className="p-4 border-t border-border mt-auto bg-muted/20 relative">
         <div
           onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
           className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
@@ -401,20 +401,20 @@ const Sidebar = ({
             <span className="text-xs font-bold text-foreground truncate">
               {user?.full_name || "Anonymous User"}
             </span>
-            <span className="text-[9px] text-zinc-400 font-black uppercase tracking-tighter truncate">
+            <span className="text-[9px] text-muted-foreground/80 font-black uppercase tracking-tighter truncate">
               {user?.role || "User"}
             </span>
           </div>
         </div>
 
         {isUserMenuOpen && (
-          <div className="absolute bottom-[calc(100%-8px)] left-4 right-4 z-50 bg-zinc-900 border border-white/10 rounded-xl shadow-2xl py-2 animate-in slide-in-from-bottom-2 duration-200">
-            <div className="px-3 py-1.5 border-b border-white/10 mb-2">
-              <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+          <div className="absolute bottom-[calc(100%-8px)] left-4 right-4 z-50 bg-card border border-border rounded-xl shadow-2xl py-2 animate-in slide-in-from-bottom-2 duration-200">
+            <div className="px-3 py-1.5 border-b border-border mb-2">
+              <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
                 Account Settings
               </span>
             </div>
-            <button className="flex w-full items-center gap-3 px-3 py-2 text-xs font-bold text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">
+            <button className="flex w-full items-center gap-3 px-3 py-2 text-xs font-bold text-muted-foreground/80 hover:text-white hover:bg-white/5 transition-colors">
               <Settings className="h-3.5 w-3.5" />
               Profile
             </button>
@@ -433,11 +433,11 @@ const Sidebar = ({
       {/* Context Menu */}
       {contextMenu && (
         <div
-          className="fixed z-[100] w-48 bg-zinc-900 border border-white/10 rounded-xl shadow-2xl py-1.5 shadow-black/50 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+          className="fixed z-[100] w-48 bg-card border border-border rounded-xl shadow-2xl py-1.5 shadow-black/50 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
           style={{ left: contextMenu.x, top: contextMenu.y }}
         >
-          <div className="px-3 py-1.5 border-b border-white/10 mb-1.5">
-            <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+          <div className="px-3 py-1.5 border-b border-border mb-1.5">
+            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
               {contextMenu.table}
             </span>
           </div>
@@ -450,13 +450,13 @@ const Sidebar = ({
             },
             {
               label: "View Structure",
-              color: "text-zinc-400",
+              color: "text-muted-foreground/80",
               onClick: () => {
                 onTableSelect(contextMenu.table!);
                 onTabChange("query");
               },
             },
-            { label: "Export Schema", color: "text-zinc-400" },
+            { label: "Export Schema", color: "text-muted-foreground/80" },
             { separator: true },
             { label: "Truncate Table", color: "text-amber-500" },
             {
@@ -474,7 +474,7 @@ const Sidebar = ({
                   item.onClick?.();
                   setContextMenu(null);
                 }}
-                className={`flex w-full items-center gap-3 px-3 py-2 text-[11px] font-bold transition-colors group ${item.color || "text-zinc-400"} hover:text-white hover:bg-white/5`}
+                className={`flex w-full items-center gap-3 px-3 py-2 text-[11px] font-bold transition-colors group ${item.color || "text-muted-foreground/80"} hover:text-white hover:bg-white/5`}
               >
                 <span>{item.label}</span>
               </button>

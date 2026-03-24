@@ -27,12 +27,10 @@ export const DataExplorerSection = () => {
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
               className="relative"
             >
-              {/* Abstract Ambient Shadow */}
-              <div className="absolute -inset-20 bg-primary/5 blur-[120px] rounded-full opacity-30 group-hover:opacity-50 transition-opacity duration-1000"></div>
 
               <div className="relative space-y-8">
                 {/* The Query Bar */}
-                <div className="p-[1px] bg-gradient-to-r from-white/10 via-white/5 to-transparent rounded-2xl shadow-2xl">
+                <div className="p-[1px] bg-gradient-to-r from-white/10 via-white/5 to-transparent rounded-2xl">
                   <div className="bg-black/40 backdrop-blur-xl rounded-[15px] p-8 md:p-12 border border-white/5">
                     <div className="flex flex-col md:flex-row items-center gap-8">
                       <div className="flex items-center gap-4 text-zinc-500 font-mono text-[10px] uppercase tracking-[0.3em]">

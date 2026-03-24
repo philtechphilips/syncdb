@@ -30,7 +30,7 @@ const TableNode = ({
       style={{ left: node.x, top: node.y }}
     >
       <div
-        className={`flex items-center justify-between rounded-t-xl px-3 py-2 border-b border-white/10 ${node.isExpanded ? "bg-white/[0.05]" : "bg-background hover:bg-white/[0.08]"} ${isActive ? "bg-primary/20" : ""}`}
+        className={`flex items-center justify-between rounded-t-xl px-3 py-2 border-b border-border ${node.isExpanded ? "bg-white/[0.05]" : "bg-background hover:bg-white/[0.08]"} ${isActive ? "bg-primary/20" : ""}`}
       >
         <div className="flex items-center gap-2">
           <TableIcon
@@ -74,7 +74,7 @@ const TableNode = ({
                   {col.name}
                 </span>
               </div>
-              <span className="text-[9px] font-mono text-zinc-500 uppercase opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="text-[9px] font-mono text-muted-foreground uppercase opacity-0 group-hover:opacity-100 transition-opacity">
                 {col.type}
               </span>
             </div>

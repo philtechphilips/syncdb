@@ -136,7 +136,7 @@ export default function BackupRestorePage() {
       <div className="max-w-4xl mx-auto space-y-10">
         {/* Header */}
         <div className="flex flex-col gap-2 items-center text-center">
-          <div className="h-12 w-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-2 border border-primary/20">
+          <div className="h-12 w-12 bg-primary/10 flex items-center justify-center mb-2 border border-primary/20">
             <ShieldCheck className="text-primary h-7 w-7" />
           </div>
           <h1 className="text-3xl font-black text-white tracking-tight">
@@ -153,14 +153,14 @@ export default function BackupRestorePage() {
           <div className="inline-flex p-1 bg-zinc-900/80 border border-white/5 rounded-xl backdrop-blur-md">
             <button
               onClick={() => setMode("backup")}
-              className={`flex items-center gap-2 px-8 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${mode === "backup" ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-zinc-500 hover:text-white"}`}
+              className={`flex items-center gap-2 px-8 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${mode === "backup" ? "bg-primary text-white" : "text-zinc-500 hover:text-white"}`}
             >
               <Download className="h-4 w-4" />
               Backup
             </button>
             <button
               onClick={() => setMode("restore")}
-              className={`flex items-center gap-2 px-8 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${mode === "restore" ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-zinc-500 hover:text-white"}`}
+              className={`flex items-center gap-2 px-8 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${mode === "restore" ? "bg-primary text-white" : "text-zinc-500 hover:text-white"}`}
             >
               <Upload className="h-4 w-4" />
               Restore
@@ -216,7 +216,7 @@ export default function BackupRestorePage() {
               <button
                 onClick={handleBackup}
                 disabled={isBackingUp}
-                className="w-full h-14 rounded-2xl bg-primary text-white text-[13px] font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all active:scale-[0.98] disabled:opacity-50 hover:shadow-[0_0_25px_rgba(0,237,100,0.3)] mt-4"
+                className="w-full h-14 rounded-2xl bg-primary text-white text-[13px] font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all active:scale-[0.98] disabled:opacity-50 mt-4"
               >
                 {isBackingUp ? (
                   <Loader2 className="h-5 w-5 animate-spin" />

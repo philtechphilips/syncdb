@@ -44,7 +44,7 @@ const DataTableBody = ({
     <div className="flex-1 overflow-auto scrollbar-hide">
       <table className="w-full text-left border-collapse min-w-[800px]">
         <thead>
-          <tr className="bg-[#021016]/80 border-b border-white/10 sticky top-0 z-10 backdrop-blur-md">
+          <tr className="bg-[#021016]/80 border-b border-border sticky top-0 z-10 backdrop-blur-md">
             <th className="px-6 py-4 w-12 text-center">
               <input
                 type="checkbox"
@@ -57,7 +57,7 @@ const DataTableBody = ({
               Object.keys(rows[0]).map((col) => (
                 <th
                   key={col}
-                  className="px-6 py-4 text-[10px] font-black text-zinc-300 tracking-widest border-r border-white/10 last:border-0 cursor-default hover:text-white transition-colors"
+                  className="px-6 py-4 text-[10px] font-black text-zinc-300 tracking-widest border-r border-border last:border-0 cursor-default hover:text-white transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     {col}
@@ -105,9 +105,9 @@ const DataTableBody = ({
                         col !== "id" &&
                         onStartEdit(rowId, col, String(row[col]))
                       }
-                      className={`px-6 py-4 text-xs font-semibold border-r border-white/5 last:border-0 relative transition-all ${
+                      className={`px-6 py-4 text-xs font-semibold border-r border-border/50 last:border-0 relative transition-all ${
                         col === "id"
-                          ? "font-mono text-zinc-500"
+                          ? "font-mono text-muted-foreground"
                           : "text-zinc-200"
                       } ${row[col] === "NULL" ? "italic text-zinc-600" : ""} ${
                         activeCell?.rowId === rowId &&
@@ -117,7 +117,7 @@ const DataTableBody = ({
                       }`}
                     >
                       {isEditing ? (
-                        <div className="absolute inset-0 z-50 bg-zinc-900 border-2 border-primary shadow-2xl rounded-md flex items-center p-1 animate-in zoom-in-95 duration-150">
+                        <div className="absolute inset-0 z-50 bg-card border-2 border-primary shadow-2xl rounded-md flex items-center p-1 animate-in zoom-in-95 duration-150">
                           <textarea
                             autoFocus
                             className="w-full h-full bg-transparent border-none outline-none text-[11px] font-medium text-white resize-none scrollbar-hide py-1.5 px-3 leading-relaxed"
@@ -141,7 +141,7 @@ const DataTableBody = ({
                             className={`h-1.5 w-1.5 rounded-full ${row[col] === "Active" ? "bg-primary shadow-[0_0_8px_rgba(0,237,100,0.5)]" : "bg-zinc-700"}`}
                           ></div>
                           <span
-                            className={`${row[col] === "Active" ? "text-zinc-200" : "text-zinc-500"}`}
+                            className={`${row[col] === "Active" ? "text-zinc-200" : "text-muted-foreground"}`}
                           >
                             {row[col] as React.ReactNode}
                           </span>

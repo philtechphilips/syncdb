@@ -12,7 +12,7 @@ const DiagramOverlay = ({
 }: DiagramOverlayProps) => {
   return (
     <div className="absolute bottom-4 left-4 flex flex-col gap-2">
-      <div className="rounded-full border border-white/10 bg-[#021016]/80 px-3 py-1.5 flex items-center gap-4 text-[9px] font-black text-zinc-500 backdrop-blur-xl shadow-md uppercase tracking-widest">
+      <div className="rounded-full border border-border bg-[#021016]/80 px-3 py-1.5 flex items-center gap-4 text-[9px] font-black text-muted-foreground backdrop-blur-xl shadow-md uppercase tracking-widest">
         <div className="flex items-center gap-1.5">
           <MousePointer2 className="h-3 w-3" />
           <span>Drag to Pan</span>

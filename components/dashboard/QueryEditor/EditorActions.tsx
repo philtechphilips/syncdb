@@ -28,7 +28,7 @@ const EditorActions = ({
   clusterSelected,
 }: EditorActionsProps) => {
   return (
-    <div className="w-full border-y border-white/5 p-2 bg-[#021016] flex items-center justify-between px-4 lg:px-6 shrink-0 h-auto min-h-[3.5rem] flex-wrap gap-y-2">
+    <div className="w-full border-y border-border/50 p-2 bg-[#021016] flex items-center justify-between px-4 lg:px-6 shrink-0 h-auto min-h-[3.5rem] flex-wrap gap-y-2">
       <div className="flex items-center gap-2 lg:gap-4 text-left">
         <button
           onClick={onRun}
@@ -60,7 +60,7 @@ const EditorActions = ({
           ) : (
             <Copy className="h-4 w-4 text-white" />
           )}
-          <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-zinc-900 text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none border border-white/5 whitespace-nowrap">
+          <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-card text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none border border-border/50 whitespace-nowrap">
             {copied ? "Copied!" : "Copy Code"}
           </span>
         </button>
@@ -69,7 +69,7 @@ const EditorActions = ({
           className="p-2 rounded-lg text-white hover:bg-white/5 hover:text-white transition-all group/btn relative"
         >
           <Eraser className="h-4 w-4 text-white" />
-          <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-zinc-900 text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none border border-white/5 whitespace-nowrap">
+          <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-card text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none border border-border/50 whitespace-nowrap">
             Clear SQL
           </span>
         </button>

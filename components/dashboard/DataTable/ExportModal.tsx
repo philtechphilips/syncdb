@@ -31,19 +31,19 @@ const ExportModal = ({
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-md bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-        <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+      <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="px-6 py-4 border-b border-border/50 flex items-center justify-between bg-white/[0.02]">
           <div>
             <h3 className="text-sm font-black text-white uppercase tracking-widest">
               Export Data
             </h3>
-            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mt-1">
+            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-1">
               Select your preferred format
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/5 rounded-lg text-zinc-500 hover:text-white transition-all"
+            className="p-2 hover:bg-white/5 rounded-lg text-muted-foreground hover:text-white transition-all"
           >
             <X className="h-5 w-5" />
           </button>
@@ -79,7 +79,7 @@ const ExportModal = ({
             <button
               key={format.id}
               onClick={() => onExport(format.id)}
-              className="flex flex-col items-start gap-3 p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-primary/50 transition-all text-left group"
+              className="flex flex-col items-start gap-3 p-4 rounded-xl border border-border/50 bg-white/[0.02] hover:bg-white/[0.05] hover:border-primary/50 transition-all text-left group"
             >
               <div className="p-2 rounded-lg bg-white/5 group-hover:bg-primary/20 group-hover:text-primary transition-colors">
                 <format.icon className="h-5 w-5" />
@@ -101,12 +101,12 @@ const ExportModal = ({
           ))}
         </div>
 
-        <div className="px-6 py-4 bg-white/[0.02] border-t border-white/5 flex items-center justify-between">
+        <div className="px-6 py-4 bg-white/[0.02] border-t border-border/50 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div
               className={`h-1.5 w-1.5 rounded-full ${selectedRowsCount > 0 ? "bg-primary" : "bg-zinc-700"}`}
             ></div>
-            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
               {selectedRowsCount > 0
                 ? `${selectedRowsCount} Rows Selected`
                 : "Full Dataset"}

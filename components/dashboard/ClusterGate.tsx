@@ -49,7 +49,7 @@ export default function ClusterGate({
                 ? "Establish your first connection"
                 : "Select an active cluster"}
             </h1>
-            <p className="text-zinc-500 font-medium max-w-md mx-auto">
+            <p className="text-muted-foreground font-medium max-w-md mx-auto">
               {clusters.length === 0
                 ? "Before exploring the dashboard, you need to connect to a PostgreSQL or MySQL database."
                 : "Choose a database cluster from your repository to start managing your data."}
@@ -62,10 +62,10 @@ export default function ClusterGate({
                 <button
                   key={cluster.id}
                   onClick={() => selectCluster(cluster)}
-                  className="group relative flex items-center gap-5 p-6 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-primary/30 hover:bg-primary/[0.02] transition-all text-left"
+                  className="group relative flex items-center gap-5 p-6 rounded-3xl bg-white/[0.02] border border-border/50 hover:border-primary/30 hover:bg-primary/[0.02] transition-all text-left"
                 >
-                  <div className="h-12 w-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
-                    <Database className="h-6 w-6 text-zinc-500 group-hover:text-primary transition-colors" />
+                  <div className="h-12 w-12 rounded-2xl bg-white/5 border border-border/50 flex items-center justify-center group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
+                    <Database className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-black text-white uppercase tracking-wider truncate">
@@ -76,7 +76,7 @@ export default function ClusterGate({
                         {cluster.type}
                       </span>
                       <span className="h-1 w-1 bg-zinc-800 rounded-full"></span>
-                      <span className="text-[10px] font-medium text-zinc-500 truncate">
+                      <span className="text-[10px] font-medium text-muted-foreground truncate">
                         {cluster.host}
                       </span>
                     </div>
@@ -87,9 +87,9 @@ export default function ClusterGate({
 
               <button
                 onClick={() => setIsConnectOpen(true)}
-                className="flex items-center gap-5 p-6 rounded-3xl border border-dashed border-white/10 hover:border-primary/40 hover:bg-primary/[0.02] transition-all text-left group"
+                className="flex items-center gap-5 p-6 rounded-3xl border border-dashed border-border hover:border-primary/40 hover:bg-primary/[0.02] transition-all text-left group"
               >
-                <div className="h-12 w-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
+                <div className="h-12 w-12 rounded-2xl bg-white/5 border border-border/50 flex items-center justify-center group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
                   <Plus className="h-6 w-6 text-zinc-600 group-hover:text-primary transition-colors" />
                 </div>
                 <div className="flex-1">
@@ -112,7 +112,7 @@ export default function ClusterGate({
             </button>
           )}
 
-          <div className="flex items-center gap-8 pt-6 border-t border-white/5 w-full justify-center">
+          <div className="flex items-center gap-8 pt-6 border-t border-border/50 w-full justify-center">
             <div className="flex items-center gap-2 text-zinc-600">
               <Server className="h-4 w-4" />
               <span className="text-[10px] font-black uppercase tracking-widest">

@@ -48,9 +48,9 @@ const DataRowModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-end bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="w-full max-w-xl h-full bg-[#021016] border-l border-white/10 shadow-2xl flex flex-col animate-in slide-in-from-right duration-500 ease-out">
-        <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
+    <div className="fixed inset-0 z-[200] flex items-center justify-end bg-muted/40 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="w-full max-w-xl h-full bg-[#021016] border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-500 ease-out">
+        <div className="px-8 py-6 border-b border-border/50 flex items-center justify-between bg-white/[0.01]">
           <div>
             <h3 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-3">
               {isEditMode ? (
@@ -60,14 +60,14 @@ const DataRowModal = ({
               )}
               {isEditMode ? "Update Row" : "Insert New Row"}
             </h3>
-            <p className="text-[10px] text-zinc-500 font-bold tracking-widest mt-1">
+            <p className="text-[10px] text-muted-foreground font-bold tracking-widest mt-1">
               {isEditMode ? "Modifying existing data in " : "Adding to "}
               <span className="text-white">{selectedTable}</span>
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2.5 hover:bg-white/5 rounded-xl text-zinc-500 hover:text-white transition-all group"
+            className="p-2.5 hover:bg-white/5 rounded-xl text-muted-foreground hover:text-white transition-all group"
           >
             <X className="h-5 w-5 group-hover:rotate-90 transition-transform duration-300" />
           </button>
@@ -134,7 +134,7 @@ const DataRowModal = ({
                           <button
                             type="button"
                             onClick={() => onToggleNull(col.name)}
-                            className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-widest transition-all ${isNull ? "bg-amber-500/20 text-amber-500 border border-amber-500/30" : "bg-white/5 text-zinc-500 border border-transparent hover:bg-white/10 hover:text-zinc-300"}`}
+                            className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-widest transition-all ${isNull ? "bg-amber-500/20 text-amber-500 border border-amber-500/30" : "bg-white/5 text-muted-foreground border border-transparent hover:bg-white/10 hover:text-zinc-300"}`}
                           >
                             <FileMinus
                               className={`h-2.5 w-2.5 ${isNull ? "text-amber-500" : "text-zinc-600"}`}
@@ -259,7 +259,7 @@ const DataRowModal = ({
                             className={`w-full border rounded-xl px-4 py-3 text-sm font-medium transition-all ${
                               isNull
                                 ? "bg-amber-500/[0.03] border-amber-500/20 text-amber-500/50 italic cursor-default"
-                                : "bg-white/[0.02] border-white/5 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 hover:bg-white/[0.04]"
+                                : "bg-white/[0.02] border-border/50 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 hover:bg-white/[0.04]"
                             }`}
                             disabled={isDisabled}
                           />
@@ -287,7 +287,7 @@ const DataRowModal = ({
           )}
         </div>
 
-        <div className="px-8 py-6 bg-white/[0.01] border-t border-white/5 flex items-center justify-end gap-4">
+        <div className="px-8 py-6 bg-white/[0.01] border-t border-border/50 flex items-center justify-end gap-4">
           <button
             onClick={onClose}
             className="px-6 py-2.5 rounded-xl text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all"

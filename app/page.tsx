@@ -15,7 +15,6 @@ import { Pricing } from "@/components/landing/Pricing";
 import { Footer } from "@/components/landing/Footer";
 import { CTASection } from "@/components/landing/CTASection";
 import { useRouter } from "next/navigation";
-import { MouseGlow } from "@/components/ui/MouseGlow";
 
 export default function Home() {
   const router = useRouter();
@@ -23,8 +22,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background font-sans selection:bg-primary/30 scroll-smooth">
-      <MouseGlow />
       <LandingNavbar onLaunch={handleLaunch} />
+
       <main>
         <Hero onLaunch={handleLaunch} />
         <EngineGrid />

@@ -110,18 +110,15 @@ export const useClusterStore = create<ClusterState>()(
             (a: Cluster, b: Cluster) => a.name.localeCompare(b.name),
           );
 
-          const { selectedCluster } = get();
-          let nextSelected = selectedCluster;
-
-          if (
-            selectedCluster &&
-            !clusters.find((c: Cluster) => c.id === selectedCluster.id)
-          ) {
-            nextSelected = null;
-          }
-
-          if (!nextSelected && clusters.length === 1) {
+          const { selectedCluster: latestSelected } = get();
+          // Only overwrite if we dont have one or if it was removed from clusters
+          const stillExists = latestSelected && clusters.find((c: Cluster) => c.id === latestSelected.id);
+          let nextSelected = latestSelected;
+          
+          if (!stillExists && clusters.length === 1) {
             nextSelected = clusters[0];
+          } else if (!stillExists) {
+             nextSelected = null;
           }
 
           set({ clusters, selectedCluster: nextSelected, isLoading: false });
@@ -309,6 +306,7 @@ export const useClusterStore = create<ClusterState>()(
       selectCluster: (cluster) => {
         set({
           selectedCluster: cluster,
+          selectedTable: "",
           tables: [],
           tableData: [],
           totalRows: 0,

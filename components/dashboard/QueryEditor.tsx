@@ -61,6 +61,9 @@ const QueryEditor = () => {
   );
   const [aiOutput, setAiOutput] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const handledRunId = React.useRef(runRequested);
+  const editorRef = React.useRef<any>(null);
+
 
   const activeQuery = queries.find((q) => q.id === activeQueryId) || queries[0];
 
@@ -223,11 +226,14 @@ const QueryEditor = () => {
     [selectedCluster, executeQuery, bottomTab, loadHistory],
   );
 
-  const handleRunQuery = useCallback(async () => {
-    if (!selectedCluster) return toast.error("Please select a cluster first");
+  const handleRunQuery = useCallback(
+    async (overrideSql?: string | unknown) => {
+      if (!selectedCluster) return toast.error("Please select a cluster first");
 
-    const sql = activeQuery.code.trim();
-    if (!sql) return;
+      const sql = (
+        typeof overrideSql === "string" ? overrideSql : activeQuery.code
+      ).trim();
+      if (!sql) return;
 
     const lowerSql = sql.toLowerCase();
     if (lowerSql.includes("drop database"))
@@ -260,10 +266,35 @@ const QueryEditor = () => {
   }, [bottomTab, selectedCluster, loadHistory]);
 
   useEffect(() => {
-    if (runRequested > 0) {
+    if (runRequested > handledRunId.current) {
       handleRunQuery();
+      handledRunId.current = runRequested;
     }
   }, [runRequested, handleRunQuery]);
+
+  const handleEditorMount = (editor: any, monaco: any) => {
+    editorRef.current = editor;
+
+    // Add "Run Selected" to context menu
+    editor.addAction({
+      id: "run-selected-query",
+      label: "Run Selected Query",
+      contextMenuGroupId: "navigation",
+      contextMenuOrder: 1,
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+      run: (ed: any) => {
+        const selection = ed.getSelection();
+        const selectedText = ed.getModel()?.getValueInRange(selection);
+        if (selectedText?.trim()) {
+          handleRunQuery(selectedText);
+        } else {
+          toast.error("No SQL selected", {
+            description: "Highlight a query first to run it individually.",
+          });
+        }
+      },
+    });
+  };
 
   const handleAskAi = async () => {
     if (aiMode === "generate" && !aiPrompt.trim()) return;
@@ -278,7 +309,14 @@ const QueryEditor = () => {
           `/v1/ai/${selectedCluster.id}/generate`,
           { prompt: aiPrompt },
         );
-        handleUpdateCode(response.data.sql);
+
+        const currentCode = activeQuery.code;
+        const generatedSql = response.data.sql;
+        const finalSql = currentCode.trim()
+          ? `${currentCode.trimEnd()}\n\n${generatedSql}`
+          : generatedSql;
+
+        handleUpdateCode(finalSql);
         setIsAiOpen(false);
         setAiPrompt("");
         toast.success("SQL generated");
@@ -374,6 +412,7 @@ const QueryEditor = () => {
           theme="vs-dark"
           value={activeQuery.code}
           onChange={(val) => handleUpdateCode(val || "")}
+          onMount={handleEditorMount}
           options={{
             minimap: { enabled: false },
             fontSize: 13,
@@ -388,7 +427,7 @@ const QueryEditor = () => {
 
         <div className="absolute top-6 right-8 flex items-center gap-3 px-4 py-1.5 rounded-lg border border-white/5 bg-black/40 text-[9px] font-black text-zinc-500 uppercase tracking-widest backdrop-blur-md opacity-40 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
           <div
-            className={`h-1.5 w-1.5 rounded-full ${selectedCluster ? "bg-primary shadow-[0_0_8px_rgba(0,237,100,0.8)]" : "bg-red-500"}`}
+            className={`h-1.5 w-1.5 rounded-full ${selectedCluster ? "bg-primary" : "bg-red-500"}`}
           ></div>
           {selectedCluster
             ? `${selectedCluster.type === "postgres" ? "PostgreSQL" : "MySQL"} - ${selectedCluster.database}`

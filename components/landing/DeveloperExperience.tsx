@@ -87,11 +87,8 @@ export const DeveloperExperience = () => {
                     }}
                   />
                 ))}
-                <motion.div
-                  animate={{ opacity: [0.4, 1, 0.4] }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                  className="h-2 w-2 rounded-full bg-primary shadow-[0_0_20px_rgba(39,121,85,1)]"
-                />
+                <div className="h-2 w-2 rounded-full bg-primary" />
+
               </div>
             </motion.div>
 

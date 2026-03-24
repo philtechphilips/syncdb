@@ -112,7 +112,7 @@ const ConnectionDialog = ({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
-      <div className="relative w-full max-w-4xl rounded-[2.5rem] bg-background p-10 shadow-3xl border border-white/5 overflow-hidden max-h-[90vh] overflow-y-auto scrollbar-hide">
+      <div className="relative w-full max-w-4xl rounded-[2.5rem] bg-background p-10 shadow-3xl border border-border/50 overflow-hidden max-h-[90vh] overflow-y-auto scrollbar-hide">
         {/* Background Tech Elements */}
         <div className="absolute inset-0 tech-grid opacity-[0.05] pointer-events-none"></div>
         <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/10 blur-[100px] pointer-events-none"></div>
@@ -122,13 +122,13 @@ const ConnectionDialog = ({
             <h2 className="text-3xl font-serif text-white tracking-tight">
               Add New Connection
             </h2>
-            <p className="text-zinc-500 font-medium">
+            <p className="text-muted-foreground font-medium">
               Configure your terminal to access remote clusters.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="rounded-full p-2.5 bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+            className="rounded-full p-2.5 bg-white/5 border border-border text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
           >
             <X className="h-5 w-5" />
           </button>
@@ -140,7 +140,7 @@ const ConnectionDialog = ({
         >
           {/* Provider Selection */}
           <div className="lg:col-span-5 space-y-6">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">
               Select Provider
             </span>
             <div className="grid grid-cols-1 gap-3">
@@ -152,11 +152,11 @@ const ConnectionDialog = ({
                   className={`flex items-center gap-4 rounded-2xl border p-4 transition-all group relative overflow-hidden ${
                     selectedDb === db.id
                       ? "border-primary/50 bg-primary/5 shadow-[0_0_20px_rgba(0,237,100,0.1)]"
-                      : "bg-white/[0.02] border-white/5 hover:border-white/20"
+                      : "bg-white/[0.02] border-border/50 hover:border-white/20"
                   }`}
                 >
                   <div
-                    className={`p-2.5 rounded-xl bg-white/5 border border-white/5 group-hover:scale-110 transition-transform ${selectedDb === db.id ? "text-primary" : "text-zinc-500"}`}
+                    className={`p-2.5 rounded-xl bg-white/5 border border-border/50 group-hover:scale-110 transition-transform ${selectedDb === db.id ? "text-primary" : "text-muted-foreground"}`}
                   >
                     <Database className="h-5 w-5" />
                   </div>
@@ -180,11 +180,11 @@ const ConnectionDialog = ({
             </div>
 
             <div className="pt-6 space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">
                 Identity
               </span>
               <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
                   Friendly Name
                 </label>
                 <input
@@ -193,7 +193,7 @@ const ConnectionDialog = ({
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
                   placeholder="Production DB"
-                  className="h-12 w-full rounded-xl border border-white/5 bg-white/[0.03] px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
+                  className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
                 />
               </div>
             </div>
@@ -223,12 +223,12 @@ const ConnectionDialog = ({
 
           {/* Form Fields */}
           <div className="lg:col-span-7 space-y-6">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">
               Connection Details
             </span>
-            <div className="glass rounded-[2rem] p-8 border border-white/5 space-y-5">
+            <div className="glass rounded-[2rem] p-8 border border-border/50 space-y-5">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
                   Host & Port
                 </label>
                 <div className="grid grid-cols-12 gap-3">
@@ -242,7 +242,7 @@ const ConnectionDialog = ({
                         handleInputChange("host", e.target.value)
                       }
                       placeholder="127.0.0.1"
-                      className="h-12 w-full rounded-xl border border-white/5 bg-white/[0.03] pl-11 pr-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
+                      className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] pl-11 pr-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
                     />
                   </div>
                   <div className="col-span-4 text-center">
@@ -254,14 +254,14 @@ const ConnectionDialog = ({
                         handleInputChange("port", e.target.value)
                       }
                       placeholder="5432"
-                      className="h-12 w-full rounded-xl border border-white/5 bg-white/[0.03] px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium text-center"
+                      className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium text-center"
                     />
                   </div>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
                   Database Info
                 </label>
                 <input
@@ -272,12 +272,12 @@ const ConnectionDialog = ({
                     handleInputChange("database", e.target.value)
                   }
                   placeholder="Database Name"
-                  className="h-12 w-full rounded-xl border border-white/5 bg-white/[0.03] px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
+                  className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
                   Authentication
                 </label>
                 <div className="space-y-3">
@@ -289,7 +289,7 @@ const ConnectionDialog = ({
                       handleInputChange("username", e.target.value)
                     }
                     placeholder="Username"
-                    className="h-12 w-full rounded-xl border border-white/5 bg-white/[0.03] px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
+                    className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
                   />
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-600" />
@@ -300,7 +300,7 @@ const ConnectionDialog = ({
                         handleInputChange("password", e.target.value)
                       }
                       placeholder="Password (Optional)"
-                      className="h-12 w-full rounded-xl border border-white/5 bg-white/[0.03] pl-11 pr-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
+                      className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] pl-11 pr-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
                     />
                   </div>
                 </div>
@@ -312,7 +312,7 @@ const ConnectionDialog = ({
                 type="button"
                 disabled={isLoading}
                 onClick={handleTest}
-                className="flex-1 rounded-xl px-8 py-3.5 text-sm font-black text-white bg-white/5 border border-white/10 hover:bg-white/10 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 rounded-xl px-8 py-3.5 text-sm font-black text-white bg-white/5 border border-border hover:bg-white/10 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -335,7 +335,7 @@ const ConnectionDialog = ({
           </div>
         </form>
 
-        <div className="mt-12 flex items-center justify-between gap-6 relative z-10 border-t border-white/5 pt-8">
+        <div className="mt-12 flex items-center justify-between gap-6 relative z-10 border-t border-border/50 pt-8">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20">
               <Shield className="h-5 w-5 text-emerald-500" />
