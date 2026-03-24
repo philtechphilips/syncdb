@@ -14,6 +14,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/errorUtils";
 
 export default function BackupRestorePage() {
   const { selectedCluster, backup, restore } = useClusterStore();
@@ -40,7 +41,10 @@ export default function BackupRestorePage() {
 
       // Download the file
       const blobContent =
-        backupFormat === "sql" ? data.content : JSON.stringify(data, null, 2);
+        backupFormat === "sql"
+          ? data.content || ""
+          : JSON.stringify(data, null, 2);
+
       const blob = new Blob([blobContent], {
         type: backupFormat === "json" ? "application/json" : "text/plain",
       });
@@ -54,7 +58,7 @@ export default function BackupRestorePage() {
       window.URL.revokeObjectURL(url);
 
       toast.success("Backup successful", { id: t });
-    } catch (error) {
+    } catch {
       toast.error("Backup failed", { id: t });
     } finally {
       setIsBackingUp(false);
@@ -82,8 +86,8 @@ export default function BackupRestorePage() {
 
       await restore(selectedCluster.id, restoreFormat, restoreData);
       toast.success("Restore completed successfully", { id: t });
-    } catch (error: any) {
-      toast.error(`Restore failed: ${error.message}`, { id: t });
+    } catch (error: unknown) {
+      toast.error(`Restore failed: ${getErrorMessage(error)}`, { id: t });
     } finally {
       setIsRestoring(false);
       if (event.target) event.target.value = "";
@@ -101,7 +105,12 @@ export default function BackupRestorePage() {
     );
   }
 
-  const formats = [
+  const formats: {
+    id: "sql" | "csv" | "json";
+    label: string;
+    icon: React.ElementType;
+    description: string;
+  }[] = [
     {
       id: "sql",
       label: "SQL Dump",
@@ -179,7 +188,7 @@ export default function BackupRestorePage() {
                 {formats.map((f) => (
                   <div
                     key={f.id}
-                    onClick={() => setBackupFormat(f.id as any)}
+                    onClick={() => setBackupFormat(f.id)}
                     className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col gap-3 ${backupFormat === f.id ? "bg-primary/5 border-primary/20 ring-1 ring-primary/20" : "bg-muted/20 border-white/5 hover:bg-muted/40"}`}
                   >
                     <div
@@ -238,7 +247,9 @@ export default function BackupRestorePage() {
                 {formats.map((f) => (
                   <div
                     key={f.id}
-                    onClick={() => setRestoreFormat(f.id as any)}
+                    onClick={() =>
+                      setRestoreFormat(f.id as "sql" | "json" | "csv")
+                    }
                     className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col gap-3 ${restoreFormat === f.id ? "bg-primary/5 border-primary/20 ring-1 ring-primary/20" : "bg-muted/20 border-white/5 hover:bg-muted/40"}`}
                   >
                     <div

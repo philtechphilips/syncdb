@@ -1,13 +1,5 @@
 import React from "react";
-import {
-  Table,
-  History,
-  Trash2,
-  Copy,
-  Download,
-  Filter,
-  Plus,
-} from "lucide-react";
+import { History, Trash2, Copy, Download, Filter, Plus } from "lucide-react";
 import { useModalStore } from "@/store/useModalStore";
 
 interface DataTableHeaderProps {
@@ -26,14 +18,21 @@ interface DataTableHeaderProps {
   showFilterPopover: boolean;
   setShowFilterPopover: (val: boolean) => void;
   activeFiltersCount: number;
-  stagedFilters: any[];
+  stagedFilters: {
+    column: string;
+    operator: string;
+    value: string;
+  }[];
   onClearAllFilters: () => void;
   onAddFilter: () => void;
   onRemoveFilter: (idx: number) => void;
-  onUpdateFilter: (idx: number, updates: any) => void;
+  onUpdateFilter: (
+    idx: number,
+    updates: Partial<{ column: string; operator: string; value: string }>,
+  ) => void;
   onApplyFilters: () => void;
-  tableColumns: any[];
-  rows: any[];
+  tableColumns: { name: string; type: string }[];
+  rows: Record<string, unknown>[];
   showGlobalExportDropdown: boolean;
   setShowGlobalExportDropdown: (val: boolean) => void;
   onOpenInsertModal: () => void;

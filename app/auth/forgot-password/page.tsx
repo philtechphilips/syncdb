@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Mail,
-  ArrowRight,
   ArrowLeft,
   CheckCircle2,
   Loader2,
@@ -33,7 +32,7 @@ export default function ForgotPasswordPage() {
     try {
       await forgotPassword(email);
       setIsSubmitted(true);
-    } catch (err) {
+    } catch {
       // Error is handled by the store
     }
   };
@@ -56,7 +55,7 @@ export default function ForgotPasswordPage() {
             Reset password
           </h1>
           <p className="text-zinc-500 font-medium whitespace-nowrap">
-            We'll send you a link to get back into your account.
+            We&apos;ll send you a link to get back into your account.
           </p>
         </div>
 
@@ -112,14 +111,14 @@ export default function ForgotPasswordPage() {
                 Check your email
               </h3>
               <p className="text-zinc-500 font-medium mb-8">
-                If an account exists for {email}, we've sent instructions to
-                reset your password.
+                If an account exists for {email}, we&apos;ve sent instructions
+                to reset your password.
               </p>
               <button
                 onClick={() => setIsSubmitted(false)}
                 className="text-primary font-bold hover:underline"
               >
-                Didn't receive it? Try again
+                Didn&apos;t receive it? Try again
               </button>
             </div>
           )}

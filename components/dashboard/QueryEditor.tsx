@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Editor, { useMonaco } from "@monaco-editor/react";
 import { format } from "sql-formatter";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/errorUtils";
 import { useClusterStore } from "@/store/useClusterStore";
 import api from "@/lib/api";
 import { useModalStore } from "@/store/useModalStore";
@@ -27,15 +28,25 @@ const QueryEditor = () => {
     setActiveQueryId,
     setQueries,
     updateActiveQueryCode,
-    addQuery,
-    removeQuery,
     runRequested,
   } = useQueryStore();
-  const [queryResults, setQueryResults] = useState<any[] | null>(null);
+  const [queryResults, setQueryResults] = useState<
+    Record<string, unknown>[] | Record<string, unknown> | null
+  >(null);
   const [isRunning, setIsRunning] = useState(false);
-  const [schemaMetadata, setSchemaMetadata] = useState<any[]>([]);
+  const [schemaMetadata, setSchemaMetadata] = useState<
+    { tableName?: string; table_name?: string; name: string }[]
+  >([]);
   const [bottomTab, setBottomTab] = useState<"results" | "history">("results");
-  const [queryHistory, setQueryHistory] = useState<any[]>([]);
+  const [queryHistory, setQueryHistory] = useState<
+    {
+      id: string;
+      query: string;
+      success: boolean;
+      executionTimeMs: number;
+      createdAt: string;
+    }[]
+  >([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
   // UI/AI State
@@ -60,8 +71,12 @@ const QueryEditor = () => {
   // Autocomplete Setup
   useEffect(() => {
     if (selectedCluster)
-      fetchSchema(selectedCluster.id).then(setSchemaMetadata);
-  }, [selectedCluster?.id, fetchSchema]);
+      fetchSchema(selectedCluster.id).then((res) =>
+        setSchemaMetadata(
+          res as { tableName?: string; table_name?: string; name: string }[],
+        ),
+      );
+  }, [selectedCluster, fetchSchema]);
 
   useEffect(() => {
     if (!monaco || schemaMetadata.length === 0) return;
@@ -81,7 +96,18 @@ const QueryEditor = () => {
           startColumn: word.startColumn,
           endColumn: word.endColumn,
         };
-        const suggestions: any[] = [
+        const suggestions: {
+          label: string;
+          kind: number;
+          insertText: string;
+          range: {
+            startLineNumber: number;
+            endLineNumber: number;
+            startColumn: number;
+            endColumn: number;
+          };
+          detail?: string;
+        }[] = [
           ...[
             "SELECT",
             "FROM",
@@ -109,9 +135,9 @@ const QueryEditor = () => {
             range,
           })),
           ...tableNames.map((t) => ({
-            label: t,
+            label: t!,
             kind: monaco.languages.CompletionItemKind.Struct,
-            insertText: t,
+            insertText: t!,
             detail: "Table",
             range,
           })),
@@ -130,28 +156,26 @@ const QueryEditor = () => {
   }, [monaco, schemaMetadata]);
 
   // Load History
-  const loadHistory = async () => {
+  const loadHistory = useCallback(async () => {
     if (!selectedCluster) return;
     setIsLoadingHistory(true);
     try {
       const logs = await fetchQueryLogs(selectedCluster.id);
-      setQueryHistory(logs);
-    } catch (error) {
+      setQueryHistory(
+        logs as {
+          id: string;
+          query: string;
+          success: boolean;
+          executionTimeMs: number;
+          createdAt: string;
+        }[],
+      );
+    } catch {
       toast.error("Failed to load query history");
     } finally {
       setIsLoadingHistory(false);
     }
-  };
-
-  useEffect(() => {
-    if (bottomTab === "history" && selectedCluster) loadHistory();
-  }, [bottomTab, selectedCluster?.id]);
-
-  useEffect(() => {
-    if (runRequested > 0) {
-      handleRunQuery();
-    }
-  }, [runRequested]);
+  }, [selectedCluster, fetchQueryLogs]);
 
   // -------------------------------------------------------------------------
   // Handlers
@@ -161,37 +185,45 @@ const QueryEditor = () => {
     updateActiveQueryCode(newCode);
   };
 
-  const proceedWithExecution = async (sql: string) => {
-    setIsRunning(true);
-    setQueryResults(null);
-    try {
-      const results = await executeQuery(selectedCluster!.id, sql);
-      const isSelect = Array.isArray(results);
-      const count = isSelect
-        ? results.length
-        : (results.rowCount ?? results.affectedRows ?? 0);
+  const proceedWithExecution = useCallback(
+    async (sql: string) => {
+      setIsRunning(true);
+      setQueryResults(null);
+      try {
+        const results = await executeQuery(selectedCluster!.id, sql);
+        const isSelect = Array.isArray(results);
+        let count = 0;
+        if (isSelect) {
+          count = (results as unknown[]).length;
+        } else if (results && typeof results === "object") {
+          const r = results as Record<string, unknown>;
+          count = (r.rowCount as number) ?? (r.affectedRows as number) ?? 0;
+        }
 
-      setQueryResults(results);
-      setBottomTab("results");
+        setQueryResults(
+          results as Record<string, unknown>[] | Record<string, unknown>,
+        );
+        setBottomTab("results");
 
-      toast.success(isSelect ? "Query successful" : "Command successful", {
-        description: isSelect
-          ? `${count} rows returned.`
-          : `${count} rows affected.`,
-      });
+        toast.success(isSelect ? "Query successful" : "Command successful", {
+          description: isSelect
+            ? `${count} rows returned.`
+            : `${count} rows affected.`,
+        });
 
-      if (bottomTab === "history") loadHistory();
-    } catch (err: any) {
-      toast.error("Execution failed", {
-        description:
-          err.message || "An unknown error occurred during execution.",
-      });
-    } finally {
-      setIsRunning(false);
-    }
-  };
+        if (bottomTab === "history") loadHistory();
+      } catch (err: unknown) {
+        toast.error("Execution failed", {
+          description: getErrorMessage(err),
+        });
+      } finally {
+        setIsRunning(false);
+      }
+    },
+    [selectedCluster, executeQuery, bottomTab, loadHistory],
+  );
 
-  const handleRunQuery = async () => {
+  const handleRunQuery = useCallback(async () => {
     if (!selectedCluster) return toast.error("Please select a cluster first");
 
     const sql = activeQuery.code.trim();
@@ -221,7 +253,17 @@ const QueryEditor = () => {
     }
 
     await proceedWithExecution(sql);
-  };
+  }, [selectedCluster, activeQuery.code, openModal, proceedWithExecution]);
+
+  useEffect(() => {
+    if (bottomTab === "history" && selectedCluster) loadHistory();
+  }, [bottomTab, selectedCluster, loadHistory]);
+
+  useEffect(() => {
+    if (runRequested > 0) {
+      handleRunQuery();
+    }
+  }, [runRequested, handleRunQuery]);
 
   const handleAskAi = async () => {
     if (aiMode === "generate" && !aiPrompt.trim()) return;
@@ -257,7 +299,7 @@ const QueryEditor = () => {
         setBottomTab("results");
         setQueryResults(null);
       }
-    } catch (error) {
+    } catch {
       toast.error("AI service failed.");
     } finally {
       setIsGenerating(false);
@@ -273,7 +315,7 @@ const QueryEditor = () => {
         }),
       );
       toast.success("Formatted");
-    } catch (e) {
+    } catch {
       toast.error("Format failed");
     }
   };

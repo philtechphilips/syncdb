@@ -4,6 +4,18 @@ import CustomSelect from "@/components/ui/CustomSelect";
 import CustomDatePicker from "@/components/ui/CustomDatePicker";
 import CustomFKSelect from "@/components/ui/CustomFKSelect";
 
+export interface TableColumn {
+  name: string;
+  type: string;
+  nullable: string;
+  columnKey: string;
+  defaultValue: string | null;
+  fullType?: string;
+  enumValues?: string;
+  referencedTable?: string;
+  referencedColumn?: string;
+}
+
 interface DataRowModalProps {
   isOpen: boolean;
   isEditMode: boolean;
@@ -11,10 +23,10 @@ interface DataRowModalProps {
   onSubmit: () => Promise<void>;
   isSaving: boolean;
   selectedTable: string;
-  tableColumns: any[];
-  formData: Record<string, any>;
+  tableColumns: TableColumn[];
+  formData: Record<string, unknown>;
   nullFields: Set<string>;
-  onInputChange: (col: string, val: any) => void;
+  onInputChange: (col: string, val: unknown) => void;
   onToggleNull: (col: string) => void;
   selectedClusterId?: string;
 }
@@ -141,7 +153,15 @@ const DataRowModal = ({
                     >
                       {col.referencedTable && col.referencedColumn ? (
                         <CustomFKSelect
-                          value={isNull ? "NULL" : (formData[col.name] ?? "")}
+                          value={
+                            isNull
+                              ? "NULL"
+                              : ((formData[col.name] as
+                                  | string
+                                  | number
+                                  | boolean
+                                  | null) ?? "")
+                          }
                           onChange={(val) => onInputChange(col.name, val)}
                           referencedTable={col.referencedTable}
                           referencedColumn={col.referencedColumn}
@@ -151,7 +171,15 @@ const DataRowModal = ({
                         />
                       ) : isBoolean ? (
                         <CustomSelect
-                          value={isNull ? "NULL" : (formData[col.name] ?? true)}
+                          value={
+                            isNull
+                              ? "NULL"
+                              : ((formData[col.name] as
+                                  | string
+                                  | number
+                                  | boolean
+                                  | null) ?? true)
+                          }
                           onChange={(val) => onInputChange(col.name, val)}
                           options={[
                             ...(col.nullable === "YES"
@@ -165,7 +193,15 @@ const DataRowModal = ({
                         />
                       ) : enumOptions ? (
                         <CustomSelect
-                          value={isNull ? "NULL" : (formData[col.name] ?? "")}
+                          value={
+                            isNull
+                              ? "NULL"
+                              : ((formData[col.name] as
+                                  | string
+                                  | number
+                                  | boolean
+                                  | null) ?? "")
+                          }
                           onChange={(val) => onInputChange(col.name, val)}
                           options={[
                             ...(col.nullable === "YES"
@@ -181,7 +217,9 @@ const DataRowModal = ({
                         />
                       ) : isDate || isDateTime ? (
                         <CustomDatePicker
-                          value={isNull ? "" : (formData[col.name] ?? "")}
+                          value={
+                            isNull ? "" : ((formData[col.name] as string) ?? "")
+                          }
                           onChange={(val) => onInputChange(col.name, val)}
                           isDateTime={isDateTime}
                           disabled={isDisabled}
@@ -205,7 +243,15 @@ const DataRowModal = ({
                                 ? "NULL"
                                 : `Enter ${col.name}...`)
                             }
-                            value={isNull ? "NULL" : (formData[col.name] ?? "")}
+                            value={
+                              isNull
+                                ? "NULL"
+                                : ((formData[col.name] as
+                                    | string
+                                    | number
+                                    | readonly string[]
+                                    | undefined) ?? "")
+                            }
                             readOnly={isNull}
                             onChange={(e) =>
                               onInputChange(col.name, e.target.value)

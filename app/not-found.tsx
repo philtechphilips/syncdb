@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowLeft, Home, Search, Terminal } from "lucide-react";
+import { Home, Search, Terminal } from "lucide-react";
 import { SynqLogo } from "@/components/ui/SynqLogo";
 
 export default function NotFound() {

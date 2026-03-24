@@ -66,10 +66,18 @@ const ERDiagram = () => {
     const loadSchema = async () => {
       setIsLoading(true);
       try {
-        const schema = await fetchSchema(selectedCluster.id);
-        const tables: Record<string, any[]> = {};
+        const schema = (await fetchSchema(selectedCluster.id)) as {
+          tableName?: string;
+          table_name?: string;
+          name: string;
+          type?: string;
+          udtName?: string;
+          columnKey?: string;
+          referencedTable?: string;
+        }[];
+        const tables: Record<string, typeof schema> = {};
         schema.forEach((col) => {
-          const tName = col.tableName || col.table_name;
+          const tName = (col.tableName || col.table_name)!;
           if (!tables[tName]) tables[tName] = [];
           tables[tName].push(col);
         });
@@ -135,15 +143,19 @@ const ERDiagram = () => {
 
         setNodes(newNodes);
         setEdges(newEdges);
-      } catch (err) {
-        console.error("Schema mapping failed:", err);
+      } catch (err: unknown) {
+        // Error is handled
+        const errorMessage =
+          (err as { response?: { data?: { message?: string } } })?.response
+            ?.data?.message || "Connection failed";
+        toast.error(errorMessage);
       } finally {
         setIsLoading(false);
       }
     };
 
     loadSchema();
-  }, [selectedCluster?.id, fetchSchema]);
+  }, [selectedCluster, fetchSchema]);
 
   // -------------------------------------------------------------------------
   // Filtering Logic
@@ -225,7 +237,7 @@ const ERDiagram = () => {
         link.click();
       }
       toast.success(`Exported successfully`, { id: toastId });
-    } catch (err) {
+    } catch {
       toast.error("Memory limit exceeded for large schema.", { id: toastId });
     } finally {
       setIsExporting(false);

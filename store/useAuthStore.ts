@@ -21,10 +21,14 @@ interface AuthState {
 
   setUser: (user: User | null) => void;
   setTokens: (access: string | null, refresh: string | null) => void;
-  login: (credentials: any) => Promise<any>;
-  register: (data: any) => Promise<any>;
-  forgotPassword: (email: string) => Promise<any>;
-  resetPassword: (data: any) => Promise<any>;
+  login: (
+    credentials: Record<string, unknown>,
+  ) => Promise<Record<string, unknown>>;
+  register: (data: Record<string, unknown>) => Promise<Record<string, unknown>>;
+  forgotPassword: (email: string) => Promise<Record<string, unknown>>;
+  resetPassword: (
+    data: Record<string, unknown>,
+  ) => Promise<Record<string, unknown>>;
   logout: () => void;
   checkAuth: () => Promise<void>;
   clearError: () => void;
@@ -69,7 +73,7 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
           });
           return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
           set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
         }
@@ -81,7 +85,7 @@ export const useAuthStore = create<AuthState>()(
           const response = await api.post("/v1/auth/register", data);
           set({ isLoading: false });
           return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
           set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
         }
@@ -95,7 +99,7 @@ export const useAuthStore = create<AuthState>()(
           });
           set({ isLoading: false });
           return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
           set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
         }
@@ -107,7 +111,7 @@ export const useAuthStore = create<AuthState>()(
           const response = await api.post("/v1/auth/reset-password", data);
           set({ isLoading: false });
           return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
           set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
         }
@@ -143,7 +147,7 @@ export const useAuthStore = create<AuthState>()(
             access_token: token,
             refresh_token: localStorage.getItem("refresh_token"),
           });
-        } catch (error) {
+        } catch {
           localStorage.removeItem("access_token");
           localStorage.removeItem("refresh_token");
           localStorage.removeItem("user");

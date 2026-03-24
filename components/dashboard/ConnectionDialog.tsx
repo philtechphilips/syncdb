@@ -41,7 +41,12 @@ const ConnectionDialog = ({
 
   if (!isOpen) return null;
 
-  const databases = [
+  const databases: {
+    id: "mysql" | "postgres" | "mssql";
+    name: string;
+    icon: string;
+    defaultPort: string;
+  }[] = [
     { id: "postgres", name: "PostgreSQL", icon: "🐘", defaultPort: "5432" },
     { id: "mysql", name: "MySQL / MariaDB", icon: "🐬", defaultPort: "3306" },
     {
@@ -66,16 +71,18 @@ const ConnectionDialog = ({
 
   const handleTest = async () => {
     try {
-      const result = await testConnection({
+      const result = (await testConnection({
         ...formData,
         type: selectedDb,
         port: parseInt(formData.port),
-      });
+      })) as { message: string };
       setTestResult({ success: true, message: result.message });
-    } catch (err: any) {
+    } catch (err: unknown) {
       setTestResult({
         success: false,
-        message: err.response?.data?.message || "Connection failed",
+        message:
+          (err as { response?: { data?: { message?: string } } })?.response
+            ?.data?.message || "Connection failed",
       });
     }
   };
@@ -98,7 +105,7 @@ const ConnectionDialog = ({
         username: "",
         password: "",
       });
-    } catch (err) {
+    } catch {
       // Error is handled by store
     }
   };
@@ -137,7 +144,7 @@ const ConnectionDialog = ({
               Select Provider
             </span>
             <div className="grid grid-cols-1 gap-3">
-              {databases.map((db: any) => (
+              {databases.map((db) => (
                 <button
                   key={db.id}
                   type="button"

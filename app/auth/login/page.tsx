@@ -3,16 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  Github,
-  Mail,
-  Lock,
-  ArrowRight,
-  Eye,
-  EyeOff,
-  Loader2,
-  AlertCircle,
-} from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
 import { SynqLogo } from "@/components/ui/SynqLogo";
 import { useAuthStore } from "@/store/useAuthStore";
 
@@ -36,7 +27,7 @@ export default function LoginPage() {
     try {
       await login({ email, password });
       router.push("/dashboard");
-    } catch (err) {
+    } catch {
       // Error is handled by the store
     }
   };
@@ -161,7 +152,6 @@ export default function LoginPage() {
                 <div className="flex justify-end">
                   <Link
                     href="/auth/forgot-password"
-                    size-1
                     className="text-[10px] font-bold text-primary hover:underline uppercase tracking-widest"
                   >
                     Forgot password?
@@ -185,7 +175,7 @@ export default function LoginPage() {
 
         <div className="mt-8 text-center">
           <p className="text-zinc-600 font-medium">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/auth/signup" className="text-primary hover:underline">
               Create one free
             </Link>

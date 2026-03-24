@@ -2,14 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X, ChevronRight, User } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { SynqLogo } from "@/components/ui/SynqLogo";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export const LandingNavbar = ({ onLaunch }: { onLaunch: () => void }) => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const { isAuthenticated, user, logout } = useAuthStore();
+  const { isAuthenticated, logout } = useAuthStore();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -82,12 +81,12 @@ export const LandingNavbar = ({ onLaunch }: { onLaunch: () => void }) => {
               >
                 Sign In
               </Link>
-              <Link
-                href="/auth/signup"
+              <button
+                onClick={onLaunch}
                 className="px-6 py-2.5 rounded-full bg-primary text-white text-[10px] font-black uppercase tracking-[0.3em] transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
               >
                 Try Free
-              </Link>
+              </button>
             </div>
           )}
         </div>

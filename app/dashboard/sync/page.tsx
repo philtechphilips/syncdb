@@ -17,14 +17,21 @@ import {
   Plus,
   Minus,
   CheckCircle2,
-  Box,
 } from "lucide-react";
 
 interface DiffResult {
-  missingInTarget: any[];
-  missingInSource: any[];
-  tableMismatches: any[];
-  matchingTables: any[];
+  missingInTarget: { tableName: string }[];
+  missingInSource: { tableName: string }[];
+  tableMismatches: {
+    tableName: string;
+    missingColumns: { name: string; type: string; status: string }[];
+    typeMismatches: {
+      name: string;
+      sourceType: string;
+      targetType: string;
+    }[];
+  }[];
+  matchingTables: { tableName: string }[];
 }
 
 export default function SyncPage() {
@@ -38,12 +45,12 @@ export default function SyncPage() {
   const [selectedTables, setSelectedTables] = useState<string[]>([]);
   const [withData, setWithData] = useState(false);
   const [activeCategory, setActiveCategory] = useState<
-    "mismatches" | "missing" | "matching" | "extra"
-  >("mismatches");
+    "all" | "missing" | "extra" | "mismatch"
+  >("mismatch");
 
   useEffect(() => {
     if (selectedCluster && !sourceId) setSourceId(selectedCluster.id);
-  }, [selectedCluster]);
+  }, [selectedCluster, sourceId]);
 
   const handleDropTable = async (tableName: string) => {
     if (!targetId) return;
@@ -61,7 +68,7 @@ export default function SyncPage() {
             description: `${tableName} was successfully deleted.`,
           });
           handleCompare(); // Refresh
-        } catch (error) {
+        } catch {
           toast.error("Failed to delete table");
         }
       },
@@ -90,16 +97,16 @@ export default function SyncPage() {
       setDiff(res.data);
 
       // Set initial category based on results
-      if (res.data.tableMismatches.length > 0) setActiveCategory("mismatches");
+      if (res.data.tableMismatches.length > 0) setActiveCategory("mismatch");
       else if (res.data.missingInTarget.length > 0)
         setActiveCategory("missing");
       else if (res.data.missingInSource.length > 0) setActiveCategory("extra");
-      else setActiveCategory("matching");
+      else setActiveCategory("all");
 
       toast.success("Comparison Ready", {
         description: "Schemas analyzed successfully.",
       });
-    } catch (error) {
+    } catch {
       toast.error("Failed to compare schemas");
     } finally {
       setIsComparing(false);
@@ -121,7 +128,7 @@ export default function SyncPage() {
         withData,
       });
 
-      const failures = res.data.filter((r: any) => !r.success);
+      const failures = res.data.filter((r: { success: boolean }) => !r.success);
       if (failures.length > 0) {
         toast.error(`Sync partially failed: ${failures.length} tables failed.`);
       } else {
@@ -130,7 +137,7 @@ export default function SyncPage() {
         });
         handleCompare(); // Refresh
       }
-    } catch (error) {
+    } catch {
       toast.error("Sync failed");
     } finally {
       setIsSyncing(false);
@@ -148,11 +155,11 @@ export default function SyncPage() {
   const selectAllFromActive = () => {
     if (!diff) return;
     let tables: string[] = [];
-    if (activeCategory === "mismatches")
+    if (activeCategory === "mismatch")
       tables = diff.tableMismatches.map((t) => t.tableName);
     if (activeCategory === "missing")
       tables = diff.missingInTarget.map((t) => t.tableName);
-    if (activeCategory === "matching")
+    if (activeCategory === "all")
       tables = diff.matchingTables.map((t) => t.tableName);
 
     setSelectedTables((prev) => [...new Set([...prev, ...tables])]);
@@ -320,7 +327,7 @@ export default function SyncPage() {
               <div className="flex flex-wrap items-center gap-2">
                 {[
                   {
-                    id: "mismatches",
+                    id: "mismatch",
                     label: "Mismatches",
                     fullLabel: "Structural Mismatches",
                     count: diff.tableMismatches.length,
@@ -336,7 +343,7 @@ export default function SyncPage() {
                     bg: "bg-rose-500/10",
                   },
                   {
-                    id: "matching",
+                    id: "all",
                     label: "Matching",
                     fullLabel: "Matching Perfectly",
                     count: diff.matchingTables.length,
@@ -347,14 +354,18 @@ export default function SyncPage() {
                     id: "extra",
                     label: "Extra",
                     fullLabel: "Extra in Target",
-                    count: (diff as any).missingInSource.length,
+                    count: diff.missingInSource.length,
                     color: "text-zinc-400",
                     bg: "bg-white/5",
                   },
                 ].map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveCategory(tab.id as any)}
+                    onClick={() =>
+                      setActiveCategory(
+                        tab.id as "all" | "missing" | "extra" | "mismatch",
+                      )
+                    }
                     className={`flex items-center gap-2 lg:gap-3 px-3 lg:px-6 py-2.5 lg:py-3 rounded-xl border transition-all ${
                       activeCategory === tab.id
                         ? `border-${tab.color.split("-")[1]}-500/50 ${tab.bg} ${tab.color}`
@@ -417,7 +428,7 @@ export default function SyncPage() {
                 <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
                   <div className="flex flex-col">
                     <h3 className="text-sm font-black text-white uppercase tracking-widest mb-1">
-                      {activeCategory === "mismatches"
+                      {activeCategory === "mismatch"
                         ? "Structural Repair"
                         : activeCategory === "missing"
                           ? "Missing Declarations"
@@ -441,7 +452,7 @@ export default function SyncPage() {
                 </div>
 
                 {/* Items */}
-                {activeCategory === "mismatches" && (
+                {activeCategory === "mismatch" && (
                   <div className="space-y-4">
                     {diff.tableMismatches.map((item) => (
                       <div
@@ -484,7 +495,7 @@ export default function SyncPage() {
                           </button>
                         </div>
                         <div className="p-5 grid grid-cols-2 gap-4 bg-black/20">
-                          {item.missingColumns.map((col: any) => (
+                          {item.missingColumns.map((col) => (
                             <div
                               key={col.name}
                               className="flex items-center gap-3 p-3 bg-[#040d12] rounded-xl border border-white/[0.03]"
@@ -505,7 +516,7 @@ export default function SyncPage() {
                               </span>
                             </div>
                           ))}
-                          {item.typeMismatches.map((col: any) => (
+                          {item.typeMismatches.map((col) => (
                             <div
                               key={col.name}
                               className="flex items-center gap-3 p-3 bg-[#040d12] rounded-xl border border-white/[0.03]"
@@ -568,9 +579,9 @@ export default function SyncPage() {
                   </div>
                 )}
 
-                {activeCategory === "matching" && (
+                {activeCategory === "all" && (
                   <div className="space-y-4">
-                    {diff.matchingTables.map((item: any) => (
+                    {diff.matchingTables.map((item) => (
                       <div
                         key={item.tableName}
                         className="flex items-center justify-between p-5 bg-[#0b1215]/40 border border-white/5 hover:border-emerald-500/30 rounded-2xl group transition-all duration-300"
@@ -606,7 +617,7 @@ export default function SyncPage() {
                 )}
 
                 {activeCategory === "extra" &&
-                  (diff as any).missingInSource.map((item: any) => (
+                  diff.missingInSource.map((item) => (
                     <div
                       key={item.tableName}
                       className="flex items-center justify-between p-5 bg-[#0b1215]/40 border border-white/5 hover:border-zinc-500/30 rounded-2xl group transition-all duration-300"
@@ -635,7 +646,7 @@ export default function SyncPage() {
                   ))}
 
                 {diff[
-                  activeCategory === "mismatches"
+                  activeCategory === "mismatch"
                     ? "tableMismatches"
                     : activeCategory === "missing"
                       ? "missingInTarget"

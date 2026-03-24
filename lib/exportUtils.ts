@@ -1,10 +1,10 @@
-export const formatToJSON = (data: any[]) => {
+export const formatToJSON = <T extends Record<string, unknown>>(data: T[]) => {
   return JSON.stringify(data, null, 2);
 };
 
-export const formatToCSV = (data: any[]) => {
+export const formatToCSV = <T extends Record<string, unknown>>(data: T[]) => {
   if (data.length === 0) return "";
-  const keys = Object.keys(data[0]);
+  const keys = Object.keys(data[0]) as (keyof T)[];
   return [
     keys.join(","),
     ...data.map((row) =>
@@ -20,9 +20,12 @@ export const formatToCSV = (data: any[]) => {
   ].join("\n");
 };
 
-export const formatToSQL = (data: any[], tableName: string = "table") => {
+export const formatToSQL = <T extends Record<string, unknown>>(
+  data: T[],
+  tableName: string = "table",
+) => {
   if (data.length === 0) return "";
-  const keys = Object.keys(data[0]);
+  const keys = Object.keys(data[0]) as (keyof T)[];
   return data
     .map((row) => {
       const vals = keys
@@ -38,9 +41,11 @@ export const formatToSQL = (data: any[], tableName: string = "table") => {
     .join("\n");
 };
 
-export const formatToMarkdown = (data: any[]) => {
+export const formatToMarkdown = <T extends Record<string, unknown>>(
+  data: T[],
+) => {
   if (data.length === 0) return "";
-  const keys = Object.keys(data[0]);
+  const keys = Object.keys(data[0]) as (keyof T)[];
   const header = `| ${keys.join(" | ")} |`;
   const separator = `| ${keys.map(() => "---").join(" | ")} |`;
   const body = data
@@ -73,9 +78,9 @@ export const downloadFile = (
   URL.revokeObjectURL(url);
 };
 
-export const formatData = (
+export const formatData = <T extends Record<string, unknown>>(
   format: string,
-  data: any[],
+  data: T[],
   tableName: string = "table",
 ) => {
   const upperFormat = format.toUpperCase();

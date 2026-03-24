@@ -20,56 +20,68 @@ interface ClusterState {
   isTablesLoading: boolean;
   isDataLoading: boolean;
   error: string | null;
-  tables: any[];
-  tableData: any[];
+  tables: { name: string }[];
+  tableData: Record<string, unknown>[];
   totalRows: number;
   currentPage: number;
   rowsPerPage: number;
-  activeTab: "query" | "er" | "table" | "logs" | "sync";
+  activeTab: "query" | "er" | "table" | "logs" | "sync" | "backup";
   selectedTable: string;
   fetchClusters: () => Promise<Cluster[]>;
-  fetchTables: (clusterId: string) => Promise<any[]>;
-  fetchTableColumns: (clusterId: string, tableName: string) => Promise<any[]>;
+  fetchTables: (clusterId: string) => Promise<{ name: string }[]>;
+  fetchTableColumns: (
+    clusterId: string,
+    tableName: string,
+  ) => Promise<{ name: string; type: string }[]>;
   fetchTableData: (
     clusterId: string,
     tableName: string,
     page?: number,
     limit?: number,
-    filters?: any[],
-  ) => Promise<any[]>;
+    filters?: { column: string; operator: string; value: unknown }[],
+  ) => Promise<Record<string, unknown>[]>;
   updateRow: (
     clusterId: string,
     tableName: string,
-    data: any,
-    where: any,
+    data: Record<string, unknown>,
+    where: Record<string, unknown>,
   ) => Promise<void>;
-  insertRow: (clusterId: string, tableName: string, data: any) => Promise<void>;
+  insertRow: (
+    clusterId: string,
+    tableName: string,
+    data: Record<string, unknown>,
+  ) => Promise<void>;
   deleteRows: (
     clusterId: string,
     tableName: string,
-    where: any,
+    where: Record<string, unknown>,
   ) => Promise<void>;
   deleteRowsBulk: (
     clusterId: string,
     tableName: string,
-    rows: any[],
+    rows: Record<string, unknown>[],
   ) => Promise<void>;
   selectCluster: (cluster: Cluster | null) => void;
-  createCluster: (data: any) => Promise<Cluster>;
-  testConnection: (data: any) => Promise<any>;
+  createCluster: (data: Record<string, unknown>) => Promise<Cluster>;
+  testConnection: (data: Record<string, unknown>) => Promise<unknown>;
   deleteCluster: (id: string) => Promise<void>;
-  setActiveTab: (tab: "query" | "er" | "table" | "logs" | "sync") => void;
+  setActiveTab: (
+    tab: "query" | "er" | "table" | "logs" | "sync" | "backup",
+  ) => void;
   setSelectedTable: (tableName: string) => void;
   clearError: () => void;
-  fetchSchema: (clusterId: string) => Promise<any[]>;
-  executeQuery: (clusterId: string, query: string) => Promise<any>;
-  fetchQueryLogs: (clusterId: string) => Promise<any[]>;
+  fetchSchema: (clusterId: string) => Promise<unknown[]>;
+  executeQuery: (clusterId: string, query: string) => Promise<unknown>;
+  fetchQueryLogs: (clusterId: string) => Promise<unknown[]>;
   dropTable: (clusterId: string, tableName: string) => Promise<void>;
-  backup: (clusterId: string, format: "sql" | "csv" | "json") => Promise<any>;
+  backup: (
+    clusterId: string,
+    format: "sql" | "csv" | "json",
+  ) => Promise<{ content?: string; [key: string]: unknown }>;
   restore: (
     clusterId: string,
     format: "sql" | "csv" | "json",
-    data: any,
+    data: unknown,
   ) => Promise<void>;
 }
 
@@ -114,7 +126,7 @@ export const useClusterStore = create<ClusterState>()(
 
           set({ clusters, selectedCluster: nextSelected, isLoading: false });
           return clusters;
-        } catch (error: any) {
+        } catch (error: unknown) {
           set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
         }
@@ -124,12 +136,13 @@ export const useClusterStore = create<ClusterState>()(
         set({ isTablesLoading: true, error: null });
         try {
           const response = await api.get(`/v1/clusters/${clusterId}/tables`);
-          const sortedTables = (response.data || []).sort((a: any, b: any) =>
-            a.name.localeCompare(b.name),
+          const sortedTables = (response.data || []).sort(
+            (a: { name: string }, b: { name: string }) =>
+              a.name.localeCompare(b.name),
           );
           set({ tables: sortedTables, isTablesLoading: false });
           return sortedTables;
-        } catch (error: any) {
+        } catch (error: unknown) {
           set({
             isTablesLoading: false,
             error: getErrorMessage(error),
@@ -145,7 +158,7 @@ export const useClusterStore = create<ClusterState>()(
             `/v1/clusters/${clusterId}/tables/${tableName}/columns`,
           );
           return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
           set({ error: getErrorMessage(error) });
           throw error;
         }
@@ -156,7 +169,7 @@ export const useClusterStore = create<ClusterState>()(
         tableName: string,
         page: number = 1,
         limit: number = 100,
-        filters: any[] = [],
+        filters: { column: string; operator: string; value: unknown }[] = [],
       ) => {
         set({ isDataLoading: true, error: null });
         try {
@@ -177,7 +190,7 @@ export const useClusterStore = create<ClusterState>()(
             isDataLoading: false,
           });
           return data;
-        } catch (error: any) {
+        } catch (error: unknown) {
           set({
             isDataLoading: false,
             error: getErrorMessage(error),
@@ -205,7 +218,7 @@ export const useClusterStore = create<ClusterState>()(
             return match ? { ...row, ...data } : row;
           });
           set({ tableData: updatedTableData, isDataLoading: false });
-        } catch (error: any) {
+        } catch (error: unknown) {
           set({ isDataLoading: false, error: getErrorMessage(error) });
           throw error;
         }
@@ -224,7 +237,7 @@ export const useClusterStore = create<ClusterState>()(
             totalRows: state.totalRows + 1,
             isDataLoading: false,
           }));
-        } catch (error) {
+        } catch (error: unknown) {
           const message = getErrorMessage(error);
           set({ error: message, isDataLoading: false });
           throw error;
@@ -250,7 +263,7 @@ export const useClusterStore = create<ClusterState>()(
             totalRows: Math.max(0, state.totalRows - 1),
             isDataLoading: false,
           }));
-        } catch (error) {
+        } catch (error: unknown) {
           const message = getErrorMessage(error);
           set({ error: message, isDataLoading: false });
           throw error;
@@ -260,7 +273,7 @@ export const useClusterStore = create<ClusterState>()(
       deleteRowsBulk: async (
         clusterId: string,
         tableName: string,
-        selectedRows: any[],
+        selectedRows: Record<string, unknown>[],
       ) => {
         if (selectedRows.length === 0) return;
         set({ isDataLoading: true, error: null });
@@ -268,14 +281,14 @@ export const useClusterStore = create<ClusterState>()(
           // Send all deletes in parallel
           // In a real production app, we would have a dedicated bulk DELETE endpoint
           await Promise.all(
-            selectedRows.map((row: any) =>
+            selectedRows.map((row: Record<string, unknown>) =>
               api.delete(`/v1/clusters/${clusterId}/tables/${tableName}/rows`, {
                 data: { where: { id: row.id } },
               }),
             ),
           );
 
-          const idsToDelete = selectedRows.map((r: any) => r.id);
+          const idsToDelete = selectedRows.map((r) => r.id);
           const { tableData } = get();
           const filteredData = tableData.filter(
             (row) => !idsToDelete.includes(row.id),
@@ -317,7 +330,7 @@ export const useClusterStore = create<ClusterState>()(
             selectedCluster: state.selectedCluster || newCluster, // Select automatically if it's the first one
           }));
           return newCluster;
-        } catch (error: any) {
+        } catch (error: unknown) {
           set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
         }
@@ -326,10 +339,12 @@ export const useClusterStore = create<ClusterState>()(
       testConnection: async (data) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await api.post("/v1/clusters/test", data);
+          const response = await api.post("/v1/clusters/test", data, {
+            _skipToast: true,
+          } as any);
           set({ isLoading: false });
           return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
           set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
         }
@@ -345,7 +360,7 @@ export const useClusterStore = create<ClusterState>()(
               state.selectedCluster?.id === id ? null : state.selectedCluster,
             isLoading: false,
           }));
-        } catch (error: any) {
+        } catch (error: unknown) {
           set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
         }
@@ -359,7 +374,7 @@ export const useClusterStore = create<ClusterState>()(
         try {
           const response = await api.get(`/v1/clusters/${clusterId}/schema`);
           return response.data || [];
-        } catch (error: any) {
+        } catch (error: unknown) {
           set({ error: getErrorMessage(error) });
           throw error;
         }
@@ -367,11 +382,15 @@ export const useClusterStore = create<ClusterState>()(
 
       executeQuery: async (clusterId: string, query: string) => {
         try {
-          const response = await api.post(`/v1/clusters/${clusterId}/query`, {
-            query,
-          });
+          const response = await api.post(
+            `/v1/clusters/${clusterId}/query`,
+            {
+              query,
+            },
+            { _skipToast: true } as any,
+          );
           return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
           const message = getErrorMessage(error);
           set({ error: message });
           throw error;
@@ -384,7 +403,7 @@ export const useClusterStore = create<ClusterState>()(
             `/v1/clusters/${clusterId}/query/logs`,
           );
           return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
           const message = getErrorMessage(error);
           set({ error: message });
           throw error;
@@ -401,7 +420,7 @@ export const useClusterStore = create<ClusterState>()(
               state.selectedTable === tableName ? "" : state.selectedTable,
             isTablesLoading: false,
           }));
-        } catch (error: any) {
+        } catch (error: unknown) {
           const message = getErrorMessage(error);
           set({ error: message, isTablesLoading: false });
           throw error;
@@ -413,10 +432,11 @@ export const useClusterStore = create<ClusterState>()(
         try {
           const response = await api.get(`/v1/clusters/${clusterId}/backup`, {
             params: { format },
-          });
+            _skipToast: true,
+          } as any);
           set({ isDataLoading: false });
           return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
           const message = getErrorMessage(error);
           set({ error: message, isDataLoading: false });
           throw error;
@@ -426,14 +446,18 @@ export const useClusterStore = create<ClusterState>()(
       restore: async (
         clusterId: string,
         format: "sql" | "csv" | "json",
-        data: any,
+        data: unknown,
       ) => {
         set({ isDataLoading: true, error: null });
         try {
-          await api.post(`/v1/clusters/${clusterId}/restore`, { format, data });
+          await api.post(
+            `/v1/clusters/${clusterId}/restore`,
+            { format, data },
+            { _skipToast: true } as any,
+          );
           await get().fetchTables(clusterId);
           set({ isDataLoading: false });
-        } catch (error: any) {
+        } catch (error: unknown) {
           const message = getErrorMessage(error);
           set({ error: message, isDataLoading: false });
           throw error;

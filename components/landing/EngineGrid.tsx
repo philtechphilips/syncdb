@@ -2,7 +2,8 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Database, Zap, Shield, Layers, Cpu, Globe2 } from "lucide-react";
+import NextImage from "next/image";
+import { Database, Layers } from "lucide-react";
 
 const engines = [
   {
@@ -50,8 +51,8 @@ export const EngineGrid = () => {
             modern dialect.
           </h2>
           <p className="text-zinc-500 font-medium">
-            SynqDB isn't just a wrapper. We've built native drivers for the 4
-            core database technologies in your stack.
+            SynqDB isn&apos;t just a wrapper. We&apos;ve built native drivers
+            for the 4 core database technologies in your stack.
           </p>
         </div>
 
@@ -59,10 +60,12 @@ export const EngineGrid = () => {
           {/* Featured: PostgreSQL */}
           <div className="md:col-span-8 group relative overflow-hidden rounded-[2.5rem] bg-white/[0.02] border border-white/5 p-12 transition-all hover:border-primary/20 hover:bg-white/[0.03]">
             <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:opacity-20 transition-opacity">
-              <img
+              <NextImage
                 src={engines[0].icon}
                 alt=""
-                className="h-40 w-40 grayscale group-hover:grayscale-0 transition-all duration-700"
+                width={160}
+                height={160}
+                className="grayscale group-hover:grayscale-0 transition-all duration-700"
               />
             </div>
             <div className="relative z-10 max-w-md">
@@ -93,10 +96,12 @@ export const EngineGrid = () => {
               <div className="p-3 rounded-xl bg-white/5 border border-white/10 w-max mb-8 group-hover:scale-110 transition-transform">
                 <Layers className="h-6 w-6 text-zinc-400" />
               </div>
-              <img
+              <NextImage
                 src={engines[3].icon}
                 alt=""
-                className="h-10 w-10 mb-6 grayscale group-hover:grayscale-0 transition-all duration-500"
+                width={40}
+                height={40}
+                className="mb-6 grayscale group-hover:grayscale-0 transition-all duration-500"
               />
               <h3 className="text-2xl font-bold text-white mb-4 italic font-serif">
                 {engines[3].name}
@@ -115,10 +120,12 @@ export const EngineGrid = () => {
           {/* MSSQL */}
           <div className="md:col-span-5 group relative overflow-hidden rounded-[2.5rem] bg-white/[0.02] border border-white/5 p-10 transition-all hover:border-primary/20 hover:bg-white/[0.03]">
             <div className="relative z-10">
-              <img
+              <NextImage
                 src={engines[2].icon}
                 alt=""
-                className="h-12 w-12 mb-8 grayscale group-hover:grayscale-0 transition-all duration-500"
+                width={48}
+                height={48}
+                className="mb-8 grayscale group-hover:grayscale-0 transition-all duration-500"
               />
               <h3 className="text-2xl font-bold text-white mb-4 italic font-serif">
                 MSSQL Enterprise
@@ -147,10 +154,12 @@ export const EngineGrid = () => {
           <div className="md:col-span-7 group relative overflow-hidden rounded-[2.5rem] bg-white/[0.02] border border-white/5 p-10 transition-all hover:border-primary/20 hover:bg-white/[0.03]">
             <div className="relative z-10 flex flex-col md:flex-row gap-8 items-start md:items-center">
               <div className="flex-1">
-                <img
+                <NextImage
                   src={engines[1].icon}
                   alt=""
-                  className="h-12 w-12 mb-8 grayscale group-hover:grayscale-0 transition-all duration-500"
+                  width={48}
+                  height={48}
+                  className="mb-8 grayscale group-hover:grayscale-0 transition-all duration-500"
                 />
                 <h3 className="text-2xl font-bold text-white mb-4 italic font-serif">
                   {engines[1].name} Production

@@ -77,7 +77,7 @@ api.interceptors.response.use(
     }
 
     // Show toast for other critical errors
-    if (error.response?.status !== 401) {
+    if (error.response?.status !== 401 && !error.config?._skipToast) {
       toast.error(getErrorMessage(error));
     }
 

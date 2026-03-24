@@ -1,19 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  Search,
-  ChevronRight,
-  Filter,
-  Database,
-  Zap,
-  Shield,
-  ArrowRightLeft,
-  CheckCircle2,
-  Hash,
-  Type,
-  Activity,
-} from "lucide-react";
+import { Search, Zap, Shield, CheckCircle2, Hash, Type } from "lucide-react";
 import { motion } from "framer-motion";
 
 export const DataExplorerSection = () => {
@@ -76,7 +64,7 @@ export const DataExplorerSection = () => {
                             Value
                           </span>
                           <span className="text-lg font-mono font-medium text-white/60 italic tracking-tight">
-                            "deleted"
+                            &quot;deleted&quot;
                           </span>
                         </div>
                       </div>

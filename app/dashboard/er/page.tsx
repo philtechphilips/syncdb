@@ -9,7 +9,7 @@ export default function ERPage() {
 
   useEffect(() => {
     setActiveTab("er");
-  }, []);
+  }, [setActiveTab]);
 
   return (
     <div className="flex-1 p-8 bg-background/50 h-full overflow-hidden">

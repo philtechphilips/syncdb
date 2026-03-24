@@ -1,13 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import {
-  Copy,
-  Loader2,
-  History,
-  AlertCircle,
-  CheckCircle2,
-} from "lucide-react";
+import React, { useEffect, useState, useCallback } from "react";
+import { Copy, Loader2, History } from "lucide-react";
 import { useClusterStore } from "@/store/useClusterStore";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -29,6 +23,18 @@ export default function LogsPage() {
   const [logs, setLogs] = useState<QueryLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const loadLogs = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await fetchQueryLogs(selectedCluster!.id);
+      setLogs(data as QueryLog[]);
+    } catch {
+      toast.error("Failed to load audit logs");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchQueryLogs, selectedCluster]);
+
   useEffect(() => {
     setActiveTab("logs");
     if (selectedCluster) {
@@ -36,19 +42,7 @@ export default function LogsPage() {
     } else {
       setIsLoading(false);
     }
-  }, [selectedCluster]);
-
-  const loadLogs = async () => {
-    setIsLoading(true);
-    try {
-      const data = await fetchQueryLogs(selectedCluster!.id);
-      setLogs(data);
-    } catch (error) {
-      toast.error("Failed to load audit logs");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [selectedCluster, setActiveTab, loadLogs]);
 
   const formatDateGroup = (dateStr: string) => {
     const date = new Date(dateStr);

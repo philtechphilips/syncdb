@@ -2,7 +2,6 @@
 
 import React from "react";
 
-import Link from "next/link";
 import { LandingNavbar } from "@/components/landing/LandingNavbar";
 import { Hero } from "@/components/landing/Hero";
 import { Features } from "@/components/landing/Features";
@@ -16,7 +15,6 @@ import { Pricing } from "@/components/landing/Pricing";
 import { Footer } from "@/components/landing/Footer";
 import { CTASection } from "@/components/landing/CTASection";
 import { useRouter } from "next/navigation";
-import { SynqLogo } from "@/components/ui/SynqLogo";
 import { MouseGlow } from "@/components/ui/MouseGlow";
 
 export default function Home() {

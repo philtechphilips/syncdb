@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Sparkles, Zap, LayoutGrid } from "lucide-react";
 import { motion } from "framer-motion";
 
 export const DeveloperExperience = () => {
@@ -132,7 +131,7 @@ export const DeveloperExperience = () => {
                 <span className="text-primary italic">Data.</span>
               </h2>
               <p className="text-xl text-zinc-500 font-medium leading-relaxed max-w-lg">
-                Don't just look at tables. See the relationships and the
+                Don&apos;t just look at tables. See the relationships and the
                 structure of your data in a clear, visual way.
               </p>
             </motion.div>

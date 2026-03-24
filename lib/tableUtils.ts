@@ -8,15 +8,16 @@ export interface FilterRule {
   value: string;
 }
 
-export const applyFilters = (
-  rows: any[],
+export const applyFilters = <T extends Record<string, unknown>>(
+  rows: T[],
   filters: FilterRule[],
   showSelectedOnly: boolean,
-  selectedRows: Set<any>,
+  selectedRows: Set<string | number>,
 ) => {
   return rows.filter((row) => {
     // 1. Selection Filter
-    if (showSelectedOnly && !selectedRows.has(row.id)) return false;
+    if (showSelectedOnly && !selectedRows.has(row.id as string | number))
+      return false;
 
     // 2. Advanced Column Filters
     return filters.every((filter) => {
@@ -52,12 +53,15 @@ export const applyFilters = (
   });
 };
 
-export const cloneTableRow = (rows: any[], rowId: any) => {
+export const cloneTableRow = <T extends Record<string, unknown>>(
+  rows: T[],
+  rowId: string | number,
+) => {
   const rowToClone = rows.find((r) => r.id === rowId);
   if (!rowToClone) return rows;
 
   const newId = Math.max(...rows.map((r) => Number(r.id) || 0)) + 1;
-  const newRow = { ...rowToClone, id: newId };
+  const newRow = { ...rowToClone, id: newId } as T;
   const index = rows.findIndex((r) => r.id === rowId);
 
   const nextRows = [...rows];
@@ -65,6 +69,9 @@ export const cloneTableRow = (rows: any[], rowId: any) => {
   return nextRows;
 };
 
-export const deleteTableRow = (rows: any[], id: any) => {
+export const deleteTableRow = <T extends Record<string, unknown>>(
+  rows: T[],
+  id: string | number,
+) => {
   return rows.filter((r) => r.id !== id);
 };

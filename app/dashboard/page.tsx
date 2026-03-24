@@ -24,7 +24,14 @@ export default function DashboardPage() {
         router.replace(`/dashboard/${tabFromUrl}`);
       }
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [
+    isAuthenticated,
+    isLoading,
+    router,
+    searchParams,
+    activeTab,
+    selectedTable,
+  ]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">

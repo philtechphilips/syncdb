@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   ChevronDown,
   CheckCircle2,
@@ -7,15 +7,12 @@ import {
   Database,
   X,
   Maximize2,
-  ExternalLink,
-  ArrowLeft,
-  ArrowRight,
 } from "lucide-react";
 import api from "@/lib/api";
 
 interface CustomFKSelectProps {
-  value: any;
-  onChange: (val: any) => void;
+  value: unknown;
+  onChange: (val: unknown) => void;
   referencedTable: string;
   referencedColumn: string;
   clusterId: string;
@@ -38,13 +35,14 @@ const CustomFKSelect = ({
 }: CustomFKSelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [options, setOptions] = useState<any[]>([]);
+  const [options, setOptions] = useState<Record<string, unknown>[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
+
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -60,39 +58,42 @@ const CustomFKSelect = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const fetchOptions = async (
-    pageNum: number = 1,
-    isSearch: boolean = false,
-  ) => {
-    if (isLoading || (!hasMore && pageNum > 1 && !isSearch)) return;
+  const fetchOptions = useCallback(
+    async (pageNum: number = 1, isSearch: boolean = false) => {
+      if (isLoading || (!hasMore && pageNum > 1 && !isSearch)) return;
 
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await api.get(
-        `/v1/clusters/${clusterId}/tables/${referencedTable}`,
-        {
-          params: { page: pageNum, limit: 50 },
-        },
-      );
-      // Handle paginated response format { data, total, page, limit }
-      const newData = response.data?.data || response.data || [];
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await api.get(
+          `/v1/clusters/${clusterId}/tables/${referencedTable}`,
+          {
+            params: { page: pageNum, limit: 50 },
+          },
+        );
+        // Handle paginated response format { data, total, page, limit }
+        const newData = (response.data?.data || response.data || []) as Record<
+          string,
+          unknown
+        >[];
 
-      if (isSearch || pageNum === 1) {
-        setOptions(newData);
-      } else {
-        setOptions((prev) => [...prev, ...newData]);
+        if (isSearch || pageNum === 1) {
+          setOptions(newData);
+        } else {
+          setOptions((prev) => [...prev, ...newData]);
+        }
+
+        setHasMore(newData.length === 50);
+        setPage(pageNum);
+      } catch (err) {
+        console.error("Failed to fetch FK options:", err);
+        setError(`Could not load records from ${referencedTable}`);
+      } finally {
+        setIsLoading(false);
       }
-
-      setHasMore(newData.length === 50);
-      setPage(pageNum);
-    } catch (err) {
-      console.error("Failed to fetch FK options:", err);
-      setError(`Could not load records from ${referencedTable}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [clusterId, hasMore, isLoading, referencedTable],
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -100,7 +101,7 @@ const CustomFKSelect = ({
       setHasMore(true);
       fetchOptions(1);
     }
-  }, [isOpen, referencedTable]);
+  }, [isOpen, referencedTable, fetchOptions]);
 
   // Handle searching with a delay to avoid too many requests
   useEffect(() => {
@@ -112,7 +113,7 @@ const CustomFKSelect = ({
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [search]);
+  }, [search, isOpen, fetchOptions]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
@@ -125,7 +126,7 @@ const CustomFKSelect = ({
     }
   };
 
-  const getOptionLabel = (opt: any) => {
+  const getOptionLabel = (opt: Record<string, unknown>) => {
     const val = opt[referencedColumn];
     const descriptives = [
       "name",
@@ -149,7 +150,7 @@ const CustomFKSelect = ({
   const selectedOption = options.find((opt) => opt[referencedColumn] === value);
   const displayValue = selectedOption
     ? getOptionLabel(selectedOption)
-    : value || placeholder || `Select from ${referencedTable}...`;
+    : (value as string) || placeholder || `Select from ${referencedTable}...`;
 
   return (
     <div className="relative" ref={containerRef}>
@@ -354,7 +355,7 @@ const CustomFKSelect = ({
         referencedTable={referencedTable}
         referencedColumn={referencedColumn}
         clusterId={clusterId}
-        selectedValue={value}
+        selectedValue={value as string | number | boolean | null}
       />
     </div>
   );

@@ -14,16 +14,16 @@ import { downloadFile, formatData } from "@/lib/exportUtils";
 import DataTableHeader from "./DataTable/DataTableHeader";
 import DataTableBody from "./DataTable/DataTableBody";
 import DataTableFooter from "./DataTable/DataTableFooter";
-import DataRowModal from "./DataTable/DataRowModal";
+import DataRowModal, { TableColumn } from "./DataTable/DataRowModal";
 import DataContextMenu from "./DataTable/DataContextMenu";
 import ExportModal from "./DataTable/ExportModal";
 
 interface DataTableProps {
-  data?: any[];
+  data?: Record<string, unknown>[];
   selectedTable?: string;
 }
 
-const DataTable = ({ data, selectedTable }: DataTableProps) => {
+const DataTable = ({ selectedTable }: DataTableProps) => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const {
@@ -43,14 +43,17 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
   } = useClusterStore();
 
   // Core Data State
-  const [rows, setRows] = useState<any[]>(tableData);
-  const [selectedRows, setSelectedRows] = useState<Set<any>>(new Set());
+  const [rows, setRows] = useState<Record<string, unknown>[]>(tableData);
+  const [selectedRows, setSelectedRows] = useState<Set<string | number>>(
+    new Set(),
+  );
+
   const [activeCell, setActiveCell] = useState<{
-    rowId: number;
+    rowId: string | number;
     colName: string;
   } | null>(null);
   const [editingCell, setEditingCell] = useState<{
-    rowId: any;
+    rowId: string | number;
     colName: string;
     value: string;
   } | null>(null);
@@ -59,10 +62,11 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
-    rowId: number;
+    rowId: string | number;
     colName: string;
     type: "cell" | "row";
   } | null>(null);
+
   const [showCopyDropdown, setShowCopyDropdown] = useState(false);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [showGlobalExportDropdown, setShowGlobalExportDropdown] =
@@ -75,10 +79,12 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
   // Row Insertion/Update State
   const [showRowModal, setShowRowModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editingRow, setEditingRow] = useState<any>(null);
-  const [tableColumns, setTableColumns] = useState<any[]>([]);
+  const [editingRow, setEditingRow] = useState<Record<string, unknown> | null>(
+    null,
+  );
+  const [tableColumns, setTableColumns] = useState<TableColumn[]>([]);
   const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [nullFields, setNullFields] = useState<Set<string>>(new Set());
 
   // Filtering State
@@ -104,7 +110,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
           setActiveFilters(parsed);
           setStagedFilters(parsed);
         }
-      } catch (e) {
+      } catch {
         console.error("Failed to parse filters from URL");
       }
     }
@@ -114,7 +120,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
   useEffect(() => {
     if (!selectedTable || !selectedCluster) return;
     fetchTableColumns(selectedCluster.id, selectedTable).then((cols) => {
-      setTableColumns(cols);
+      setTableColumns(cols as TableColumn[]);
     });
   }, [selectedTable, selectedCluster, fetchTableColumns]);
 
@@ -174,7 +180,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
 
   const handleContextMenu = (
     e: React.MouseEvent,
-    rowId: number,
+    rowId: string | number,
     colName: string,
   ) => {
     e.preventDefault();
@@ -194,7 +200,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
     }
   };
 
-  const toggleRow = (id: any) => {
+  const toggleRow = (id: string | number) => {
     const next = new Set(selectedRows);
     if (next.has(id)) next.delete(id);
     else next.add(id);
@@ -205,18 +211,20 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
     if (selectedRows.size === rows.length) {
       setSelectedRows(new Set());
     } else {
-      setSelectedRows(new Set(rows.map((r) => r.id)));
+      setSelectedRows(new Set(rows.map((r) => r.id as string | number)));
     }
   };
 
-  const setAsNull = (rowId: number, colName: string) => {
+  const setAsNull = (rowId: string | number, colName: string) => {
     if (colName === "id") return;
     setRows(
-      rows.map((r) => (r.id === rowId ? { ...r, [colName]: "NULL" } : r)),
+      rows.map((r) =>
+        (r.id as string | number) === rowId ? { ...r, [colName]: "NULL" } : r,
+      ),
     );
   };
 
-  const deleteRow = async (id: any) => {
+  const deleteRow = async (id: string | number) => {
     if (!selectedCluster || !selectedTable) return;
     try {
       await deleteRows(selectedCluster.id, selectedTable, { id: id });
@@ -234,12 +242,21 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
     if (!selectedCluster || !selectedTable || selectedRows.size === 0) return;
 
     const count = selectedRows.size;
-    const rowsToDelete = rows.filter((r) => selectedRows.has(r.id));
+    const rowsToDelete = rows.filter((r) =>
+      selectedRows.has(r.id as string | number),
+    ) as Record<string, unknown>[];
 
     try {
-      await deleteRowsBulk(selectedCluster.id, selectedTable, rowsToDelete);
-      setRows((prev) => prev.filter((r) => !selectedRows.has(r.id)));
+      await deleteRowsBulk(
+        selectedCluster.id,
+        selectedTable,
+        rowsToDelete as Record<string, unknown>[],
+      );
+      setRows((prev) =>
+        prev.filter((r) => !selectedRows.has(r.id as string | number)),
+      );
       setSelectedRows(new Set());
+
       toast.success(`${count} row${count > 1 ? "s" : ""} deleted successfully`);
     } catch (error) {
       console.error("Failed to delete rows:", error);
@@ -247,13 +264,15 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
     }
   };
 
-  const cloneRow = (rowId: number) => {
-    setRows(cloneTableRow(rows, rowId));
+  const cloneRow = (rowId: string | number) => {
+    setRows(cloneTableRow(rows, rowId) as Record<string, unknown>[]);
   };
 
   const handleCopy = (
     format: string,
-    dataToProcess: any[] = rows.filter((r) => selectedRows.has(r.id)),
+    dataToProcess: Record<string, unknown>[] = rows.filter((r) =>
+      selectedRows.has(r.id as string | number),
+    ),
   ) => {
     const content = formatData(format, dataToProcess, selectedTable || "table");
     copyToClipboard(content);
@@ -264,7 +283,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
 
   const handleExport = (
     format: string,
-    dataToProcess: any[] = applyFilters(
+    dataToProcess: Record<string, unknown>[] = applyFilters(
       rows,
       [],
       showSelectedOnly,
@@ -284,8 +303,11 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
     setShowExportModal(false);
   };
 
-  const handleInputChange = (colName: string, value: any) => {
-    setFormData((prev: any) => ({ ...prev, [colName]: value }));
+  const handleInputChange = (colName: string, value: unknown) => {
+    setFormData((prev: Record<string, unknown>) => ({
+      ...prev,
+      [colName]: value,
+    }));
     if (nullFields.has(colName)) {
       const nextNulls = new Set(nullFields);
       nextNulls.delete(colName);
@@ -327,7 +349,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
     try {
       await dropTable(selectedCluster.id, selectedTable);
       toast.success("Table dropped successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to drop table");
     }
   };
@@ -341,7 +363,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
     setShowRowModal(true);
   };
 
-  const handleOpenUpdateModal = (row: any) => {
+  const handleOpenUpdateModal = (row: Record<string, unknown>) => {
     setIsEditMode(true);
     setEditingRow(row);
     setFormData({ ...row });
@@ -356,7 +378,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
   const handleSubmitRow = async () => {
     if (!selectedCluster || !selectedTable) return;
     setIsSaving(true);
-    const finalData: any = { ...formData };
+    const finalData: Record<string, unknown> = { ...formData };
     nullFields.forEach((col) => {
       finalData[col] = null;
     });
@@ -425,11 +447,16 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
         onSetNull={setAsNull}
         onCopyValue={(rid, col) =>
           copyToClipboard(
-            rows.find((r) => r.id === rid)?.[col]?.toString() || "",
+            rows
+              .find((r) => (r.id as string | number) === rid)
+              ?.[col]?.toString() || "",
           )
         }
         onFilterByValue={(rid, col) => {
-          const val = rows.find((r) => r.id === rid)?.[col]?.toString() || "";
+          const val =
+            rows
+              .find((r) => (r.id as string | number) === rid)
+              ?.[col]?.toString() || "";
           setActiveFilters([
             ...activeFilters,
             { column: col, operator: "is", value: val },
@@ -441,8 +468,10 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
           handleCopy(
             format,
             rid === -1
-              ? rows.filter((r) => selectedRows.has(r.id))
-              : [rows.find((r) => r.id === rid)],
+              ? rows.filter((r) => selectedRows.has(r.id as string | number))
+              : (rows.filter(
+                  (r) => (r.id as string | number) === rid,
+                ) as Record<string, unknown>[]),
           )
         }
         onCloneRow={cloneRow}
@@ -477,7 +506,7 @@ const DataTable = ({ data, selectedTable }: DataTableProps) => {
         onExport={(fmt) =>
           handleExport(
             fmt,
-            rows.filter((r) => selectedRows.has(r.id)),
+            rows.filter((r) => selectedRows.has(r.id as string | number)),
           )
         }
         showFilterPopover={showFilterPopover}

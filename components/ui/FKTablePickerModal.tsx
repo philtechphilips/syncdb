@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   X,
   Search,
@@ -10,14 +10,19 @@ import {
 } from "lucide-react";
 import api from "@/lib/api";
 
+interface Column {
+  name: string;
+  type: string;
+}
+
 interface FKTablePickerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelect: (value: any) => void;
+  onSelect: (value: string | number | boolean | null) => void;
   referencedTable: string;
   referencedColumn: string;
   clusterId: string;
-  selectedValue: any;
+  selectedValue: string | number | boolean | null;
 }
 
 const FKTablePickerModal = ({
@@ -29,15 +34,15 @@ const FKTablePickerModal = ({
   clusterId,
   selectedValue,
 }: FKTablePickerModalProps) => {
-  const [columns, setColumns] = useState<any[]>([]);
-  const [data, setData] = useState<any[]>([]);
+  const [columns, setColumns] = useState<Column[]>([]);
+  const [data, setData] = useState<Record<string, unknown>[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [totalRows, setTotalRows] = useState(0);
   const limit = 100;
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       // Fetch columns first if not loaded
@@ -67,13 +72,13 @@ const FKTablePickerModal = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [clusterId, columns.length, page, referencedTable]);
 
   useEffect(() => {
     if (isOpen) {
       fetchData();
     }
-  }, [isOpen, page, referencedTable]);
+  }, [isOpen, fetchData]);
 
   const filteredData = data.filter((row) =>
     Object.values(row).some((val) =>
@@ -158,11 +163,20 @@ const FKTablePickerModal = ({
               </thead>
               <tbody className="divide-y divide-white/[0.02]">
                 {filteredData.map((row, i) => {
-                  const isSelected = row[referencedColumn] === selectedValue;
+                  const isSelected =
+                    row[referencedColumn] === (selectedValue as unknown);
                   return (
                     <tr
                       key={i}
-                      onClick={() => onSelect(row[referencedColumn])}
+                      onClick={() =>
+                        onSelect(
+                          row[referencedColumn] as
+                            | string
+                            | number
+                            | boolean
+                            | null,
+                        )
+                      }
                       className={`group cursor-pointer transition-colors ${isSelected ? "bg-primary/10 hover:bg-primary/20" : "hover:bg-white/[0.03]"}`}
                     >
                       <td className="px-6 py-4 whitespace-nowrap">

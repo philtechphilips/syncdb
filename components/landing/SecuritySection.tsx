@@ -1,15 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  ShieldCheck,
-  Lock,
-  Fingerprint,
-  Terminal,
-  Globe,
-  Shield,
-  Workflow,
-} from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 
 export const SecuritySection = () => {

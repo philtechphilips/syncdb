@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 interface QueryResultsAreaProps {
-  queryResults: any[] | null;
+  queryResults: Record<string, unknown>[] | Record<string, unknown> | null;
   bottomTab: "results" | "history";
   onSetTab: (tab: "results" | "history") => void;
   onClose: () => void;
@@ -20,7 +20,13 @@ interface QueryResultsAreaProps {
   onCloseAiOutput: () => void;
   aiMode: string;
   isLoadingHistory: boolean;
-  queryHistory: any[];
+  queryHistory: {
+    id: string;
+    query: string;
+    success: boolean;
+    executionTimeMs: number;
+    createdAt: string;
+  }[];
   isRunning?: boolean;
   onRestoreQuery: (query: string) => void;
 }
@@ -158,7 +164,7 @@ const QueryResultsArea = ({
                         key={i}
                         className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors"
                       >
-                        {Object.values(row).map((val: any, j) => (
+                        {Object.values(row).map((val, j) => (
                           <td
                             key={j}
                             className="px-4 py-2 font-mono text-zinc-400 truncate max-w-[300px]"

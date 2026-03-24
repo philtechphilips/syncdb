@@ -1,11 +1,8 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import {
-  Database,
   Table,
-  Search,
   Settings,
   Plus,
   ChevronRight,
@@ -13,7 +10,6 @@ import {
   Terminal,
   History,
   LayoutGrid,
-  Layout,
   PowerOff,
   X,
   Zap,
@@ -51,10 +47,10 @@ const Sidebar = ({
     clusters,
     selectedCluster,
     selectCluster,
-    fetchClusters,
     tables,
     fetchTables,
     dropTable,
+    deleteCluster,
   } = useClusterStore();
   const { open: openModal } = useModalStore();
   const [isTablesExpanded, setIsTablesExpanded] = React.useState(true);
@@ -66,7 +62,6 @@ const Sidebar = ({
     table: string | null;
   } | null>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false);
-  const { deleteCluster } = useClusterStore();
   const [confirmDisconnect, setConfirmDisconnect] = React.useState<
     string | null
   >(null);
@@ -110,7 +105,7 @@ const Sidebar = ({
           toast.success("Table Dropped", {
             description: `${tableName} was successfully deleted.`,
           });
-        } catch (error) {
+        } catch {
           toast.error("Failed to delete table");
         }
       },
@@ -129,7 +124,7 @@ const Sidebar = ({
     if (selectedCluster) {
       fetchTables(selectedCluster.id);
     }
-  }, [selectedCluster?.id, fetchTables]);
+  }, [selectedCluster, fetchTables]);
 
   return (
     <aside
@@ -326,7 +321,7 @@ const Sidebar = ({
             {/* Expanded Tables List */}
             {isTablesExpanded && (
               <div className="mt-1 flex flex-col animate-in fade-in slide-in-from-top-1 duration-200">
-                {tables.map((table: any) => (
+                {tables.map((table: { name: string }) => (
                   <div
                     key={table.name}
                     onClick={() => onTableSelect(table.name)}
@@ -384,10 +379,12 @@ const Sidebar = ({
           className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
         >
           <div className="h-8 w-8 rounded-full bg-zinc-800 border border-border flex items-center justify-center overflow-hidden shrink-0">
-            {user?.profile_picture ? (
+            {user?.profile_picture &&
+            (user.profile_picture.startsWith("http") ||
+              user.profile_picture.startsWith("/")) ? (
               <img
                 src={user.profile_picture}
-                alt={user.full_name}
+                alt={user.full_name || "Profile"}
                 className="h-full w-full object-cover"
               />
             ) : (
@@ -467,7 +464,7 @@ const Sidebar = ({
               color: "text-red-500",
               onClick: () => handleDropTable(contextMenu.table!),
             },
-          ].map((item: any, i) =>
+          ].map((item, i) =>
             item.separator ? (
               <div key={i} className="h-px bg-white/5 my-1.5"></div>
             ) : (

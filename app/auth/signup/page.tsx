@@ -4,11 +4,9 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Github,
   Mail,
   Lock,
   User,
-  ArrowRight,
   Eye,
   EyeOff,
   CheckCircle2,
@@ -47,7 +45,7 @@ export default function SignupPage() {
       setTimeout(() => {
         router.push("/auth/login");
       }, 3000);
-    } catch (err) {
+    } catch {
       // Error is handled by the store
     }
   };
@@ -63,9 +61,10 @@ export default function SignupPage() {
             Welcome aboard!
           </h2>
           <p className="text-zinc-400 font-medium mb-8 leading-relaxed">
-            Your account has been created successfully. We're redirecting you to
-            the sign-in page to start your journey.
+            Your account has been created successfully. We&apos;re redirecting
+            you to the sign-in page to start your journey.
           </p>
+
           <div className="flex justify-center">
             <Loader2 className="h-6 w-6 text-primary animate-spin" />
           </div>

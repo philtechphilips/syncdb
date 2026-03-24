@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import NextImage from "next/image";
 
 const databases = [
   {
@@ -103,10 +104,12 @@ export const LogoMarquee = () => {
                 key={i}
                 className="flex items-center gap-4 px-8 py-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all group/logo cursor-default"
               >
-                <img
+                <NextImage
                   src={db.icon}
                   alt={db.name}
-                  className="h-6 w-6 grayscale group-hover/logo:grayscale-0 transition-all duration-500 opacity-40 group-hover/logo:opacity-100"
+                  width={24}
+                  height={24}
+                  className="grayscale group-hover/logo:grayscale-0 transition-all duration-500 opacity-40 group-hover/logo:opacity-100"
                 />
                 <span className="text-xl font-serif text-zinc-600 group-hover/logo:text-white transition-colors">
                   {db.name}
@@ -132,10 +135,12 @@ export const LogoMarquee = () => {
                 key={i}
                 className="flex items-center gap-4 px-8 py-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all group/logo cursor-default"
               >
-                <img
+                <NextImage
                   src={db.icon}
                   alt={db.name}
-                  className="h-6 w-6 grayscale group-hover/logo:grayscale-0 transition-all duration-500 opacity-40 group-hover/logo:opacity-100"
+                  width={24}
+                  height={24}
+                  className="grayscale group-hover/logo:grayscale-0 transition-all duration-500 opacity-40 group-hover/logo:opacity-100"
                 />
                 <span className="text-xl font-serif text-zinc-600 group-hover/logo:text-white transition-colors">
                   {db.name}

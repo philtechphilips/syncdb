@@ -14,18 +14,18 @@ interface DataContextMenuProps {
   contextMenu: {
     x: number;
     y: number;
-    rowId: number;
+    rowId: string | number;
     colName: string;
     type: "cell" | "row";
   } | null;
   onClose: () => void;
-  onSetNull: (rowId: number, colName: string) => void;
-  onCopyValue: (rowId: number, colName: string) => void;
-  onFilterByValue: (rowId: number, colName: string) => void;
+  onSetNull: (rowId: string | number, colName: string) => void;
+  onCopyValue: (rowId: string | number, colName: string) => void;
+  onFilterByValue: (rowId: string | number, colName: string) => void;
   onCopyColumn: (colName: string) => void;
-  onCopyRow: (format: string, rowId: number) => void;
-  onCloneRow: (rowId: number) => void;
-  onDeleteRow: (rowId: number) => void;
+  onCopyRow: (format: string, rowId: string | number) => void;
+  onCloneRow: (rowId: string | number) => void;
+  onDeleteRow: (rowId: string | number) => void;
   onDeleteSelected: () => void;
   onFilterSelected: () => void;
   selectedRowsCount: number;

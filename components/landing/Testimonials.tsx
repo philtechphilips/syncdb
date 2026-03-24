@@ -59,7 +59,7 @@ export const Testimonials = () => {
               className="absolute inset-0 flex flex-col items-start"
             >
               <p className="text-3xl md:text-5xl font-serif text-white leading-[1.2] tracking-tighter max-w-4xl italic px-1">
-                "{reviews[index].text}"
+                &quot;{reviews[index].text}&quot;
               </p>
 
               <div className="mt-12 flex items-center gap-6">

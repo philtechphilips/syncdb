@@ -1,15 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  Search,
-  Bell,
-  User,
-  ChevronRight,
-  Play,
-  Database,
-  Menu,
-} from "lucide-react";
+import { Search, Bell, ChevronRight, Play, Database, Menu } from "lucide-react";
 
 import { useClusterStore } from "@/store/useClusterStore";
 import { useQueryStore } from "@/store/useQueryStore";

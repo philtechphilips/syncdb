@@ -2,7 +2,8 @@ import React from "react";
 import { X, Sparkles } from "lucide-react";
 
 interface QueryTabsProps {
-  queries: any[];
+  queries: { id: number; name: string }[];
+
   activeQueryId: number;
   onSetActive: (id: number) => void;
   onDelete: (id: number) => void;

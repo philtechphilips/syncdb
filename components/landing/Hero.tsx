@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ArrowRight } from "lucide-react";
+
 import { motion, Variants } from "framer-motion";
 import { BackgroundBeams } from "@/components/ui/BackgroundBeams";
 import { SynqLogo } from "@/components/ui/SynqLogo";

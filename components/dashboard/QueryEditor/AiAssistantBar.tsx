@@ -70,7 +70,9 @@ const AiAssistantBar = ({
               </span>
               <select
                 value={explainLevel}
-                onChange={(e: any) => onSetExplainLevel(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  onSetExplainLevel(e.target.value as "simple" | "advanced")
+                }
                 className="bg-black/40 border border-white/10 text-zinc-300 text-[9px] px-2 py-1 rounded outline-none focus:border-primary/50 transition-colors uppercase font-bold"
               >
                 <option value="simple">Simple</option>

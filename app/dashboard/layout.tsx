@@ -21,13 +21,8 @@ export default function DashboardLayout({
     isLoading: isAuthLoading,
     checkAuth,
   } = useAuthStore();
-  const {
-    clusters,
-    selectedCluster,
-    fetchClusters,
-    selectCluster,
-    isLoading: isClustersLoading,
-  } = useClusterStore();
+  const { clusters, selectedCluster, fetchClusters, selectCluster } =
+    useClusterStore();
   const [isConnectOpen, setIsConnectOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isSidebarMobileOpen, setIsSidebarMobileOpen] = useState(false);
@@ -44,7 +39,7 @@ export default function DashboardLayout({
       setIsInitialized(true);
     };
     handshake();
-  }, []);
+  }, [isAuthenticated, checkAuth, clusters.length, fetchClusters]);
 
   // Session Restoration (Cluster from URL)
   React.useEffect(() => {
@@ -55,7 +50,7 @@ export default function DashboardLayout({
         if (cluster) selectCluster(cluster);
       }
     }
-  }, [isInitialized, clusters.length, searchParams]);
+  }, [isInitialized, clusters, searchParams, selectedCluster, selectCluster]);
 
   // Protection logic
   React.useEffect(() => {
@@ -109,8 +104,16 @@ export default function DashboardLayout({
         {/* Sidebar navigation */}
         <Sidebar
           onOpenConnect={() => setIsConnectOpen(true)}
-          activeTab={getActiveTab() as any}
-          onTabChange={(tab: any) => {
+          activeTab={
+            getActiveTab() as
+              | "query"
+              | "er"
+              | "table"
+              | "logs"
+              | "sync"
+              | "backup"
+          }
+          onTabChange={(tab) => {
             setActiveTab(tab);
             setIsSidebarMobileOpen(false);
             router.push(`/dashboard/${tab}`);

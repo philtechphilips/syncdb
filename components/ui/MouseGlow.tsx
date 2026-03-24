@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+
 import { motion, useSpring, useMotionValue } from "framer-motion";
 
 export const MouseGlow = () => {

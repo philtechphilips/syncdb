@@ -145,10 +145,11 @@ export const Workloads = () => {
           <div className="max-w-xs space-y-4">
             <div className="h-1 w-12 bg-primary/40" />
             <p className="text-xs font-bold leading-relaxed uppercase tracking-widest italic text-white/40">
-              SynqDB doesn't just connect; <br />
+              SynqDB doesn&apos;t just connect; <br />
               it harmonizes.
             </p>
           </div>
+
           <div className="flex-1 max-w-2xl text-lg font-medium leading-relaxed">
             Industry leaders rely on tools that disappear. We provide the
             silence and performance of a native engine, with the flexibility of

@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Lock,
-  ArrowRight,
   Eye,
   EyeOff,
   CheckCircle2,
@@ -28,15 +27,14 @@ function ResetPasswordForm() {
 
   const token = searchParams.get("token");
 
-  useEffect(() => {
-    if (!token) {
-      setLocalError("Invalid or missing reset token.");
-    }
-  }, [token]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError("");
+
+    if (!token) {
+      setLocalError("Invalid or missing reset token.");
+      return;
+    }
 
     if (password !== confirmPassword) {
       setLocalError("Passwords do not match.");
@@ -54,10 +52,14 @@ function ResetPasswordForm() {
       setTimeout(() => {
         router.push("/auth/login");
       }, 3000);
-    } catch (err) {
+    } catch {
       // Error is handled by the store
     }
   };
+
+  const currentError = !token
+    ? "Invalid or missing reset token."
+    : error || localError;
 
   if (isSuccess) {
     return (
@@ -80,14 +82,17 @@ function ResetPasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {(error || localError) && (
-        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-3 text-red-400 text-xs font-medium animate-in fade-in slide-in-from-top-2">
+      {currentError && (
+        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-3 text-red-300 text-xs font-medium animate-in fade-in slide-in-from-top-2">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <div className="flex-1 flex justify-between items-center">
-            <span>{error || localError}</span>
+            <span>{currentError}</span>
             <button
               type="button"
-              onClick={clearError}
+              onClick={() => {
+                clearError();
+                setLocalError("");
+              }}
               className="hover:text-red-300"
             >
               ✕

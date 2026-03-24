@@ -75,8 +75,8 @@ export const Features = () => {
 
           <div className="flex items-end">
             <p className="text-2xl text-zinc-500 font-medium leading-relaxed max-w-lg mb-4">
-              Get all the power you need with a tool that's actually easy to
-              use. Built for speed and made to help you work faster.
+              Get all the power you need with a tool that&apos;s actually easy
+              to use. Built for speed and made to help you work faster.
             </p>
           </div>
         </div>

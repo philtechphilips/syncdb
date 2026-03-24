@@ -1,23 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { ChevronDown, CheckCircle2 } from "lucide-react";
 
-interface CustomSelectProps {
-  value: any;
-  onChange: (val: any) => void;
-  options: string[] | { label: string; value: any }[];
+interface Option<T> {
+  label: string;
+  value: T;
+}
+
+interface CustomSelectProps<T> {
+  value: T;
+  onChange: (val: T) => void;
+  options: string[] | Option<T>[];
   disabled?: boolean;
   placeholder?: string;
   isNull?: boolean;
 }
 
-const CustomSelect = ({
+const CustomSelect = <T extends string | number | boolean | null>({
   value,
   onChange,
   options,
   disabled,
   placeholder,
   isNull,
-}: CustomSelectProps) => {
+}: CustomSelectProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -36,16 +41,16 @@ const CustomSelect = ({
 
   const selectedOption = Array.isArray(options)
     ? typeof options[0] === "string"
-      ? (options as string[]).find((opt) => opt === value)
-      : (options as { label: string; value: any }[]).find(
-          (opt) => opt.value === value,
+      ? (options as string[]).find(
+          (opt) => opt === (value as unknown as string),
         )
+      : (options as Option<T>[]).find((opt) => opt.value === value)
     : null;
 
   const displayValue = selectedOption
     ? typeof selectedOption === "string"
       ? selectedOption
-      : selectedOption.label
+      : (selectedOption as Option<T>).label
     : placeholder || "Select...";
 
   return (
@@ -74,7 +79,8 @@ const CustomSelect = ({
         <div className="absolute top-full mt-2 left-0 right-0 z-[210] bg-zinc-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 py-1 max-h-60 overflow-y-auto scrollbar-hide">
           {Array.isArray(options) &&
             options.map((opt, i) => {
-              const optVal = typeof opt === "string" ? opt : opt.value;
+              const optVal =
+                typeof opt === "string" ? (opt as unknown as T) : opt.value;
               const optLabel = typeof opt === "string" ? opt : opt.label;
               const isSelected = optVal === value;
 
