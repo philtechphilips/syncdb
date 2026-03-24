@@ -49,8 +49,8 @@ export default function DashboardLayout({
       if (clusterId) {
         const cluster = clusters.find((c) => c.id === clusterId);
         if (cluster) {
-           selectCluster(cluster);
-           restorerRef.current = true;
+          selectCluster(cluster);
+          restorerRef.current = true;
         }
       } else {
         restorerRef.current = true; // No cluster in URL, mark as handled

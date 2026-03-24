@@ -27,7 +27,6 @@ export const DataExplorerSection = () => {
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
               className="relative"
             >
-
               <div className="relative space-y-8">
                 {/* The Query Bar */}
                 <div className="p-[1px] bg-gradient-to-r from-white/10 via-white/5 to-transparent rounded-2xl">

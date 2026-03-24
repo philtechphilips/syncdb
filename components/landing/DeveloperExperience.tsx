@@ -88,7 +88,6 @@ export const DeveloperExperience = () => {
                   />
                 ))}
                 <div className="h-2 w-2 rounded-full bg-primary" />
-
               </div>
             </motion.div>
 

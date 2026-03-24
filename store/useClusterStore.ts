@@ -112,13 +112,15 @@ export const useClusterStore = create<ClusterState>()(
 
           const { selectedCluster: latestSelected } = get();
           // Only overwrite if we dont have one or if it was removed from clusters
-          const stillExists = latestSelected && clusters.find((c: Cluster) => c.id === latestSelected.id);
+          const stillExists =
+            latestSelected &&
+            clusters.find((c: Cluster) => c.id === latestSelected.id);
           let nextSelected = latestSelected;
-          
+
           if (!stillExists && clusters.length === 1) {
             nextSelected = clusters[0];
           } else if (!stillExists) {
-             nextSelected = null;
+            nextSelected = null;
           }
 
           set({ clusters, selectedCluster: nextSelected, isLoading: false });

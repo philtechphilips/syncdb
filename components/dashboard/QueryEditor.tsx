@@ -64,7 +64,6 @@ const QueryEditor = () => {
   const handledRunId = React.useRef(runRequested);
   const editorRef = React.useRef<any>(null);
 
-
   const activeQuery = queries.find((q) => q.id === activeQueryId) || queries[0];
 
   // -------------------------------------------------------------------------
@@ -235,31 +234,33 @@ const QueryEditor = () => {
       ).trim();
       if (!sql) return;
 
-    const lowerSql = sql.toLowerCase();
-    if (lowerSql.includes("drop database"))
-      return toast.error("Strictly prohibited command.");
+      const lowerSql = sql.toLowerCase();
+      if (lowerSql.includes("drop database"))
+        return toast.error("Strictly prohibited command.");
 
-    const destructive = [
-      "drop table",
-      "truncate",
-      "delete",
-      "update",
-      "alter table",
-    ].filter((k) => lowerSql.includes(k));
+      const destructive = [
+        "drop table",
+        "truncate",
+        "delete",
+        "update",
+        "alter table",
+      ].filter((k) => lowerSql.includes(k));
 
-    if (destructive.length > 0) {
-      openModal({
-        title: "Destructive Action",
-        message: `Warning: You are about to execute a destructive command (${destructive.join(", ").toUpperCase()}). Proceed with caution.`,
-        type: "warning",
-        confirmLabel: "Execute Anyway",
-        onConfirm: () => proceedWithExecution(sql),
-      });
-      return;
-    }
+      if (destructive.length > 0) {
+        openModal({
+          title: "Destructive Action",
+          message: `Warning: You are about to execute a destructive command (${destructive.join(", ").toUpperCase()}). Proceed with caution.`,
+          type: "warning",
+          confirmLabel: "Execute Anyway",
+          onConfirm: () => proceedWithExecution(sql),
+        });
+        return;
+      }
 
-    await proceedWithExecution(sql);
-  }, [selectedCluster, activeQuery.code, openModal, proceedWithExecution]);
+      await proceedWithExecution(sql);
+    },
+    [selectedCluster, activeQuery.code, openModal, proceedWithExecution],
+  );
 
   useEffect(() => {
     if (bottomTab === "history" && selectedCluster) loadHistory();

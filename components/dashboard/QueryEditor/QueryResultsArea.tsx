@@ -158,26 +158,26 @@ const QueryResultsArea = ({
                 </thead>
                 <tbody>
                   {queryResults.map((row, i) => (
-                      <tr
-                        key={i}
-                        className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors"
-                      >
-                        {Object.values(row).map((val, j) => (
-                          <td
-                            key={j}
-                            className="px-4 py-2 font-mono text-zinc-400 truncate max-w-[300px]"
-                          >
-                            {val === null ? (
-                              <span className="font-italic text-zinc-600">
-                                NULL
-                              </span>
-                            ) : (
-                              String(val)
-                            )}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
+                    <tr
+                      key={i}
+                      className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors"
+                    >
+                      {Object.values(row).map((val, j) => (
+                        <td
+                          key={j}
+                          className="px-4 py-2 font-mono text-zinc-400 truncate max-w-[300px]"
+                        >
+                          {val === null ? (
+                            <span className="font-italic text-zinc-600">
+                              NULL
+                            </span>
+                          ) : (
+                            String(val)
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
