@@ -14,7 +14,8 @@ interface DataTableHeaderProps {
   onCopy: (format: string) => void;
   showExportDropdown: boolean;
   setShowExportDropdown: (val: boolean) => void;
-  onExport: (format: string) => void;
+  onExportSelection: (format: string) => void;
+  onExportAll: (format: string) => void;
   showFilterPopover: boolean;
   setShowFilterPopover: (val: boolean) => void;
   activeFiltersCount: number;
@@ -51,7 +52,8 @@ const DataTableHeader = ({
   onCopy,
   showExportDropdown,
   setShowExportDropdown,
-  onExport,
+  onExportSelection,
+  onExportAll,
   showFilterPopover,
   setShowFilterPopover,
   activeFiltersCount,
@@ -134,7 +136,7 @@ const DataTableHeader = ({
               </button>
               {showCopyDropdown && (
                 <div className="absolute top-full mt-2 left-0 z-[100] w-28 bg-card border border-border rounded-lg shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150">
-                  {["CSV", "JSON", "SQL"].map((format) => (
+                  {["CSV", "JSON", "SQL", "PDF", "Markdown"].map((format) => (
                     <button
                       key={format}
                       onClick={() => onCopy(format)}
@@ -158,10 +160,10 @@ const DataTableHeader = ({
               </button>
               {showExportDropdown && (
                 <div className="absolute top-full mt-2 left-0 z-[100] w-28 bg-card border border-border rounded-lg shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150">
-                  {["CSV", "JSON", "SQL"].map((format) => (
+                  {["CSV", "JSON", "SQL", "PDF", "Markdown"].map((format) => (
                     <button
                       key={format}
-                      onClick={() => onExport(format)}
+                      onClick={() => onExportSelection(format)}
                       className="flex w-full items-center px-4 py-2 text-[9px] font-bold text-zinc-400 hover:text-white hover:bg-white/5 transition-colors uppercase"
                     >
                       {format}
@@ -316,15 +318,22 @@ const DataTableHeader = ({
               <div className="px-4 py-1.5 text-[8px] font-black text-zinc-600 uppercase tracking-tighter border-b border-border/50 mb-1">
                 Table View ({rowsCount})
               </div>
-              {["CSV", "JSON", "SQL"].map((format) => (
+              {["CSV", "JSON", "SQL", "PDF", "Markdown"].map((format) => (
                 <button
                   key={format}
-                  onClick={() => onExport(format)}
+                  onClick={() => onExportAll(format)}
                   className="flex w-full items-center px-4 py-2 text-[9px] font-bold text-zinc-400 hover:text-white hover:bg-white/5 transition-colors uppercase text-left"
                 >
                   {format} File
                 </button>
               ))}
+              <div className="h-px bg-border/50 my-1"></div>
+              <button
+                onClick={() => onExportAll("modal")}
+                className="flex w-full items-center px-4 py-2 text-[9px] font-black text-primary hover:bg-primary/10 transition-colors uppercase text-left tracking-widest"
+              >
+                Advanced Export...
+              </button>
             </div>
           )}
         </div>

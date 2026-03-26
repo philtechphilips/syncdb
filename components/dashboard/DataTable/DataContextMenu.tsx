@@ -144,6 +144,16 @@ const DataContextMenu = ({
             <Database className="h-4 w-4 text-muted-foreground" />
             Copy Row as SQL
           </button>
+          <button
+            onClick={() => {
+              onCopyRow("Markdown", contextMenu.rowId);
+              onClose();
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
+          >
+            <FileType className="h-4 w-4 text-muted-foreground" />
+            Copy Row as Markdown
+          </button>
 
           <div className="h-px bg-white/5 my-1.5"></div>
 
@@ -199,6 +209,16 @@ const DataContextMenu = ({
           >
             <Database className="h-4 w-4 text-muted-foreground" />
             Copy Selection as SQL
+          </button>
+          <button
+            onClick={() => {
+              onCopyRow("Markdown", -1);
+              onClose();
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
+          >
+            <FileType className="h-4 w-4 text-muted-foreground" />
+            Copy Selection as Markdown
           </button>
 
           <div className="h-px bg-white/5 my-1.5"></div>

@@ -16,7 +16,9 @@ const api = axios.create({
 // Add a request interceptor to add the auth token to every request
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("access_token");
+    // Import lazily to avoid circular dependency; read from in-memory store only
+    const { useAuthStore } = require("@/store/useAuthStore");
+    const token = useAuthStore.getState().access_token;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -40,10 +42,8 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      const refreshToken =
-        typeof window !== "undefined"
-          ? localStorage.getItem("refresh_token")
-          : null;
+      const { useAuthStore } = require("@/store/useAuthStore");
+      const refreshToken = useAuthStore.getState().refresh_token;
 
       if (!refreshToken) {
         console.error("No refresh token available, forcing logout");
@@ -52,7 +52,6 @@ api.interceptors.response.use(
       }
 
       try {
-        console.log("Attempting to refresh access token...");
         const response = await axios.post(`${API_URL}/v1/auth/refresh`, {
           refresh_token: refreshToken,
         });
@@ -60,10 +59,7 @@ api.interceptors.response.use(
         const { access_token, refresh_token: newRefreshToken } = response.data;
 
         if (access_token) {
-          localStorage.setItem("access_token", access_token);
-          if (newRefreshToken) {
-            localStorage.setItem("refresh_token", newRefreshToken);
-          }
+          useAuthStore.getState().setTokens(access_token, newRefreshToken ?? refreshToken);
 
           // Retry the original request with the new token
           originalRequest.headers.Authorization = `Bearer ${access_token}`;
@@ -89,13 +85,8 @@ api.interceptors.response.use(
 function handleLogout(message?: string) {
   if (typeof window !== "undefined") {
     if (message) toast.error(message);
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("user");
-    // Prevent infinite redirect loops if already on login page
-    if (window.location.pathname !== "/auth/login") {
-      window.location.href = "/auth/login";
-    }
+    const { useAuthStore } = require("@/store/useAuthStore");
+    useAuthStore.getState().logout();
   }
 }
 

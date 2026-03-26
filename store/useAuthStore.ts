@@ -36,7 +36,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       access_token: null,
       refresh_token: null,
@@ -46,12 +46,6 @@ export const useAuthStore = create<AuthState>()(
 
       setUser: (user) => set({ user, isAuthenticated: !!user }),
       setTokens: (access, refresh) => {
-        if (access) localStorage.setItem("access_token", access);
-        else localStorage.removeItem("access_token");
-
-        if (refresh) localStorage.setItem("refresh_token", refresh);
-        else localStorage.removeItem("refresh_token");
-
         set({ access_token: access, refresh_token: refresh });
       },
 
@@ -60,10 +54,6 @@ export const useAuthStore = create<AuthState>()(
         try {
           const response = await api.post("/v1/auth/login", credentials);
           const { user, access_token, refresh_token } = response.data;
-
-          localStorage.setItem("access_token", access_token);
-          localStorage.setItem("refresh_token", refresh_token);
-          localStorage.setItem("user", JSON.stringify(user));
 
           set({
             user,
@@ -118,21 +108,21 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        localStorage.removeItem("user");
         set({
           user: null,
           access_token: null,
           refresh_token: null,
           isAuthenticated: false,
         });
-        window.location.href = "/auth/login";
+        if (typeof window !== "undefined" && window.location.pathname !== "/auth/login") {
+          window.location.href = "/auth/login";
+        }
       },
 
       checkAuth: async () => {
-        const token = localStorage.getItem("access_token");
-        if (!token) {
+        // Tokens are in-memory only; if there's no access_token in state the session is gone
+        const { access_token } = get();
+        if (!access_token) {
           set({ isAuthenticated: false, isLoading: false });
           return;
         }
@@ -144,13 +134,8 @@ export const useAuthStore = create<AuthState>()(
             user: response.data,
             isAuthenticated: true,
             isLoading: false,
-            access_token: token,
-            refresh_token: localStorage.getItem("refresh_token"),
           });
         } catch {
-          localStorage.removeItem("access_token");
-          localStorage.removeItem("refresh_token");
-          localStorage.removeItem("user");
           set({
             user: null,
             isAuthenticated: false,

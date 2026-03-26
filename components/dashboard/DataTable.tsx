@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Table, Database } from "lucide-react";
 
 import { useClusterStore } from "@/store/useClusterStore";
+import api from "@/lib/api";
 import { applyFilters, cloneTableRow, deleteTableRow } from "@/lib/tableUtils";
 import { calculateContextMenuPosition, copyToClipboard } from "@/lib/uiUtils";
 import { downloadFile, formatData } from "@/lib/exportUtils";
@@ -275,23 +276,61 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
     ),
   ) => {
     const content = formatData(format, dataToProcess, selectedTable || "table");
-    copyToClipboard(content);
-    setLastCopiedFormat(format.toUpperCase());
-    setTimeout(() => setLastCopiedFormat(null), 2000);
+    if (typeof content === "string") {
+      copyToClipboard(content);
+      setLastCopiedFormat(format.toUpperCase());
+      setTimeout(() => setLastCopiedFormat(null), 2000);
+    } else {
+      toast.error("Format not supported for clipboard");
+    }
     setShowCopyDropdown(false);
   };
 
-  const handleExport = (
+  const handleExport = async (
     format: string,
-    dataToProcess: Record<string, unknown>[] = applyFilters(
-      rows,
-      [],
-      showSelectedOnly,
-      selectedRows,
-    ),
+    dataToProcess?: Record<string, unknown>[],
   ) => {
-    const content = formatData(format, dataToProcess, selectedTable || "table");
-    const subName = selectedRows.size > 0 ? "selection" : "filtered";
+    if (format === "modal") {
+      setShowExportModal(true);
+      return;
+    }
+
+    let data = dataToProcess;
+
+    if (!data) {
+      // If we're coming from ExportModal or Global Header
+      if (showSelectedOnly && selectedRows.size > 0) {
+        data = rows.filter((r) => selectedRows.has(r.id as string | number));
+      } else {
+        // FETCH ALL DATA for the table (honoring active filters)
+        const toastId = toast.loading(`Preparing ${totalRows.toLocaleString()} rows for export...`);
+        try {
+          const filterParam = activeFilters.length > 0 
+            ? `&filters=${encodeURIComponent(JSON.stringify(activeFilters))}` 
+            : "";
+          
+          const response = await api.get(
+            `/v1/clusters/${selectedCluster!.id}/tables/${selectedTable}?page=1&limit=${totalRows}${filterParam}`
+          );
+          data = response.data.data;
+          toast.dismiss(toastId);
+        } catch (error) {
+          toast.error("Failed to fetch full dataset for export", { id: toastId });
+          return;
+        }
+      }
+    }
+
+    if (!data || data.length === 0) {
+      return toast.error("No data available to export");
+    }
+
+    const content = formatData(format, data, selectedTable || "table");
+    if (!content || (typeof content === "string" && content === "")) {
+      return toast.error("Failed to format data for export");
+    }
+
+    const subName = selectedRows.size > 0 && showSelectedOnly ? "selection" : "full";
     downloadFile(
       content,
       `${selectedTable || "export"}_${subName}.${format.toLowerCase()}`,
@@ -503,12 +542,13 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
         onCopy={handleCopy}
         showExportDropdown={showExportDropdown}
         setShowExportDropdown={setShowExportDropdown}
-        onExport={(fmt) =>
+        onExportSelection={(fmt) =>
           handleExport(
             fmt,
             rows.filter((r) => selectedRows.has(r.id as string | number)),
           )
         }
+        onExportAll={(fmt) => handleExport(fmt, rows)}
         showFilterPopover={showFilterPopover}
         setShowFilterPopover={setShowFilterPopover}
         activeFiltersCount={activeFilters.length}

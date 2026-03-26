@@ -27,16 +27,15 @@ export const Workloads = () => {
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="space-y-8"
             >
-              <span className="text-primary text-xs font-black tracking-[0.4em] uppercase">
+              <span className="text-primary text-xs font-black tracking-[0.4em] uppercase block mb-3">
                 Connectivity
               </span>
-              <h2 className="text-4xl md:text-5xl font-serif text-white leading-[0.9] tracking-tighter">
+              <h2 className="text-4xl md:text-5xl font-serif text-white leading-[1.1] tracking-tighter">
                 Every Database. <br />
                 <span className="text-primary italic">One Interface.</span>
               </h2>
-              <p className="text-xl text-zinc-500 font-medium leading-relaxed max-w-lg">
+              <p className="text-xl text-zinc-500 font-medium leading-relaxed max-w-lg mt-6">
                 Stop switching tools. Use one simple interface to manage every
                 database in your stack — from local files to large clusters.
               </p>

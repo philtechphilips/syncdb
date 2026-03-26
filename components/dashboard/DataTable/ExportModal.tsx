@@ -70,6 +70,12 @@ const ExportModal = ({
               desc: "GitHub Flavored Table",
             },
             {
+              id: "pdf",
+              label: "PDF",
+              icon: FileText,
+              desc: "Portable Document Format",
+            },
+            {
               id: "sql",
               label: "SQL",
               icon: Database,

@@ -5,17 +5,19 @@ export interface SavedQuery {
   id: number;
   name: string;
   code: string;
+  persistentId?: string | null;
 }
 
 interface QueryState {
   queries: SavedQuery[];
   activeQueryId: number;
-  runRequested: number; // Increment this to trigger a run in the component
+  runRequested: number; 
   setActiveQueryId: (id: number) => void;
   setQueries: (queries: SavedQuery[]) => void;
   updateActiveQueryCode: (code: string) => void;
+  updateActiveQueryPersistentId: (persistentId: string | null) => void;
   requestRun: () => void;
-  addQuery: () => void;
+  addQuery: (initialData?: Partial<SavedQuery>) => void;
   removeQuery: (id: number) => void;
 }
 
@@ -43,16 +45,27 @@ export const useQueryStore = create<QueryState>()(
           ),
         })),
 
+      updateActiveQueryPersistentId: (persistentId) =>
+        set((state) => ({
+          queries: state.queries.map((q) =>
+            q.id === state.activeQueryId ? { ...q, persistentId } : q,
+          ),
+        })),
+
       requestRun: () =>
         set((state) => ({ runRequested: state.runRequested + 1 })),
 
-      addQuery: () =>
+      addQuery: (initialData) =>
         set((state) => {
-          const nextId = Math.max(...state.queries.map((q) => q.id)) + 1;
+          const nextId =
+            state.queries.length > 0
+              ? Math.max(...state.queries.map((q) => q.id)) + 1
+              : 1;
           const newQuery = {
             id: nextId,
-            name: `query_${nextId}.sql`,
-            code: "",
+            name: initialData?.name || `query_${nextId}.sql`,
+            code: initialData?.code || "",
+            persistentId: initialData?.persistentId || null,
           };
           return {
             queries: [...state.queries, newQuery],
@@ -64,7 +77,12 @@ export const useQueryStore = create<QueryState>()(
         set((state) => {
           const filtered = state.queries.filter((q) => q.id !== id);
           if (filtered.length === 0) {
-            const defaultQuery = { id: 1, name: "query_1.sql", code: "" };
+            const defaultQuery = {
+              id: 1,
+              name: "query_1.sql",
+              code: "",
+              persistentId: null,
+            };
             return { queries: [defaultQuery], activeQueryId: 1 };
           }
           return {

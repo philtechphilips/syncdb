@@ -9,12 +9,15 @@ import { useClusterStore } from "@/store/useClusterStore";
 import api from "@/lib/api";
 import { useModalStore } from "@/store/useModalStore";
 import { useQueryStore } from "@/store/useQueryStore";
+import { useSavedQueryStore } from "@/store/useSavedQueryStore";
 
 // Sub-components
 import QueryTabs from "./QueryEditor/QueryTabs";
 import AiAssistantBar from "./QueryEditor/AiAssistantBar";
 import EditorActions from "./QueryEditor/EditorActions";
 import QueryResultsArea from "./QueryEditor/QueryResultsArea";
+import SavedQueriesSidebar from "./QueryEditor/SavedQueriesSidebar";
+import SaveQueryDialog from "./QueryEditor/SaveQueryDialog";
 
 const QueryEditor = () => {
   const { selectedCluster, executeQuery, fetchSchema, fetchQueryLogs } =
@@ -28,6 +31,9 @@ const QueryEditor = () => {
     setActiveQueryId,
     setQueries,
     updateActiveQueryCode,
+    updateActiveQueryPersistentId,
+    addQuery,
+    removeQuery,
     runRequested,
   } = useQueryStore();
   const [queryResults, setQueryResults] = useState<
@@ -61,6 +67,8 @@ const QueryEditor = () => {
   );
   const [aiOutput, setAiOutput] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const handledRunId = React.useRef(runRequested);
   const editorRef = React.useRef<any>(null);
 
@@ -366,30 +374,27 @@ const QueryEditor = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background font-sans min-w-0 w-full overflow-hidden">
-      <QueryTabs
-        queries={queries}
-        activeQueryId={activeQueryId}
-        onSetActive={setActiveQueryId}
-        onDelete={(id) => {
-          if (queries.length === 1) return handleUpdateCode("");
-          const next = queries.filter((q) => q.id !== id);
-          setQueries(next);
-          if (activeQueryId === id) setActiveQueryId(next[0].id);
+    <div className="flex h-full bg-background font-sans min-w-0 w-full overflow-hidden">
+      <SavedQueriesSidebar 
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        onLoadQuery={(savedQuery) => {
+          handleUpdateCode(savedQuery.query);
+          updateActiveQueryPersistentId(savedQuery.id);
+          setIsSidebarOpen(false);
         }}
-        onNew={() => {
-          const id = Math.max(...queries.map((q) => q.id), 0) + 1;
-          const q = {
-            id,
-            name: `query_${id}.sql`,
-            code: `-- New query ${id}\nSELECT * FROM users LIMIT 10;`,
-          };
-          setQueries([...queries, q]);
-          setActiveQueryId(id);
-        }}
-        onToggleAi={() => setIsAiOpen(!isAiOpen)}
-        isAiOpen={isAiOpen}
       />
+      
+      <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden">
+        <QueryTabs
+          queries={queries}
+          activeQueryId={activeQueryId}
+          onSetActive={setActiveQueryId}
+          onDelete={(id) => removeQuery(id)}
+          onNew={() => addQuery()}
+          onToggleAi={() => setIsAiOpen(!isAiOpen)}
+          isAiOpen={isAiOpen}
+        />
 
       <AiAssistantBar
         isOpen={isAiOpen}
@@ -442,6 +447,9 @@ const QueryEditor = () => {
         onFormat={handleFormat}
         onCopy={handleCopy}
         onClear={() => handleUpdateCode("")}
+        onSave={() => setIsSaveDialogOpen(true)}
+        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+        isSidebarOpen={isSidebarOpen}
         copied={copied}
         clusterSelected={!!selectedCluster}
       />
@@ -465,8 +473,16 @@ const QueryEditor = () => {
           toast.success("Query loaded");
         }}
       />
+      
+      <SaveQueryDialog 
+        isOpen={isSaveDialogOpen}
+        onClose={() => setIsSaveDialogOpen(false)}
+        queryCode={activeQuery.code}
+        persistentId={activeQuery.persistentId}
+      />
     </div>
-  );
+  </div>
+);
 };
 
 export default QueryEditor;

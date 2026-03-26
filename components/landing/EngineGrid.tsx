@@ -43,10 +43,10 @@ export const EngineGrid = () => {
 
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center max-w-2xl mx-auto mb-20">
-          <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-4 block animate-pulse underline underline-offset-8">
+          <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-3 block">
             Multi-Engine Intelligence
           </span>
-          <h2 className="text-4xl md:text-5xl font-serif text-white mb-6">
+          <h2 className="text-4xl md:text-5xl font-serif text-white leading-[1.1] tracking-tighter mb-6">
             Designed for every <br />
             modern dialect.
           </h2>
