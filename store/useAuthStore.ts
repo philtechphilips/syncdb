@@ -46,8 +46,14 @@ interface AuthState {
   ) => Promise<Record<string, unknown>>;
   logout: () => void;
   checkAuth: () => Promise<void>;
-  updateProfile: (data: { full_name?: string; profile_picture?: string }) => Promise<void>;
-  changePassword: (data: { current_password: string; new_password: string }) => Promise<void>;
+  updateProfile: (data: {
+    full_name?: string;
+    profile_picture?: string;
+  }) => Promise<void>;
+  changePassword: (data: {
+    current_password: string;
+    new_password: string;
+  }) => Promise<void>;
   clearError: () => void;
 }
 
@@ -156,9 +162,13 @@ export const useAuthStore = create<AuthState>()(
             const res = await axios.post(`${API_URL}/v1/auth/refresh`, {
               refresh_token: storedRefresh,
             });
-            const { access_token: newAccess, refresh_token: newRefresh } = res.data;
+            const { access_token: newAccess, refresh_token: newRefresh } =
+              res.data;
             saveRefreshToken(newRefresh ?? storedRefresh);
-            set({ access_token: newAccess, refresh_token: newRefresh ?? storedRefresh });
+            set({
+              access_token: newAccess,
+              refresh_token: newRefresh ?? storedRefresh,
+            });
             access_token = newAccess;
           } catch {
             saveRefreshToken(null);

@@ -39,7 +39,10 @@ const SAMPLE_QUERY = [
     { t: "       ", c: "" },
     { t: "created_at", c: "#E2E8F0" },
   ],
-  [{ t: "FROM ", c: "#7DD3FC" }, { t: "users", c: "#E2E8F0" }],
+  [
+    { t: "FROM ", c: "#7DD3FC" },
+    { t: "users", c: "#E2E8F0" },
+  ],
   [
     { t: "WHERE ", c: "#7DD3FC" },
     { t: "status = ", c: "#E2E8F0" },
@@ -95,7 +98,7 @@ const ConnectStep = ({ onSuccess }: { onSuccess: () => void }) => {
     useClusterStore();
 
   const [selectedDb, setSelectedDb] = useState<"postgres" | "mysql" | "mssql">(
-    "postgres"
+    "postgres",
   );
   const [form, setForm] = useState({
     name: "",
@@ -396,9 +399,21 @@ const ExploreStep = ({ onDone }: { onDone: () => void }) => (
 // ── Main Wizard ───────────────────────────────────────────────────────────────
 
 const STEPS = [
-  { number: 1, title: "Connect your database", subtitle: "Add your first connection" },
-  { number: 2, title: "Run your first query", subtitle: "See results in milliseconds" },
-  { number: 3, title: "Explore your data", subtitle: "Everything at your fingertips" },
+  {
+    number: 1,
+    title: "Connect your database",
+    subtitle: "Add your first connection",
+  },
+  {
+    number: 2,
+    title: "Run your first query",
+    subtitle: "See results in milliseconds",
+  },
+  {
+    number: 3,
+    title: "Explore your data",
+    subtitle: "Everything at your fingertips",
+  },
 ];
 
 export const OnboardingWizard = ({ onDismiss }: { onDismiss: () => void }) => {
@@ -412,7 +427,7 @@ export const OnboardingWizard = ({ onDismiss }: { onDismiss: () => void }) => {
     }
     onDismiss();
     router.push(
-      `/dashboard/query${selectedCluster ? `?cluster=${selectedCluster.id}` : ""}`
+      `/dashboard/query${selectedCluster ? `?cluster=${selectedCluster.id}` : ""}`,
     );
   };
 
@@ -442,7 +457,10 @@ export const OnboardingWizard = ({ onDismiss }: { onDismiss: () => void }) => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+          transition={{
+            duration: 0.5,
+            ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+          }}
           className="relative rounded-2xl border border-white/10 bg-[#040d12] overflow-hidden"
         >
           {/* Top gradient line */}
@@ -457,8 +475,8 @@ export const OnboardingWizard = ({ onDismiss }: { onDismiss: () => void }) => {
                   i === step
                     ? "bg-primary/[0.06]"
                     : i < step
-                    ? "bg-white/[0.01]"
-                    : "opacity-40"
+                      ? "bg-white/[0.01]"
+                      : "opacity-40"
                 }`}
               >
                 <div
@@ -466,8 +484,8 @@ export const OnboardingWizard = ({ onDismiss }: { onDismiss: () => void }) => {
                     i < step
                       ? "bg-primary text-white"
                       : i === step
-                      ? "bg-primary/20 border border-primary/40 text-primary"
-                      : "bg-white/5 border border-white/10 text-zinc-600"
+                        ? "bg-primary/20 border border-primary/40 text-primary"
+                        : "bg-white/5 border border-white/10 text-zinc-600"
                   }`}
                 >
                   {i < step ? <CheckCircle2 className="h-3 w-3" /> : s.number}
@@ -508,15 +526,9 @@ export const OnboardingWizard = ({ onDismiss }: { onDismiss: () => void }) => {
                 exit={{ opacity: 0, x: -12 }}
                 transition={{ duration: 0.25 }}
               >
-                {step === 0 && (
-                  <ConnectStep onSuccess={() => setStep(1)} />
-                )}
-                {step === 1 && (
-                  <QueryStep onNext={() => setStep(2)} />
-                )}
-                {step === 2 && (
-                  <ExploreStep onDone={complete} />
-                )}
+                {step === 0 && <ConnectStep onSuccess={() => setStep(1)} />}
+                {step === 1 && <QueryStep onNext={() => setStep(2)} />}
+                {step === 2 && <ExploreStep onDone={complete} />}
               </motion.div>
             </AnimatePresence>
           </div>

@@ -36,9 +36,10 @@ const QueryEditor = () => {
     removeQuery,
     runRequested,
   } = useQueryStore();
-  const [queryResults, setQueryResults] = useState<
-    Record<string, unknown>[] | Record<string, unknown> | null
-  >(null);
+  const [queryResults, setQueryResults] = useState<any[] | null>(null);
+  const [queryTotals, setQueryTotals] = useState<number[]>([]);
+  const [isPagingEnabled, setIsPagingEnabled] = useState(true);
+  const [resultsHeight, setResultsHeight] = useState(350);
   const [isRunning, setIsRunning] = useState(false);
   const [schemaMetadata, setSchemaMetadata] = useState<
     { tableName?: string; table_name?: string; name: string }[]
@@ -71,6 +72,26 @@ const QueryEditor = () => {
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const handledRunId = React.useRef(runRequested);
   const editorRef = React.useRef<any>(null);
+
+  const startResizing = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startY = e.pageY;
+    const startHeight = resultsHeight;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const delta = startY - moveEvent.pageY;
+      const newHeight = Math.max(150, Math.min(window.innerHeight * 0.8, startHeight + delta));
+      setResultsHeight(newHeight);
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  };
 
   const activeQuery = queries.find((q) => q.id === activeQueryId) || queries[0];
 
@@ -196,30 +217,53 @@ const QueryEditor = () => {
   };
 
   const proceedWithExecution = useCallback(
-    async (sql: string) => {
+    async (sql: string, page: number = 1) => {
       setIsRunning(true);
       setQueryResults(null);
+      setQueryTotals([]);
       try {
-        const results = await executeQuery(selectedCluster!.id, sql);
-        const isSelect = Array.isArray(results);
-        let count = 0;
-        if (isSelect) {
-          count = (results as unknown[]).length;
-        } else if (results && typeof results === "object") {
-          const r = results as Record<string, unknown>;
-          count = (r.rowCount as number) ?? (r.affectedRows as number) ?? 0;
-        }
-
-        setQueryResults(
-          results as Record<string, unknown>[] | Record<string, unknown>,
+        const response = await executeQuery(
+          selectedCluster!.id,
+          sql,
+          isPagingEnabled ? page : undefined,
+          isPagingEnabled ? 50 : undefined,
         );
+        const resultsSets = response.results;
+        const resultsTotals = response.totals;
+
+        let totalReturned = 0;
+        let totalAffected = 0;
+        let hasSelect = false;
+
+        resultsSets.forEach((rs, idx) => {
+          if (Array.isArray(rs)) {
+            totalReturned += resultsTotals[idx] || rs.length;
+            hasSelect = true;
+          } else if (rs && typeof rs === "object") {
+            totalAffected +=
+              (rs.rowCount as number) ?? (rs.affectedRows as number) ?? 0;
+          }
+        });
+
+        setQueryResults(resultsSets);
+        setQueryTotals(resultsTotals);
         setBottomTab("results");
 
-        toast.success(isSelect ? "Query successful" : "Command successful", {
-          description: isSelect
-            ? `${count} rows returned.`
-            : `${count} rows affected.`,
-        });
+        toast.success(
+          resultsSets.length > 1
+            ? "Multiple queries successful"
+            : hasSelect
+              ? "Query successful"
+              : "Command successful",
+          {
+            description:
+              resultsSets.length > 1
+                ? `${resultsSets.length} statements executed.`
+                : hasSelect
+                  ? `${totalReturned} rows available.`
+                  : `${totalAffected} rows affected.`,
+          },
+        );
 
         if (bottomTab === "history") loadHistory();
       } catch (err: unknown) {
@@ -230,7 +274,7 @@ const QueryEditor = () => {
         setIsRunning(false);
       }
     },
-    [selectedCluster, executeQuery, bottomTab, loadHistory],
+    [selectedCluster, executeQuery, bottomTab, loadHistory, isPagingEnabled],
   );
 
   const handleRunQuery = useCallback(
@@ -283,6 +327,9 @@ const QueryEditor = () => {
 
   const handleEditorMount = (editor: any, monaco: any) => {
     editorRef.current = editor;
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+      handleRunQuery();
+    });
 
     // Add "Run Selected" to context menu
     editor.addAction({
@@ -314,18 +361,58 @@ const QueryEditor = () => {
 
     try {
       if (aiMode === "generate") {
-        const response = await api.post(
-          `/v1/ai/${selectedCluster.id}/generate`,
-          { prompt: aiPrompt },
+        const { useAuthStore } = require("@/store/useAuthStore");
+        const token = useAuthStore.getState().access_token;
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/v1/ai/${selectedCluster.id}/generate-stream`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ prompt: aiPrompt }),
+          },
         );
 
-        const currentCode = activeQuery.code;
-        const generatedSql = response.data.sql;
-        const finalSql = currentCode.trim()
-          ? `${currentCode.trimEnd()}\n\n${generatedSql}`
-          : generatedSql;
+        if (!response.ok) throw new Error("Stream failed");
 
-        handleUpdateCode(finalSql);
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        let fullGeneratedSql = "";
+        const initialCode = activeQuery.code.trim();
+
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            const lines = chunk.split("\n\n");
+
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const dataStr = line.replace("data: ", "");
+                if (dataStr === "[DONE]") break;
+
+                try {
+                  const parsed = JSON.parse(dataStr);
+                  if (parsed.chunk) {
+                    fullGeneratedSql += parsed.chunk;
+                    // Real-time update in editor
+                    const finalSql = initialCode
+                      ? `${initialCode}\n\n${fullGeneratedSql}`
+                      : fullGeneratedSql;
+                    handleUpdateCode(finalSql);
+                  }
+                } catch (e) {
+                  console.error("Error parsing stream chunk", e);
+                }
+              }
+            }
+          }
+        }
+
         setIsAiOpen(false);
         setAiPrompt("");
         toast.success("SQL generated");
@@ -424,7 +511,7 @@ const QueryEditor = () => {
               fontSize: 13,
               lineNumbers: "on",
               scrollBeyondLastLine: false,
-              readOnly: isRunning,
+              readOnly: isRunning || isGenerating,
               automaticLayout: true,
               padding: { top: 20 },
               fontFamily:
@@ -455,25 +542,31 @@ const QueryEditor = () => {
           clusterSelected={!!selectedCluster}
         />
 
-        <QueryResultsArea
-          queryResults={queryResults}
-          bottomTab={bottomTab}
-          onSetTab={setBottomTab}
-          onClose={() => {
-            setQueryResults(null);
-            setBottomTab("results");
-          }}
-          aiOutput={aiOutput}
-          onCloseAiOutput={() => setAiOutput(null)}
-          aiMode={aiMode}
-          isLoadingHistory={isLoadingHistory}
-          queryHistory={queryHistory}
-          isRunning={isRunning}
-          onRestoreQuery={(sql) => {
-            handleUpdateCode(sql);
-            toast.success("Query loaded");
-          }}
-        />
+        {queryResults && (
+            <div
+                onMouseDown={startResizing}
+                className="h-1.5 w-full cursor-row-resize bg-border/20 hover:bg-primary/50 transition-colors z-30"
+            />
+        )}
+
+        <div style={{ height: queryResults ? resultsHeight : 0, transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }} className="shrink-0 overflow-hidden flex flex-col">
+          <QueryResultsArea
+            queryResults={queryResults}
+            queryTotals={queryTotals}
+            bottomTab={bottomTab}
+            onSetTab={setBottomTab}
+            onClose={() => setQueryResults(null)}
+            aiOutput={aiOutput}
+            onCloseAiOutput={() => setAiOutput(null)}
+            aiMode={aiMode}
+            isLoadingHistory={isLoadingHistory}
+            queryHistory={queryHistory}
+            isRunning={isRunning}
+            onRestoreQuery={(q) => handleUpdateCode(q)}
+            onPageChange={(page: number) => proceedWithExecution(activeQuery.code, page)}
+            isPagingEnabled={isPagingEnabled}
+          />
+        </div>
 
         <SaveQueryDialog
           isOpen={isSaveDialogOpen}

@@ -6,7 +6,10 @@ import Navbar from "@/components/layout/Navbar";
 import StatusBar from "@/components/layout/StatusBar";
 import ConnectionDialog from "@/components/dashboard/ConnectionDialog";
 import ClusterGate from "@/components/dashboard/ClusterGate";
-import { OnboardingWizard, shouldShowOnboarding } from "@/components/dashboard/OnboardingWizard";
+import {
+  OnboardingWizard,
+  shouldShowOnboarding,
+} from "@/components/dashboard/OnboardingWizard";
 import { useClusterStore } from "@/store/useClusterStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";

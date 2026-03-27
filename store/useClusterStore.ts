@@ -7,6 +7,8 @@ export interface Cluster {
   id: string;
   name: string;
   type: "mysql" | "postgres" | "mssql";
+  environment: "development" | "staging" | "production";
+  color?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -69,7 +71,12 @@ interface ClusterState {
   setSelectedTable: (tableName: string) => void;
   clearError: () => void;
   fetchSchema: (clusterId: string) => Promise<unknown[]>;
-  executeQuery: (clusterId: string, query: string) => Promise<unknown>;
+  executeQuery: (
+    clusterId: string,
+    query: string,
+    page?: number,
+    limit?: number,
+  ) => Promise<{ results: any[]; totals: number[]; executionTimeMs: number }>;
   fetchQueryLogs: (clusterId: string) => Promise<unknown[]>;
   dropTable: (clusterId: string, tableName: string) => Promise<void>;
   backup: (
@@ -377,12 +384,19 @@ export const useClusterStore = create<ClusterState>()(
         }
       },
 
-      executeQuery: async (clusterId: string, query: string) => {
+      executeQuery: async (
+        clusterId: string,
+        query: string,
+        page?: number,
+        limit?: number,
+      ) => {
         try {
           const response = await api.post(
             `/v1/clusters/${clusterId}/query`,
             {
               query,
+              page,
+              limit,
             },
             { _skipToast: true } as any,
           );

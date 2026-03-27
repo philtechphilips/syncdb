@@ -33,7 +33,10 @@ const Section = ({
   <motion.div
     initial={{ opacity: 0, y: 12 }}
     animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+    transition={{
+      duration: 0.4,
+      ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+    }}
     className="rounded-2xl border border-white/8 bg-white/[0.02] overflow-hidden"
   >
     <div className="flex items-start gap-3 px-6 py-5 border-b border-white/5">
@@ -59,7 +62,10 @@ const ProfileSection = () => {
 
   const handleSave = async () => {
     try {
-      await updateProfile({ full_name: fullName, profile_picture: avatar || undefined });
+      await updateProfile({
+        full_name: fullName,
+        profile_picture: avatar || undefined,
+      });
       setSaved(true);
       toast.success("Profile updated");
       setTimeout(() => setSaved(false), 2500);
@@ -216,7 +222,11 @@ const PasswordSection = () => {
               onClick={() => setShow((s) => ({ ...s, current: !s.current }))}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 transition-colors"
             >
-              {show.current ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {show.current ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </button>
           </div>
         </div>
@@ -239,7 +249,11 @@ const PasswordSection = () => {
                 onClick={() => setShow((s) => ({ ...s, next: !s.next }))}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 transition-colors"
               >
-                {show.next ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {show.next ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
               </button>
             </div>
           </div>
@@ -276,8 +290,8 @@ const PasswordSection = () => {
                       ? i === 0
                         ? "bg-red-500"
                         : i === 1
-                        ? "bg-yellow-500"
-                        : "bg-emerald-500"
+                          ? "bg-yellow-500"
+                          : "bg-emerald-500"
                       : "bg-white/10"
                   }`}
                 />
@@ -287,10 +301,10 @@ const PasswordSection = () => {
               {form.new_password.length < 8
                 ? "Too short"
                 : form.new_password.length < 12
-                ? "Weak"
-                : form.new_password.length < 16
-                ? "Good"
-                : "Strong"}
+                  ? "Weak"
+                  : form.new_password.length < 16
+                    ? "Good"
+                    : "Strong"}
             </p>
           </div>
         )}
@@ -328,12 +342,18 @@ const DangerSection = () => {
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+      transition={{
+        duration: 0.4,
+        delay: 0.1,
+        ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+      }}
       className="rounded-2xl border border-red-500/15 bg-red-500/[0.03] overflow-hidden"
     >
       <div className="px-6 py-5 border-b border-red-500/10">
         <h2 className="text-sm font-bold text-white">Session</h2>
-        <p className="text-xs text-zinc-500 mt-0.5">Manage your active session</p>
+        <p className="text-xs text-zinc-500 mt-0.5">
+          Manage your active session
+        </p>
       </div>
       <div className="px-6 py-5">
         <div className="flex items-center justify-between">

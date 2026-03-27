@@ -7,7 +7,7 @@ export function Skeleton({ className, ...props }: SkeletonProps) {
     <div
       className={cn(
         "animate-shimmer rounded-md bg-linear-to-r from-muted/50 via-muted/20 to-muted/50",
-        className
+        className,
       )}
       style={{
         backgroundSize: "200% 100%",

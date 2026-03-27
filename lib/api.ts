@@ -65,9 +65,7 @@ api.interceptors.response.use(
           if (nextRefresh && typeof window !== "undefined") {
             sessionStorage.setItem("rt", nextRefresh);
           }
-          useAuthStore
-            .getState()
-            .setTokens(access_token, nextRefresh);
+          useAuthStore.getState().setTokens(access_token, nextRefresh);
 
           // Retry the original request with the new token
           originalRequest.headers.Authorization = `Bearer ${access_token}`;
