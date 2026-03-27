@@ -10,7 +10,11 @@ const fadeUp: Variants = {
   visible: (i: number = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.8, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+    transition: {
+      duration: 0.8,
+      delay: i * 0.12,
+      ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+    },
   }),
 };
 
@@ -25,7 +29,9 @@ const DashboardMockup = () => (
       </div>
       <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/5">
         <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-        <span className="text-[10px] font-mono text-zinc-500">synqdb.app / dashboard</span>
+        <span className="text-[10px] font-mono text-zinc-500">
+          synqdb.app / dashboard
+        </span>
       </div>
       <div className="w-16" />
     </div>
@@ -35,7 +41,9 @@ const DashboardMockup = () => (
       <div className="w-44 border-r border-white/5 bg-[#040c14] flex flex-col shrink-0 p-3 gap-3">
         {/* Cluster list */}
         <div>
-          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600 mb-2 px-1">Clusters</p>
+          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600 mb-2 px-1">
+            Clusters
+          </p>
           {[
             { name: "postgres-prod", dot: "#4CAF76", active: true },
             { name: "mysql-staging", dot: "#4479A1", active: false },
@@ -60,7 +68,9 @@ const DashboardMockup = () => (
 
         {/* Table list */}
         <div className="mt-2">
-          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600 mb-2 px-1">Tables</p>
+          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600 mb-2 px-1">
+            Tables
+          </p>
           {["users", "orders", "products", "sessions"].map((t, i) => (
             <div
               key={i}
@@ -150,7 +160,9 @@ const DashboardMockup = () => (
 
           {/* Blinking cursor */}
           <div className="flex items-start gap-3 mt-0.5">
-            <span className="text-zinc-700 select-none w-4 text-right shrink-0 text-[10px]">8</span>
+            <span className="text-zinc-700 select-none w-4 text-right shrink-0 text-[10px]">
+              8
+            </span>
             <span className="inline-block h-3.5 w-1.5 bg-primary/80 animate-pulse rounded-sm" />
           </div>
         </div>
@@ -160,10 +172,14 @@ const DashboardMockup = () => (
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
               <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] font-mono text-zinc-400">247 rows · 8ms</span>
+              <span className="text-[10px] font-mono text-zinc-400">
+                247 rows · 8ms
+              </span>
             </div>
             <span className="text-zinc-700 text-[10px]">·</span>
-            <span className="text-[10px] font-mono text-zinc-600">postgres-prod</span>
+            <span className="text-[10px] font-mono text-zinc-600">
+              postgres-prod
+            </span>
           </div>
           <div className="flex gap-1.5">
             {["CSV", "JSON", "PDF"].map((fmt) => (
@@ -303,13 +319,20 @@ export const Hero = ({ onLaunch }: { onLaunch: () => void }) => {
             className="absolute -top-4 -right-4 md:right-8 flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-500/20 bg-[#040c14]/90 backdrop-blur-md shadow-lg"
           >
             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-mono text-emerald-400 font-bold">8ms avg query</span>
+            <span className="text-[10px] font-mono text-emerald-400 font-bold">
+              8ms avg query
+            </span>
           </motion.div>
 
           {/* Floating badge — engines */}
           <motion.div
             animate={{ y: [0, 6, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1,
+            }}
             className="absolute -bottom-4 -left-4 md:left-8 flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-[#040c14]/90 backdrop-blur-md shadow-lg"
           >
             <div className="flex -space-x-1">
@@ -321,7 +344,9 @@ export const Hero = ({ onLaunch }: { onLaunch: () => void }) => {
                 />
               ))}
             </div>
-            <span className="text-[10px] font-mono text-zinc-400">4 engines connected</span>
+            <span className="text-[10px] font-mono text-zinc-400">
+              4 engines connected
+            </span>
           </motion.div>
         </motion.div>
 

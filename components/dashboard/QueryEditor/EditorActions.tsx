@@ -6,7 +6,7 @@ import {
   Copy,
   Eraser,
   Save,
-  Library
+  Library,
 } from "lucide-react";
 
 interface EditorActionsProps {

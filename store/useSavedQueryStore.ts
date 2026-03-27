@@ -31,13 +31,19 @@ interface SavedQueryState {
   fetchSavedQueries: () => Promise<SavedQuery[]>;
   fetchCollections: () => Promise<Collection[]>;
   fetchCollectionTree: () => Promise<Collection[]>;
-  
+
   saveQuery: (data: Partial<SavedQuery>) => Promise<SavedQuery>;
-  updateSavedQuery: (id: string, data: Partial<SavedQuery>) => Promise<SavedQuery>;
+  updateSavedQuery: (
+    id: string,
+    data: Partial<SavedQuery>,
+  ) => Promise<SavedQuery>;
   deleteSavedQuery: (id: string) => Promise<void>;
-  
+
   createCollection: (data: Partial<Collection>) => Promise<Collection>;
-  updateCollection: (id: string, data: Partial<Collection>) => Promise<Collection>;
+  updateCollection: (
+    id: string,
+    data: Partial<Collection>,
+  ) => Promise<Collection>;
   deleteCollection: (id: string) => Promise<void>;
 }
 
@@ -104,10 +110,15 @@ export const useSavedQueryStore = create<SavedQueryState>((set, get) => ({
   updateSavedQuery: async (id, data) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.patch(`/v1/query-management/queries/${id}`, data);
+      const response = await api.patch(
+        `/v1/query-management/queries/${id}`,
+        data,
+      );
       const updatedQuery = response.data;
       set((state) => ({
-        savedQueries: state.savedQueries.map((q) => (q.id === id ? updatedQuery : q)),
+        savedQueries: state.savedQueries.map((q) =>
+          q.id === id ? updatedQuery : q,
+        ),
         isLoading: false,
       }));
       await get().fetchCollectionTree();
@@ -153,10 +164,15 @@ export const useSavedQueryStore = create<SavedQueryState>((set, get) => ({
   updateCollection: async (id, data) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.patch(`/v1/query-management/collections/${id}`, data);
+      const response = await api.patch(
+        `/v1/query-management/collections/${id}`,
+        data,
+      );
       const updatedCollection = response.data;
       set((state) => ({
-        collections: state.collections.map((c) => (c.id === id ? updatedCollection : c)),
+        collections: state.collections.map((c) =>
+          c.id === id ? updatedCollection : c,
+        ),
         isLoading: false,
       }));
       await get().fetchCollectionTree();

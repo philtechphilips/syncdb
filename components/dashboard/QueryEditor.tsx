@@ -375,7 +375,7 @@ const QueryEditor = () => {
 
   return (
     <div className="flex h-full bg-background font-sans min-w-0 w-full overflow-hidden">
-      <SavedQueriesSidebar 
+      <SavedQueriesSidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         onLoadQuery={(savedQuery) => {
@@ -384,7 +384,7 @@ const QueryEditor = () => {
           setIsSidebarOpen(false);
         }}
       />
-      
+
       <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden">
         <QueryTabs
           queries={queries}
@@ -396,93 +396,94 @@ const QueryEditor = () => {
           isAiOpen={isAiOpen}
         />
 
-      <AiAssistantBar
-        isOpen={isAiOpen}
-        mode={aiMode}
-        onSetMode={setAiMode}
-        prompt={aiPrompt}
-        onSetPrompt={setAiPrompt}
-        onRun={handleAskAi}
-        isGenerating={isGenerating}
-        explainLevel={explainLevel}
-        onSetExplainLevel={setExplainLevel}
-        onClose={() => setIsAiOpen(false)}
-      />
+        <AiAssistantBar
+          isOpen={isAiOpen}
+          mode={aiMode}
+          onSetMode={setAiMode}
+          prompt={aiPrompt}
+          onSetPrompt={setAiPrompt}
+          onRun={handleAskAi}
+          isGenerating={isGenerating}
+          explainLevel={explainLevel}
+          onSetExplainLevel={setExplainLevel}
+          onClose={() => setIsAiOpen(false)}
+        />
 
-      <div
-        className={`flex flex-col w-full overflow-hidden relative font-mono text-sm group transition-all duration-500 min-h-0 ${queryResults ? "flex-[1.5]" : "flex-1"}`}
-      >
-        <Editor
-          height="100%"
-          defaultLanguage="sql"
-          theme="vs-dark"
-          value={activeQuery.code}
-          onChange={(val) => handleUpdateCode(val || "")}
-          onMount={handleEditorMount}
-          options={{
-            minimap: { enabled: false },
-            fontSize: 13,
-            lineNumbers: "on",
-            scrollBeyondLastLine: false,
-            readOnly: isRunning,
-            automaticLayout: true,
-            padding: { top: 20 },
-            fontFamily: "JetBrains Mono, Menlo, Monaco, Courier New, monospace",
+        <div
+          className={`flex flex-col w-full overflow-hidden relative font-mono text-sm group transition-all duration-500 min-h-0 ${queryResults ? "flex-[1.5]" : "flex-1"}`}
+        >
+          <Editor
+            height="100%"
+            defaultLanguage="sql"
+            theme="vs-dark"
+            value={activeQuery.code}
+            onChange={(val) => handleUpdateCode(val || "")}
+            onMount={handleEditorMount}
+            options={{
+              minimap: { enabled: false },
+              fontSize: 13,
+              lineNumbers: "on",
+              scrollBeyondLastLine: false,
+              readOnly: isRunning,
+              automaticLayout: true,
+              padding: { top: 20 },
+              fontFamily:
+                "JetBrains Mono, Menlo, Monaco, Courier New, monospace",
+            }}
+          />
+
+          <div className="absolute top-6 right-8 flex items-center gap-3 px-4 py-1.5 rounded-lg border border-white/5 bg-black/40 text-[9px] font-black text-zinc-500 uppercase tracking-widest backdrop-blur-md opacity-40 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+            <div
+              className={`h-1.5 w-1.5 rounded-full ${selectedCluster ? "bg-primary" : "bg-red-500"}`}
+            ></div>
+            {selectedCluster
+              ? `${selectedCluster.type === "postgres" ? "PostgreSQL" : "MySQL"} - ${selectedCluster.name}`
+              : "No Cluster Selected"}
+          </div>
+        </div>
+
+        <EditorActions
+          isRunning={isRunning}
+          onRun={handleRunQuery}
+          onFormat={handleFormat}
+          onCopy={handleCopy}
+          onClear={() => handleUpdateCode("")}
+          onSave={() => setIsSaveDialogOpen(true)}
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+          isSidebarOpen={isSidebarOpen}
+          copied={copied}
+          clusterSelected={!!selectedCluster}
+        />
+
+        <QueryResultsArea
+          queryResults={queryResults}
+          bottomTab={bottomTab}
+          onSetTab={setBottomTab}
+          onClose={() => {
+            setQueryResults(null);
+            setBottomTab("results");
+          }}
+          aiOutput={aiOutput}
+          onCloseAiOutput={() => setAiOutput(null)}
+          aiMode={aiMode}
+          isLoadingHistory={isLoadingHistory}
+          queryHistory={queryHistory}
+          isRunning={isRunning}
+          onRestoreQuery={(sql) => {
+            handleUpdateCode(sql);
+            toast.success("Query loaded");
           }}
         />
 
-        <div className="absolute top-6 right-8 flex items-center gap-3 px-4 py-1.5 rounded-lg border border-white/5 bg-black/40 text-[9px] font-black text-zinc-500 uppercase tracking-widest backdrop-blur-md opacity-40 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
-          <div
-            className={`h-1.5 w-1.5 rounded-full ${selectedCluster ? "bg-primary" : "bg-red-500"}`}
-          ></div>
-          {selectedCluster
-            ? `${selectedCluster.type === "postgres" ? "PostgreSQL" : "MySQL"} - ${selectedCluster.database}`
-            : "No Cluster Selected"}
-        </div>
+        <SaveQueryDialog
+          isOpen={isSaveDialogOpen}
+          onClose={() => setIsSaveDialogOpen(false)}
+          queryCode={activeQuery.code}
+          persistentId={activeQuery.persistentId}
+        />
       </div>
-
-      <EditorActions
-        isRunning={isRunning}
-        onRun={handleRunQuery}
-        onFormat={handleFormat}
-        onCopy={handleCopy}
-        onClear={() => handleUpdateCode("")}
-        onSave={() => setIsSaveDialogOpen(true)}
-        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-        isSidebarOpen={isSidebarOpen}
-        copied={copied}
-        clusterSelected={!!selectedCluster}
-      />
-
-      <QueryResultsArea
-        queryResults={queryResults}
-        bottomTab={bottomTab}
-        onSetTab={setBottomTab}
-        onClose={() => {
-          setQueryResults(null);
-          setBottomTab("results");
-        }}
-        aiOutput={aiOutput}
-        onCloseAiOutput={() => setAiOutput(null)}
-        aiMode={aiMode}
-        isLoadingHistory={isLoadingHistory}
-        queryHistory={queryHistory}
-        isRunning={isRunning}
-        onRestoreQuery={(sql) => {
-          handleUpdateCode(sql);
-          toast.success("Query loaded");
-        }}
-      />
-      
-      <SaveQueryDialog 
-        isOpen={isSaveDialogOpen}
-        onClose={() => setIsSaveDialogOpen(false)}
-        queryCode={activeQuery.code}
-        persistentId={activeQuery.persistentId}
-      />
     </div>
-  </div>
-);
+  );
 };
 
 export default QueryEditor;

@@ -28,10 +28,12 @@ interface SidebarProps {
   onCloseMobile?: () => void;
 }
 
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useClusterStore } from "@/store/useClusterStore";
 import { useModalStore } from "@/store/useModalStore";
 import { SynqLogo } from "@/components/ui/SynqLogo";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 const Sidebar = ({
   onOpenConnect,
@@ -51,6 +53,7 @@ const Sidebar = ({
     fetchTables,
     dropTable,
     deleteCluster,
+    isTablesLoading,
   } = useClusterStore();
   const { open: openModal } = useModalStore();
   const [isTablesExpanded, setIsTablesExpanded] = React.useState(true);
@@ -61,6 +64,7 @@ const Sidebar = ({
     y: number;
     table: string | null;
   } | null>(null);
+  const router = useRouter();
   const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false);
   const [confirmDisconnect, setConfirmDisconnect] = React.useState<
     string | null
@@ -321,29 +325,46 @@ const Sidebar = ({
             {/* Expanded Tables List */}
             {isTablesExpanded && (
               <div className="mt-1 flex flex-col animate-in fade-in slide-in-from-top-1 duration-200">
-                {tables.map((table: { name: string }) => (
-                  <div
-                    key={table.name}
-                    onClick={() => onTableSelect(table.name)}
-                    onContextMenu={(e) => handleContextMenu(e, table.name)}
-                    className={`flex items-center gap-3 ml-6 mr-1 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer group/item hover:bg-white/[0.05] ${selectedTable === table.name ? "text-white bg-primary/10" : "text-muted-foreground/80 hover:text-white"}`}
-                  >
+                {isTablesLoading && tables.length === 0 ? (
+                  Array.from({ length: 8 }).map((_, i) => (
                     <div
-                      className={`h-1 w-1 rounded-full ${selectedTable === table.name ? "bg-primary" : "bg-zinc-700"}`}
-                    ></div>
-                    <span className="truncate flex-1">{table.name}</span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDropTable(table.name);
-                      }}
-                      className="opacity-0 group-hover/item:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-500 rounded transition-all"
-                      title="Drop Table"
+                      key={i}
+                      className="flex items-center gap-3 ml-6 mr-1 px-3 py-2"
                     >
-                      <Trash2 className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
+                      <Skeleton className="h-1 w-1 rounded-full shrink-0" />
+                      <Skeleton
+                        className="h-2 rounded-sm"
+                        style={{
+                          width: `${Math.floor(Math.random() * (70 - 40 + 1) + 40)}%`,
+                        }}
+                      />
+                    </div>
+                  ))
+                ) : (
+                  tables.map((table: { name: string }) => (
+                    <div
+                      key={table.name}
+                      onClick={() => onTableSelect(table.name)}
+                      onContextMenu={(e) => handleContextMenu(e, table.name)}
+                      className={`flex items-center gap-3 ml-6 mr-1 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer group/item hover:bg-white/[0.05] ${selectedTable === table.name ? "text-white bg-primary/10" : "text-muted-foreground/80 hover:text-white"}`}
+                    >
+                      <div
+                        className={`h-1 w-1 rounded-full ${selectedTable === table.name ? "bg-primary" : "bg-zinc-700"}`}
+                      ></div>
+                      <span className="truncate flex-1">{table.name}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDropTable(table.name);
+                        }}
+                        className="opacity-0 group-hover/item:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-500 rounded transition-all"
+                        title="Drop Table"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </div>
@@ -414,7 +435,10 @@ const Sidebar = ({
                 Account Settings
               </span>
             </div>
-            <button className="flex w-full items-center gap-3 px-3 py-2 text-xs font-bold text-muted-foreground/80 hover:text-white hover:bg-white/5 transition-colors">
+            <button
+              onClick={() => { router.push("/dashboard/settings"); setIsUserMenuOpen(false); }}
+              className="flex w-full items-center gap-3 px-3 py-2 text-xs font-bold text-muted-foreground/80 hover:text-white hover:bg-white/5 transition-colors"
+            >
               <Settings className="h-3.5 w-3.5" />
               Profile
             </button>

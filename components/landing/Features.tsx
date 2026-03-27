@@ -16,7 +16,11 @@ const fadeUp = {
   visible: (i: number = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.7, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+    transition: {
+      duration: 0.7,
+      delay: i * 0.08,
+      ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+    },
   }),
 };
 
@@ -31,7 +35,8 @@ const AICopilotCard = () => (
           <span className="text-[8px] text-zinc-400 font-bold">U</span>
         </div>
         <div className="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/5 text-xs text-zinc-400 font-mono leading-relaxed">
-          Show me users who signed up last month and haven&apos;t placed an order yet
+          Show me users who signed up last month and haven&apos;t placed an
+          order yet
         </div>
       </div>
       <div className="flex items-start gap-2">
@@ -63,10 +68,21 @@ const AICopilotCard = () => (
     </div>
     {/* Typing indicator */}
     <div className="flex items-center gap-1.5 mt-4">
-      <div className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
-      <div className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
-      <div className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
-      <span className="text-[9px] text-zinc-600 uppercase tracking-widest font-bold ml-1">Generating</span>
+      <div
+        className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce"
+        style={{ animationDelay: "0ms" }}
+      />
+      <div
+        className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce"
+        style={{ animationDelay: "150ms" }}
+      />
+      <div
+        className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce"
+        style={{ animationDelay: "300ms" }}
+      />
+      <span className="text-[9px] text-zinc-600 uppercase tracking-widest font-bold ml-1">
+        Generating
+      </span>
     </div>
   </div>
 );
@@ -75,34 +91,138 @@ const ERDiagramCard = () => (
   <div className="flex-1 flex items-center justify-center min-h-0 relative">
     <svg viewBox="0 0 200 160" className="w-full max-w-[180px] opacity-80">
       {/* Table boxes */}
-      <rect x="10" y="10" width="70" height="48" rx="6" fill="rgba(39,121,85,0.08)" stroke="rgba(39,121,85,0.3)" strokeWidth="1" />
-      <rect x="12" y="12" width="66" height="10" rx="4" fill="rgba(39,121,85,0.2)" />
-      <text x="45" y="20" textAnchor="middle" fill="#4CAF76" fontSize="5" fontWeight="bold">USERS</text>
+      <rect
+        x="10"
+        y="10"
+        width="70"
+        height="48"
+        rx="6"
+        fill="rgba(39,121,85,0.08)"
+        stroke="rgba(39,121,85,0.3)"
+        strokeWidth="1"
+      />
+      <rect
+        x="12"
+        y="12"
+        width="66"
+        height="10"
+        rx="4"
+        fill="rgba(39,121,85,0.2)"
+      />
+      <text
+        x="45"
+        y="20"
+        textAnchor="middle"
+        fill="#4CAF76"
+        fontSize="5"
+        fontWeight="bold"
+      >
+        USERS
+      </text>
       {["id", "name", "email", "status"].map((f, i) => (
-        <text key={f} x="16" y={30 + i * 7} fill="#64748B" fontSize="4.5">{f}</text>
+        <text key={f} x="16" y={30 + i * 7} fill="#64748B" fontSize="4.5">
+          {f}
+        </text>
       ))}
 
-      <rect x="120" y="10" width="70" height="48" rx="6" fill="rgba(39,121,85,0.05)" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
-      <rect x="122" y="12" width="66" height="10" rx="4" fill="rgba(255,255,255,0.05)" />
-      <text x="155" y="20" textAnchor="middle" fill="#94A3B8" fontSize="5" fontWeight="bold">ORDERS</text>
+      <rect
+        x="120"
+        y="10"
+        width="70"
+        height="48"
+        rx="6"
+        fill="rgba(39,121,85,0.05)"
+        stroke="rgba(255,255,255,0.08)"
+        strokeWidth="1"
+      />
+      <rect
+        x="122"
+        y="12"
+        width="66"
+        height="10"
+        rx="4"
+        fill="rgba(255,255,255,0.05)"
+      />
+      <text
+        x="155"
+        y="20"
+        textAnchor="middle"
+        fill="#94A3B8"
+        fontSize="5"
+        fontWeight="bold"
+      >
+        ORDERS
+      </text>
       {["id", "user_id", "total", "status"].map((f, i) => (
-        <text key={f} x="124" y={30 + i * 7} fill="#64748B" fontSize="4.5">{f}</text>
+        <text key={f} x="124" y={30 + i * 7} fill="#64748B" fontSize="4.5">
+          {f}
+        </text>
       ))}
 
-      <rect x="65" y="100" width="70" height="40" rx="6" fill="rgba(39,121,85,0.05)" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
-      <rect x="67" y="102" width="66" height="10" rx="4" fill="rgba(255,255,255,0.05)" />
-      <text x="100" y="110" textAnchor="middle" fill="#94A3B8" fontSize="5" fontWeight="bold">PRODUCTS</text>
+      <rect
+        x="65"
+        y="100"
+        width="70"
+        height="40"
+        rx="6"
+        fill="rgba(39,121,85,0.05)"
+        stroke="rgba(255,255,255,0.08)"
+        strokeWidth="1"
+      />
+      <rect
+        x="67"
+        y="102"
+        width="66"
+        height="10"
+        rx="4"
+        fill="rgba(255,255,255,0.05)"
+      />
+      <text
+        x="100"
+        y="110"
+        textAnchor="middle"
+        fill="#94A3B8"
+        fontSize="5"
+        fontWeight="bold"
+      >
+        PRODUCTS
+      </text>
       {["id", "order_id", "name"].map((f, i) => (
-        <text key={f} x="69" y={120 + i * 7} fill="#64748B" fontSize="4.5">{f}</text>
+        <text key={f} x="69" y={120 + i * 7} fill="#64748B" fontSize="4.5">
+          {f}
+        </text>
       ))}
 
       {/* Relation lines */}
-      <path d="M80 34 L120 34" stroke="rgba(39,121,85,0.5)" strokeWidth="1" strokeDasharray="3,2" markerEnd="url(#arrow)" />
-      <path d="M45 58 L100 100" stroke="rgba(255,255,255,0.1)" strokeWidth="1" strokeDasharray="3,2" />
-      <path d="M155 58 L100 100" stroke="rgba(255,255,255,0.1)" strokeWidth="1" strokeDasharray="3,2" />
+      <path
+        d="M80 34 L120 34"
+        stroke="rgba(39,121,85,0.5)"
+        strokeWidth="1"
+        strokeDasharray="3,2"
+        markerEnd="url(#arrow)"
+      />
+      <path
+        d="M45 58 L100 100"
+        stroke="rgba(255,255,255,0.1)"
+        strokeWidth="1"
+        strokeDasharray="3,2"
+      />
+      <path
+        d="M155 58 L100 100"
+        stroke="rgba(255,255,255,0.1)"
+        strokeWidth="1"
+        strokeDasharray="3,2"
+      />
 
       <defs>
-        <marker id="arrow" markerWidth="4" markerHeight="4" refX="2" refY="2" orient="auto">
+        <marker
+          id="arrow"
+          markerWidth="4"
+          markerHeight="4"
+          refX="2"
+          refY="2"
+          orient="auto"
+        >
           <path d="M0,0 L4,2 L0,4 Z" fill="rgba(39,121,85,0.6)" />
         </marker>
       </defs>
@@ -125,8 +245,12 @@ const FilterCard = () => (
             : "bg-white/[0.02] border-white/5 text-zinc-500"
         }`}
       >
-        <span className={f.active ? "text-zinc-300" : "text-zinc-600"}>{f.field}</span>
-        <span className={f.active ? "text-primary" : "text-zinc-700"}>{f.op}</span>
+        <span className={f.active ? "text-zinc-300" : "text-zinc-600"}>
+          {f.field}
+        </span>
+        <span className={f.active ? "text-primary" : "text-zinc-700"}>
+          {f.op}
+        </span>
         <span className={f.active ? "text-zinc-200" : "text-zinc-600"}>
           &quot;{f.val}&quot;
         </span>
@@ -217,7 +341,10 @@ const BENTO = [
 
 export const Features = () => {
   return (
-    <section id="features" className="py-28 bg-background relative overflow-hidden">
+    <section
+      id="features"
+      className="py-28 bg-background relative overflow-hidden"
+    >
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         {/* Header */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-16">
@@ -233,7 +360,9 @@ export const Features = () => {
             <h2 className="text-4xl md:text-5xl font-serif text-white leading-[1.1] tracking-tighter">
               Everything you need.
               <br />
-              <span className="text-primary italic">Nothing you don&apos;t.</span>
+              <span className="text-primary italic">
+                Nothing you don&apos;t.
+              </span>
             </h2>
           </motion.div>
 

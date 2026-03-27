@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
+import { TableSkeleton } from "../DataTable/TableSkeleton";
 
 interface QueryResultsAreaProps {
   queryResults: Record<string, unknown>[] | Record<string, unknown> | null;
@@ -130,17 +131,7 @@ const QueryResultsArea = ({
           </div>
         ) : bottomTab === "results" ? (
           isRunning ? (
-            <div className="h-full flex flex-col items-center justify-center p-12 text-center">
-              <div className="relative mb-8">
-                <Loader2 className="h-12 w-12 text-primary animate-spin" />
-              </div>
-              <h3 className="text-sm font-black text-white uppercase tracking-[0.3em] mb-2">
-                Processing Query
-              </h3>
-              <p className="text-[9px] text-zinc-600 font-black uppercase tracking-widest">
-                Awaiting response from high-performance engine...
-              </p>
-            </div>
+            <TableSkeleton rowCount={6} columnCount={8} showCheckbox={false} />
           ) : Array.isArray(queryResults) && queryResults.length > 0 ? (
             <div className="overflow-x-auto w-full scrollbar-hide">
               <table className="w-full text-left border-collapse text-[11px] min-w-[600px]">
@@ -196,12 +187,7 @@ const QueryResultsArea = ({
           /* History Tab View */
           <div className="flex flex-col h-full">
             {isLoadingHistory ? (
-              <div className="flex-1 flex flex-col items-center justify-center gap-4 text-muted-foreground">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                <span className="text-[10px] font-black uppercase tracking-widest">
-                  Retrieving audit logs...
-                </span>
-              </div>
+              <TableSkeleton rowCount={8} columnCount={4} showCheckbox={false} />
             ) : queryHistory.length > 0 ? (
               <div className="overflow-x-auto w-full scrollbar-hide">
                 <table className="w-full text-left border-collapse text-[11px] min-w-[700px]">

@@ -79,7 +79,7 @@ export default function BackupRestorePage() {
       if (restoreFormat === "json") {
         restoreData = JSON.parse(text);
       } else if (restoreFormat === "csv") {
-        restoreData = { [selectedCluster.database]: text }; // Simplistic mapping
+        restoreData = { [selectedCluster.name]: text };
       } else {
         restoreData = { content: text };
       }

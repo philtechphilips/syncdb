@@ -28,7 +28,9 @@ export const LandingNavbar = ({ onLaunch }: { onLaunch: () => void }) => {
   // Lock body scroll when mobile menu is open
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [mobileOpen]);
 
   return (
@@ -36,7 +38,10 @@ export const LandingNavbar = ({ onLaunch }: { onLaunch: () => void }) => {
       <motion.nav
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+        transition={{
+          duration: 0.9,
+          ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+        }}
         className="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-7xl"
       >
         <div
@@ -110,7 +115,11 @@ export const LandingNavbar = ({ onLaunch }: { onLaunch: () => void }) => {
             className="md:hidden flex items-center justify-center h-9 w-9 rounded-full border border-white/10 text-zinc-400 hover:text-white hover:border-white/20 transition-all"
             aria-label="Toggle menu"
           >
-            {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            {mobileOpen ? (
+              <X className="h-4 w-4" />
+            ) : (
+              <Menu className="h-4 w-4" />
+            )}
           </button>
         </div>
       </motion.nav>
@@ -170,7 +179,10 @@ export const LandingNavbar = ({ onLaunch }: { onLaunch: () => void }) => {
                 ) : (
                   <>
                     <button
-                      onClick={() => { setMobileOpen(false); onLaunch(); }}
+                      onClick={() => {
+                        setMobileOpen(false);
+                        onLaunch();
+                      }}
                       className="w-full px-6 py-3.5 rounded-full bg-primary text-white font-semibold text-sm flex items-center justify-center gap-2"
                     >
                       Get started free

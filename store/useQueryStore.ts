@@ -11,7 +11,7 @@ export interface SavedQuery {
 interface QueryState {
   queries: SavedQuery[];
   activeQueryId: number;
-  runRequested: number; 
+  runRequested: number;
   setActiveQueryId: (id: number) => void;
   setQueries: (queries: SavedQuery[]) => void;
   updateActiveQueryCode: (code: string) => void;

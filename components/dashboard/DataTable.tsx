@@ -11,6 +11,8 @@ import { applyFilters, cloneTableRow, deleteTableRow } from "@/lib/tableUtils";
 import { calculateContextMenuPosition, copyToClipboard } from "@/lib/uiUtils";
 import { downloadFile, formatData } from "@/lib/exportUtils";
 
+import { TableSkeleton } from "./DataTable/TableSkeleton";
+
 // Sub-components
 import DataTableHeader from "./DataTable/DataTableHeader";
 import DataTableBody from "./DataTable/DataTableBody";
@@ -303,19 +305,24 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
         data = rows.filter((r) => selectedRows.has(r.id as string | number));
       } else {
         // FETCH ALL DATA for the table (honoring active filters)
-        const toastId = toast.loading(`Preparing ${totalRows.toLocaleString()} rows for export...`);
+        const toastId = toast.loading(
+          `Preparing ${totalRows.toLocaleString()} rows for export...`,
+        );
         try {
-          const filterParam = activeFilters.length > 0 
-            ? `&filters=${encodeURIComponent(JSON.stringify(activeFilters))}` 
-            : "";
-          
+          const filterParam =
+            activeFilters.length > 0
+              ? `&filters=${encodeURIComponent(JSON.stringify(activeFilters))}`
+              : "";
+
           const response = await api.get(
-            `/v1/clusters/${selectedCluster!.id}/tables/${selectedTable}?page=1&limit=${totalRows}${filterParam}`
+            `/v1/clusters/${selectedCluster!.id}/tables/${selectedTable}?page=1&limit=${totalRows}${filterParam}`,
           );
           data = response.data.data;
           toast.dismiss(toastId);
         } catch (error) {
-          toast.error("Failed to fetch full dataset for export", { id: toastId });
+          toast.error("Failed to fetch full dataset for export", {
+            id: toastId,
+          });
           return;
         }
       }
@@ -330,7 +337,8 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
       return toast.error("Failed to format data for export");
     }
 
-    const subName = selectedRows.size > 0 && showSelectedOnly ? "selection" : "full";
+    const subName =
+      selectedRows.size > 0 && showSelectedOnly ? "selection" : "full";
     downloadFile(
       content,
       `${selectedTable || "export"}_${subName}.${format.toLowerCase()}`,
@@ -464,17 +472,9 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
 
   if (isLoading && tableData.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)] text-zinc-600 gap-6">
-        <div className="relative">
-          <div className="h-12 w-12 rounded-full border-t-2 border-primary animate-spin"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Database className="h-4 w-4 text-primary opacity-50" />
-          </div>
-        </div>
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 animate-pulse">
-          Syncing Connection...
-        </p>
-      </div>
+      <TableSkeleton
+        columnCount={tableColumns.length > 0 ? tableColumns.length : 6}
+      />
     );
   }
 

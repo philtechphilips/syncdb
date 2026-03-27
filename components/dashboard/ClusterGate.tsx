@@ -13,6 +13,7 @@ import {
 import { useClusterStore } from "@/store/useClusterStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { SynqLogo } from "@/components/ui/SynqLogo";
+import { Skeleton } from "@/components/ui/Skeleton";
 import ConnectionDialog from "./ConnectionDialog";
 
 export default function ClusterGate({
@@ -20,9 +21,41 @@ export default function ClusterGate({
 }: {
   children: React.ReactNode;
 }) {
-  const { clusters, selectedCluster, selectCluster } = useClusterStore();
+  const { clusters, selectedCluster, selectCluster, isLoading } =
+    useClusterStore();
   const { logout } = useAuthStore();
   const [isConnectOpen, setIsConnectOpen] = useState(false);
+
+  // Loading state for initial fetch
+  if (isLoading && clusters.length === 0) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        <div className="absolute inset-0 tech-grid opacity-[0.05] pointer-events-none"></div>
+        <div className="w-full max-w-4xl relative z-10 flex flex-col items-center">
+          <div className="mb-12 flex flex-col items-center">
+            <Skeleton className="h-20 w-20 rounded-3xl mb-8" />
+            <Skeleton className="h-4 w-48 mb-3" />
+            <Skeleton className="h-3 w-64 opacity-60" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-10">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-5 p-6 rounded-3xl bg-white/[0.02] border border-border/50"
+              >
+                <Skeleton className="h-12 w-12 rounded-2xl shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-3 w-3/4 rounded-sm" />
+                  <Skeleton className="h-2 w-1/2 rounded-sm opacity-40" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // If no cluster is selected, show the selector screen
   if (!selectedCluster) {
@@ -77,7 +110,7 @@ export default function ClusterGate({
                       </span>
                       <span className="h-1 w-1 bg-zinc-800 rounded-full"></span>
                       <span className="text-[10px] font-medium text-muted-foreground truncate">
-                        {cluster.host}
+                        {cluster.name}
                       </span>
                     </div>
                   </div>

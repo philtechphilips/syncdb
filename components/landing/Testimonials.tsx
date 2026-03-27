@@ -67,7 +67,11 @@ const fadeUp = {
   visible: (i: number = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, delay: i * 0.07, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+    transition: {
+      duration: 0.6,
+      delay: i * 0.07,
+      ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+    },
   }),
 };
 
@@ -129,9 +133,15 @@ export const Testimonials = () => {
               {/* Quote icon */}
               <div
                 className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0"
-                style={{ backgroundColor: `${review.color}15`, border: `1px solid ${review.color}25` }}
+                style={{
+                  backgroundColor: `${review.color}15`,
+                  border: `1px solid ${review.color}25`,
+                }}
               >
-                <Quote className="h-3.5 w-3.5" style={{ color: review.color }} />
+                <Quote
+                  className="h-3.5 w-3.5"
+                  style={{ color: review.color }}
+                />
               </div>
 
               {/* Text */}
@@ -143,7 +153,10 @@ export const Testimonials = () => {
               <div className="flex items-center gap-3 pt-3 border-t border-white/5">
                 <div
                   className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-xs font-black text-white"
-                  style={{ backgroundColor: `${review.color}30`, border: `1px solid ${review.color}40` }}
+                  style={{
+                    backgroundColor: `${review.color}30`,
+                    border: `1px solid ${review.color}40`,
+                  }}
                 >
                   {review.initials}
                 </div>

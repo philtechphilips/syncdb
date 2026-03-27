@@ -72,7 +72,11 @@ const fadeUp = {
   visible: (i: number = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.65, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+    transition: {
+      duration: 0.65,
+      delay: i * 0.1,
+      ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+    },
   }),
 };
 
@@ -80,7 +84,10 @@ export const Pricing = () => {
   const [annual, setAnnual] = useState(true);
 
   return (
-    <section id="pricing" className="py-28 bg-background relative overflow-hidden">
+    <section
+      id="pricing"
+      className="py-28 bg-background relative overflow-hidden"
+    >
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <div className="mb-16 text-center">
@@ -172,8 +179,12 @@ export const Pricing = () => {
 
               {/* Plan header */}
               <div>
-                <div className="text-sm font-bold text-white mb-0.5">{plan.name}</div>
-                <div className="text-xs text-zinc-500 font-medium">{plan.tagline}</div>
+                <div className="text-sm font-bold text-white mb-0.5">
+                  {plan.name}
+                </div>
+                <div className="text-xs text-zinc-500 font-medium">
+                  {plan.tagline}
+                </div>
               </div>
 
               {/* Price */}
@@ -199,11 +210,14 @@ export const Pricing = () => {
               </div>
 
               {/* Annual savings note */}
-              {plan.monthlyPrice !== null && plan.monthlyPrice > 0 && annual && (
-                <p className="text-[10px] text-primary/70 font-medium -mt-4">
-                  Billed annually — save ${(plan.monthlyPrice - plan.annualPrice!) * 12}/yr per seat
-                </p>
-              )}
+              {plan.monthlyPrice !== null &&
+                plan.monthlyPrice > 0 &&
+                annual && (
+                  <p className="text-[10px] text-primary/70 font-medium -mt-4">
+                    Billed annually — save $
+                    {(plan.monthlyPrice - plan.annualPrice!) * 12}/yr per seat
+                  </p>
+                )}
 
               {/* CTA */}
               <button
@@ -223,7 +237,10 @@ export const Pricing = () => {
               {/* Feature list */}
               <ul className="space-y-3">
                 {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-2.5 text-sm">
+                  <li
+                    key={feature}
+                    className="flex items-start gap-2.5 text-sm"
+                  >
                     <div
                       className={`h-4 w-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
                         plan.featured

@@ -29,7 +29,7 @@ const StatusBar = () => {
   }, [selectedCluster]);
 
   const dbDisplay = selectedCluster
-    ? `${selectedCluster.type.toUpperCase()} / ${selectedCluster.database}`
+    ? `${selectedCluster.type.toUpperCase()} / ${selectedCluster.name}`
     : "Disconnected";
 
   return (
@@ -48,7 +48,7 @@ const StatusBar = () => {
           <>
             <div className="flex items-center gap-2">
               <Wifi className="h-3.5 w-3.5 text-emerald-500" />
-              <span>Connected: {selectedCluster.host}</span>
+              <span>Connected: {selectedCluster.name}</span>
             </div>
             {selectedTable && (
               <div className="flex items-center gap-2 text-primary/80">

@@ -2,38 +2,80 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ChevronUp, X, SlidersHorizontal, Download, Search } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  X,
+  SlidersHorizontal,
+  Download,
+  Search,
+} from "lucide-react";
 
 // ── Data ────────────────────────────────────────────────────────────────────
 
 const ROWS = [
-  { name: "Sarah Chen",    email: "sarah@linear.io",   status: "active",   plan: "Pro",       arr: "$12,400", joined: "Jan 12, 2024" },
-  { name: "Marcus Thorne", email: "marcus@vortex.dev", status: "active",   plan: "Pro",       arr: "$9,600",  joined: "Jan 28, 2024" },
-  { name: "Leo Hashimoto", email: "leo@hyperion.co",   status: "active",   plan: "Community", arr: "—",       joined: "Feb 3, 2024"  },
-  { name: "Priya Rao",     email: "priya@nexus.io",    status: "active",   plan: "Pro",       arr: "$6,000",  joined: "Feb 17, 2024" },
-  { name: "Daniel Park",   email: "dan@stack.com",     status: "inactive", plan: "Community", arr: "—",       joined: "Mar 1, 2024"  },
+  {
+    name: "Sarah Chen",
+    email: "sarah@linear.io",
+    status: "active",
+    plan: "Pro",
+    arr: "$12,400",
+    joined: "Jan 12, 2024",
+  },
+  {
+    name: "Marcus Thorne",
+    email: "marcus@vortex.dev",
+    status: "active",
+    plan: "Pro",
+    arr: "$9,600",
+    joined: "Jan 28, 2024",
+  },
+  {
+    name: "Leo Hashimoto",
+    email: "leo@hyperion.co",
+    status: "active",
+    plan: "Community",
+    arr: "—",
+    joined: "Feb 3, 2024",
+  },
+  {
+    name: "Priya Rao",
+    email: "priya@nexus.io",
+    status: "active",
+    plan: "Pro",
+    arr: "$6,000",
+    joined: "Feb 17, 2024",
+  },
+  {
+    name: "Daniel Park",
+    email: "dan@stack.com",
+    status: "inactive",
+    plan: "Community",
+    arr: "—",
+    joined: "Mar 1, 2024",
+  },
 ];
 
 const COLUMNS = [
-  { label: "Name",    key: "name"   },
-  { label: "Email",   key: "email"  },
-  { label: "Status",  key: "status" },
-  { label: "Plan",    key: "plan"   },
-  { label: "ARR",     key: "arr"    },
-  { label: "Joined",  key: "joined" },
+  { label: "Name", key: "name" },
+  { label: "Email", key: "email" },
+  { label: "Status", key: "status" },
+  { label: "Plan", key: "plan" },
+  { label: "ARR", key: "arr" },
+  { label: "Joined", key: "joined" },
 ];
 
 const CHIPS = [
   { field: "status", op: "is not", value: "deleted" },
-  { field: "plan",   op: "is",     value: "Pro"     },
+  { field: "plan", op: "is", value: "Pro" },
 ];
 
 const STATUS_CLS: Record<string, string> = {
-  active:   "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
+  active: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
   inactive: "bg-zinc-500/10 border-zinc-600/20 text-zinc-500",
 };
 const PLAN_CLS: Record<string, string> = {
-  Pro:       "bg-primary/10 border-primary/20 text-primary",
+  Pro: "bg-primary/10 border-primary/20 text-primary",
   Community: "bg-white/5 border-white/10 text-zinc-500",
 };
 
@@ -46,7 +88,10 @@ const DataTableMockup = () => {
 
   const toggle = (i: number) => {
     if (i === sortCol) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else { setSortCol(i); setSortDir("asc"); }
+    else {
+      setSortCol(i);
+      setSortDir("asc");
+    }
   };
 
   return (
@@ -72,7 +117,9 @@ const DataTableMockup = () => {
                 <span className="text-primary/60 mx-0.5">{c.op}</span>
                 <span className="text-white">&quot;{c.value}&quot;</span>
                 <button
-                  onClick={() => setChips((prev) => prev.filter((_, j) => j !== i))}
+                  onClick={() =>
+                    setChips((prev) => prev.filter((_, j) => j !== i))
+                  }
                   className="ml-0.5 text-zinc-600 hover:text-zinc-300 transition-colors"
                 >
                   <X className="h-2.5 w-2.5" />
@@ -109,13 +156,17 @@ const DataTableMockup = () => {
                   className="px-4 py-2.5 text-left cursor-pointer group select-none"
                 >
                   <div className="flex items-center gap-1">
-                    <span className={`text-[9px] font-black uppercase tracking-[0.3em] transition-colors ${sortCol === i ? "text-white" : "text-zinc-600 group-hover:text-zinc-400"}`}>
+                    <span
+                      className={`text-[9px] font-black uppercase tracking-[0.3em] transition-colors ${sortCol === i ? "text-white" : "text-zinc-600 group-hover:text-zinc-400"}`}
+                    >
                       {col.label}
                     </span>
                     {sortCol === i ? (
-                      sortDir === "asc"
-                        ? <ChevronUp className="h-3 w-3 text-primary" />
-                        : <ChevronDown className="h-3 w-3 text-primary" />
+                      sortDir === "asc" ? (
+                        <ChevronUp className="h-3 w-3 text-primary" />
+                      ) : (
+                        <ChevronDown className="h-3 w-3 text-primary" />
+                      )
                     ) : (
                       <ChevronDown className="h-3 w-3 text-zinc-700 opacity-0 group-hover:opacity-100 transition-opacity" />
                     )}
@@ -134,20 +185,32 @@ const DataTableMockup = () => {
                 transition={{ delay: i * 0.05 }}
                 className="border-b border-white/[0.03] hover:bg-primary/[0.025] transition-colors cursor-default"
               >
-                <td className="px-4 py-2.5 font-medium text-white whitespace-nowrap">{row.name}</td>
-                <td className="px-4 py-2.5 text-zinc-500 font-mono text-[10px] whitespace-nowrap">{row.email}</td>
+                <td className="px-4 py-2.5 font-medium text-white whitespace-nowrap">
+                  {row.name}
+                </td>
+                <td className="px-4 py-2.5 text-zinc-500 font-mono text-[10px] whitespace-nowrap">
+                  {row.email}
+                </td>
                 <td className="px-4 py-2.5">
-                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${STATUS_CLS[row.status]}`}>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${STATUS_CLS[row.status]}`}
+                  >
                     {row.status}
                   </span>
                 </td>
                 <td className="px-4 py-2.5">
-                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${PLAN_CLS[row.plan]}`}>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${PLAN_CLS[row.plan]}`}
+                  >
                     {row.plan}
                   </span>
                 </td>
-                <td className="px-4 py-2.5 font-mono text-zinc-400 whitespace-nowrap">{row.arr}</td>
-                <td className="px-4 py-2.5 text-zinc-600 font-mono text-[10px] whitespace-nowrap">{row.joined}</td>
+                <td className="px-4 py-2.5 font-mono text-zinc-400 whitespace-nowrap">
+                  {row.arr}
+                </td>
+                <td className="px-4 py-2.5 text-zinc-600 font-mono text-[10px] whitespace-nowrap">
+                  {row.joined}
+                </td>
               </motion.tr>
             ))}
           </tbody>
@@ -160,13 +223,17 @@ const DataTableMockup = () => {
           <div className="flex items-center gap-1.5">
             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
             <span className="text-[9px] font-mono text-zinc-500">
-              <span className="text-white">5</span> of <span className="text-white">2,847</span> rows · 14ms
+              <span className="text-white">5</span> of{" "}
+              <span className="text-white">2,847</span> rows · 14ms
             </span>
           </div>
         </div>
         <div className="flex items-center gap-1">
           {[1, 2, 3].map((p) => (
-            <div key={p} className={`h-5 w-5 rounded flex items-center justify-center text-[9px] font-bold cursor-pointer transition-colors ${p === 1 ? "bg-primary/15 border border-primary/25 text-primary" : "text-zinc-600 hover:text-zinc-300"}`}>
+            <div
+              key={p}
+              className={`h-5 w-5 rounded flex items-center justify-center text-[9px] font-bold cursor-pointer transition-colors ${p === 1 ? "bg-primary/15 border border-primary/25 text-primary" : "text-zinc-600 hover:text-zinc-300"}`}
+            >
               {p}
             </div>
           ))}
@@ -185,13 +252,15 @@ export const DataExplorerSection = () => (
 
     <div className="max-w-7xl mx-auto px-6 relative z-10">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-
         {/* Visual */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+          transition={{
+            duration: 0.9,
+            ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+          }}
           className="lg:col-span-7 order-2 lg:order-1"
         >
           <div className="rounded-2xl p-[1px] bg-gradient-to-b from-white/10 via-white/[0.04] to-transparent">
@@ -230,19 +299,23 @@ export const DataExplorerSection = () => (
             className="grid grid-cols-2 gap-4"
           >
             {[
-              { stat: "10",      label: "Concurrent filters" },
+              { stat: "10", label: "Concurrent filters" },
               { stat: "Sub-20ms", label: "Server-side response" },
-              { stat: "2,847+",  label: "Rows handled live" },
-              { stat: "3",       label: "Export formats" },
+              { stat: "2,847+", label: "Rows handled live" },
+              { stat: "3", label: "Export formats" },
             ].map((item) => (
-              <div key={item.label} className="p-4 rounded-xl border border-white/[0.06] bg-white/[0.02] space-y-1">
+              <div
+                key={item.label}
+                className="p-4 rounded-xl border border-white/[0.06] bg-white/[0.02] space-y-1"
+              >
                 <div className="text-xl font-serif text-white">{item.stat}</div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">{item.label}</div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">
+                  {item.label}
+                </div>
               </div>
             ))}
           </motion.div>
         </div>
-
       </div>
     </div>
     <div className="absolute bottom-0 right-0 w-1/3 h-px bg-gradient-to-l from-primary/15 to-transparent" />

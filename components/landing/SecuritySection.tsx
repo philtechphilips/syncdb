@@ -2,7 +2,14 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { ShieldCheck, KeyRound, Lock, UserCheck, FileCode2, Globe } from "lucide-react";
+import {
+  ShieldCheck,
+  KeyRound,
+  Lock,
+  UserCheck,
+  FileCode2,
+  Globe,
+} from "lucide-react";
 
 const PILLARS = [
   {
@@ -48,17 +55,23 @@ const fadeUp = {
   visible: (i: number = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.65, delay: i * 0.07, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+    transition: {
+      duration: 0.65,
+      delay: i * 0.07,
+      ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+    },
   }),
 };
 
 export const SecuritySection = () => (
-  <section id="security" className="py-32 bg-background relative overflow-hidden">
+  <section
+    id="security"
+    className="py-32 bg-background relative overflow-hidden"
+  >
     <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
     <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[500px] h-[500px] bg-primary/[0.04] blur-[130px] rounded-full pointer-events-none" />
 
     <div className="max-w-7xl mx-auto px-6 relative z-10">
-
       {/* Header */}
       <div className="mb-16 max-w-2xl">
         <motion.div
@@ -122,7 +135,10 @@ export const SecuritySection = () => (
       >
         <p className="text-sm text-zinc-600 font-medium">
           See something we should add?{" "}
-          <a href="#" className="text-zinc-400 underline underline-offset-4 hover:text-white transition-colors">
+          <a
+            href="#"
+            className="text-zinc-400 underline underline-offset-4 hover:text-white transition-colors"
+          >
             Open an issue on GitHub
           </a>
         </p>

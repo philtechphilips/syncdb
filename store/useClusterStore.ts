@@ -6,11 +6,9 @@ import { getErrorMessage } from "@/lib/errorUtils";
 export interface Cluster {
   id: string;
   name: string;
-  type: "mysql" | "postgres";
-  host: string;
-  port: number;
-  username: string;
-  database: string;
+  type: "mysql" | "postgres" | "mssql";
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface ClusterState {
@@ -111,16 +109,15 @@ export const useClusterStore = create<ClusterState>()(
           );
 
           const { selectedCluster: latestSelected } = get();
-          // Only overwrite if we dont have one or if it was removed from clusters
-          const stillExists =
-            latestSelected &&
-            clusters.find((c: Cluster) => c.id === latestSelected.id);
-          let nextSelected = latestSelected;
+          // Re-hydrate from fresh fetch — latestSelected may be { id } only (persisted shape)
+          const stillExists = latestSelected
+            ? (clusters.find((c: Cluster) => c.id === latestSelected.id) ??
+              null)
+            : null;
+          let nextSelected: Cluster | null = stillExists;
 
-          if (!stillExists && clusters.length === 1) {
+          if (!nextSelected && clusters.length === 1) {
             nextSelected = clusters[0];
-          } else if (!stillExists) {
-            nextSelected = null;
           }
 
           set({ clusters, selectedCluster: nextSelected, isLoading: false });
@@ -467,7 +464,10 @@ export const useClusterStore = create<ClusterState>()(
     {
       name: "cluster-storage",
       partialize: (state: ClusterState) => ({
-        selectedCluster: state.selectedCluster,
+        // Only persist the cluster ID — credentials stay server-side only
+        selectedCluster: state.selectedCluster
+          ? { id: state.selectedCluster.id }
+          : null,
         activeTab: state.activeTab,
         selectedTable: state.selectedTable,
       }),

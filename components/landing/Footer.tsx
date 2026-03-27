@@ -62,7 +62,8 @@ export const Footer = () => {
             <div className="space-y-1">
               <p className="text-sm font-bold text-white">Stay in the loop</p>
               <p className="text-sm text-zinc-500 font-medium">
-                Get product updates, engineering notes, and release announcements.
+                Get product updates, engineering notes, and release
+                announcements.
               </p>
             </div>
 
@@ -103,7 +104,10 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-6 gap-12">
           {/* Brand col */}
           <div className="md:col-span-2 space-y-5">
-            <Link href="/" className="flex items-center gap-0.5 cursor-pointer w-max">
+            <Link
+              href="/"
+              className="flex items-center gap-0.5 cursor-pointer w-max"
+            >
               <SynqLogo className="h-5 w-5 text-primary translate-y-px" />
               <span className="text-base font-serif tracking-tight text-white -ml-0.5 italic">
                 ynqDB

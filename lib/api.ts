@@ -43,7 +43,9 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       const { useAuthStore } = require("@/store/useAuthStore");
-      const refreshToken = useAuthStore.getState().refresh_token;
+      const refreshToken =
+        useAuthStore.getState().refresh_token ??
+        (typeof window !== "undefined" ? sessionStorage.getItem("rt") : null);
 
       if (!refreshToken) {
         console.error("No refresh token available, forcing logout");
@@ -59,7 +61,13 @@ api.interceptors.response.use(
         const { access_token, refresh_token: newRefreshToken } = response.data;
 
         if (access_token) {
-          useAuthStore.getState().setTokens(access_token, newRefreshToken ?? refreshToken);
+          const nextRefresh = newRefreshToken ?? refreshToken;
+          if (nextRefresh && typeof window !== "undefined") {
+            sessionStorage.setItem("rt", nextRefresh);
+          }
+          useAuthStore
+            .getState()
+            .setTokens(access_token, nextRefresh);
 
           // Retry the original request with the new token
           originalRequest.headers.Authorization = `Bearer ${access_token}`;

@@ -6,6 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import StatusBar from "@/components/layout/StatusBar";
 import ConnectionDialog from "@/components/dashboard/ConnectionDialog";
 import ClusterGate from "@/components/dashboard/ClusterGate";
+import { OnboardingWizard, shouldShowOnboarding } from "@/components/dashboard/OnboardingWizard";
 import { useClusterStore } from "@/store/useClusterStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -26,6 +27,7 @@ export default function DashboardLayout({
   const [isConnectOpen, setIsConnectOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isSidebarMobileOpen, setIsSidebarMobileOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const pathname = usePathname();
   const router = useRouter();
@@ -36,8 +38,11 @@ export default function DashboardLayout({
   React.useEffect(() => {
     const handshake = async () => {
       if (!isAuthenticated) await checkAuth();
-      if (clusters.length === 0) await fetchClusters();
+      const fetched = clusters.length === 0 ? await fetchClusters() : clusters;
       setIsInitialized(true);
+      if (fetched.length === 0 && shouldShowOnboarding()) {
+        setShowOnboarding(true);
+      }
     };
     handshake();
   }, [isAuthenticated, checkAuth, clusters.length, fetchClusters]);
@@ -173,6 +178,11 @@ export default function DashboardLayout({
           isOpen={isConnectOpen}
           onClose={() => setIsConnectOpen(false)}
         />
+
+        {/* First-run Onboarding Wizard */}
+        {showOnboarding && (
+          <OnboardingWizard onDismiss={() => setShowOnboarding(false)} />
+        )}
       </div>
     </ClusterGate>
   );

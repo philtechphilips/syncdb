@@ -1,7 +1,22 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import axios from "axios";
 import api from "@/lib/api";
 import { getErrorMessage } from "@/lib/errorUtils";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const SESSION_KEY = "rt"; // refresh token — sessionStorage only
+
+const saveRefreshToken = (token: string | null) => {
+  if (typeof window === "undefined") return;
+  if (token) sessionStorage.setItem(SESSION_KEY, token);
+  else sessionStorage.removeItem(SESSION_KEY);
+};
+
+const loadRefreshToken = (): string | null => {
+  if (typeof window === "undefined") return null;
+  return sessionStorage.getItem(SESSION_KEY);
+};
 
 export interface User {
   id: string;
@@ -31,6 +46,8 @@ interface AuthState {
   ) => Promise<Record<string, unknown>>;
   logout: () => void;
   checkAuth: () => Promise<void>;
+  updateProfile: (data: { full_name?: string; profile_picture?: string }) => Promise<void>;
+  changePassword: (data: { current_password: string; new_password: string }) => Promise<void>;
   clearError: () => void;
 }
 
@@ -46,6 +63,7 @@ export const useAuthStore = create<AuthState>()(
 
       setUser: (user) => set({ user, isAuthenticated: !!user }),
       setTokens: (access, refresh) => {
+        if (refresh) saveRefreshToken(refresh);
         set({ access_token: access, refresh_token: refresh });
       },
 
@@ -54,6 +72,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           const response = await api.post("/v1/auth/login", credentials);
           const { user, access_token, refresh_token } = response.data;
+          saveRefreshToken(refresh_token);
 
           set({
             user,
@@ -108,23 +127,44 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
+        saveRefreshToken(null);
         set({
           user: null,
           access_token: null,
           refresh_token: null,
           isAuthenticated: false,
         });
-        if (typeof window !== "undefined" && window.location.pathname !== "/auth/login") {
+        if (
+          typeof window !== "undefined" &&
+          window.location.pathname !== "/auth/login"
+        ) {
           window.location.href = "/auth/login";
         }
       },
 
       checkAuth: async () => {
-        // Tokens are in-memory only; if there's no access_token in state the session is gone
-        const { access_token } = get();
+        let { access_token } = get();
+
+        // On page reload the in-memory access token is gone — try a silent refresh
         if (!access_token) {
-          set({ isAuthenticated: false, isLoading: false });
-          return;
+          const storedRefresh = loadRefreshToken();
+          if (!storedRefresh) {
+            set({ isAuthenticated: false, isLoading: false });
+            return;
+          }
+          try {
+            const res = await axios.post(`${API_URL}/v1/auth/refresh`, {
+              refresh_token: storedRefresh,
+            });
+            const { access_token: newAccess, refresh_token: newRefresh } = res.data;
+            saveRefreshToken(newRefresh ?? storedRefresh);
+            set({ access_token: newAccess, refresh_token: newRefresh ?? storedRefresh });
+            access_token = newAccess;
+          } catch {
+            saveRefreshToken(null);
+            set({ isAuthenticated: false, isLoading: false });
+            return;
+          }
         }
 
         set({ isLoading: true });
@@ -136,6 +176,7 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
           });
         } catch {
+          saveRefreshToken(null);
           set({
             user: null,
             isAuthenticated: false,
@@ -143,6 +184,28 @@ export const useAuthStore = create<AuthState>()(
             access_token: null,
             refresh_token: null,
           });
+        }
+      },
+
+      updateProfile: async (data) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await api.patch("/v1/auth/profile", data);
+          set({ user: { ...get().user!, ...response.data }, isLoading: false });
+        } catch (error: unknown) {
+          set({ isLoading: false, error: getErrorMessage(error) });
+          throw error;
+        }
+      },
+
+      changePassword: async (data) => {
+        set({ isLoading: true, error: null });
+        try {
+          await api.patch("/v1/auth/password", data);
+          set({ isLoading: false });
+        } catch (error: unknown) {
+          set({ isLoading: false, error: getErrorMessage(error) });
+          throw error;
         }
       },
 

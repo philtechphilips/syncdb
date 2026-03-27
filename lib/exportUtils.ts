@@ -14,7 +14,7 @@ export const formatToJSON = <T extends Record<string, unknown>>(data: T[]) => {
 export const formatToCSV = <T extends Record<string, unknown>>(data: T[]) => {
   if (data.length === 0) return "";
   const keys = Object.keys(data[0]) as (keyof T)[];
-  
+
   const header = keys.join(",");
   const body = data.map((row) =>
     keys
@@ -23,14 +23,14 @@ export const formatToCSV = <T extends Record<string, unknown>>(data: T[]) => {
         if (val === null || val === undefined) return "";
         let str = String(val);
         // Escape quotes and wrap in quotes if contains comma or quote
-        if (str.includes(",") || str.includes("\"") || str.includes("\n")) {
-          str = `"${str.replace(/"/g, "\"\"")}"`;
+        if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+          str = `"${str.replace(/"/g, '""')}"`;
         }
         return str;
       })
-      .join(",")
+      .join(","),
   );
-  
+
   return [header, ...body].join("\n");
 };
 
@@ -40,8 +40,10 @@ export const formatToSQL = <T extends Record<string, unknown>>(
 ) => {
   if (data.length === 0) return "";
   const keys = Object.keys(data[0]) as (keyof T)[];
-  const escapedTableName = `"${tableName.replace(/"/g, "\"\"")}"`;
-  const escapedKeys = keys.map(k => `"${String(k).replace(/"/g, "\"\"")}"`).join(", ");
+  const escapedTableName = `"${tableName.replace(/"/g, '""')}"`;
+  const escapedKeys = keys
+    .map((k) => `"${String(k).replace(/"/g, '""')}"`)
+    .join(", ");
 
   return data
     .map((row) => {
@@ -84,12 +86,12 @@ export const formatToMarkdown = <T extends Record<string, unknown>>(
 
 export const formatToPDF = <T extends Record<string, unknown>>(
   data: T[],
-  tableName: string = "table"
+  tableName: string = "table",
 ) => {
   if (data.length === 0) return;
   const doc = new jsPDF();
   const keys = Object.keys(data[0]);
-  const body = data.map(row => keys.map(k => String(row[k] ?? "NULL")));
+  const body = data.map((row) => keys.map((k) => String(row[k] ?? "NULL")));
 
   doc.text(`Table Export: ${tableName}`, 14, 15);
   doc.autoTable({
