@@ -137,7 +137,7 @@ const ConnectionDialog = ({
       <div className="relative w-full max-w-5xl rounded-[2.5rem] bg-background p-10 shadow-3xl border border-border/50 overflow-hidden max-h-[95vh] overflow-y-auto scrollbar-hide">
         {/* Background Tech Elements */}
         <div className="absolute inset-0 tech-grid opacity-[0.05] pointer-events-none"></div>
-        <div 
+        <div
           className="absolute -top-24 -right-24 h-64 w-64 rounded-full blur-[100px] pointer-events-none opacity-20"
           style={{ backgroundColor: formData.color }}
         ></div>
@@ -186,7 +186,9 @@ const ConnectionDialog = ({
                     >
                       <Database className="h-4 w-4" />
                     </div>
-                    <span className={`text-xs font-bold ${selectedDb === db.id ? "text-white" : "text-zinc-400"}`}>
+                    <span
+                      className={`text-xs font-bold ${selectedDb === db.id ? "text-white" : "text-zinc-400"}`}
+                    >
                       {db.name}
                     </span>
                   </button>
@@ -204,11 +206,11 @@ const ConnectionDialog = ({
                     key={env.id}
                     type="button"
                     onClick={() => {
-                        setFormData({ 
-                            ...formData, 
-                            environment: env.id as any,
-                            color: env.color
-                        });
+                      setFormData({
+                        ...formData,
+                        environment: env.id as any,
+                        color: env.color,
+                      });
                     }}
                     className={`flex flex-col items-center gap-2 rounded-xl border p-3 transition-all ${
                       formData.environment === env.id
@@ -224,7 +226,8 @@ const ConnectionDialog = ({
                 ))}
               </div>
               <p className="text-[9px] text-zinc-600 font-medium px-1">
-                * Production clusters will trigger confirmation dialogs for all destructive actions.
+                * Production clusters will trigger confirmation dialogs for all
+                destructive actions.
               </p>
             </div>
 
@@ -243,12 +246,14 @@ const ConnectionDialog = ({
                   />
                 ))}
                 <div className="relative h-6 w-6 rounded-full overflow-hidden border border-white/10 ml-auto">
-                    <input 
-                        type="color" 
-                        value={formData.color}
-                        onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                        className="absolute inset-0 h-10 w-10 -translate-x-1/4 -translate-y-1/4 cursor-pointer"
-                    />
+                  <input
+                    type="color"
+                    value={formData.color}
+                    onChange={(e) =>
+                      setFormData({ ...formData, color: e.target.value })
+                    }
+                    className="absolute inset-0 h-10 w-10 -translate-x-1/4 -translate-y-1/4 cursor-pointer"
+                  />
                 </div>
               </div>
             </div>
@@ -261,93 +266,103 @@ const ConnectionDialog = ({
             </span>
             <div className="glass rounded-[2rem] p-8 border border-border/50 space-y-6">
               <div className="grid grid-cols-1 gap-6">
-                 <div className="space-y-2">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
+                    Connection Display Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => handleInputChange("name", e.target.value)}
+                    placeholder="e.g. Master Analytics Production"
+                    className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
+                  />
+                </div>
+
+                <div className="grid grid-cols-12 gap-4">
+                  <div className="col-span-8 space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
-                      Connection Display Name
+                      Cluster Host
+                    </label>
+                    <div className="relative">
+                      <Globe className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-600" />
+                      <input
+                        type="text"
+                        required
+                        value={formData.host}
+                        onChange={(e) =>
+                          handleInputChange("host", e.target.value)
+                        }
+                        placeholder="db.example.com or 10.0.0.1"
+                        className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] pl-11 pr-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
+                      />
+                    </div>
+                  </div>
+                  <div className="col-span-4 space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1 text-center block">
+                      Port
                     </label>
                     <input
                       type="text"
                       required
-                      value={formData.name}
-                      onChange={(e) => handleInputChange("name", e.target.value)}
-                      placeholder="e.g. Master Analytics Production"
-                      className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
+                      value={formData.port}
+                      onChange={(e) =>
+                        handleInputChange("port", e.target.value)
+                      }
+                      className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium text-center"
                     />
                   </div>
+                </div>
 
-                  <div className="grid grid-cols-12 gap-4">
-                    <div className="col-span-8 space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
-                          Cluster Host
-                        </label>
-                        <div className="relative">
-                            <Globe className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-600" />
-                            <input
-                              type="text"
-                              required
-                              value={formData.host}
-                              onChange={(e) => handleInputChange("host", e.target.value)}
-                              placeholder="db.example.com or 10.0.0.1"
-                              className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] pl-11 pr-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
-                            />
-                        </div>
-                    </div>
-                    <div className="col-span-4 space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1 text-center block">
-                          Port
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={formData.port}
-                          onChange={(e) => handleInputChange("port", e.target.value)}
-                          className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium text-center"
-                        />
-                    </div>
-                  </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
+                    Default Database
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.database}
+                    onChange={(e) =>
+                      handleInputChange("database", e.target.value)
+                    }
+                    placeholder="main_production"
+                    className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
+                  />
+                </div>
 
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
-                      Default Database
+                      Username
                     </label>
                     <input
                       type="text"
                       required
-                      value={formData.database}
-                      onChange={(e) => handleInputChange("database", e.target.value)}
-                      placeholder="main_production"
+                      value={formData.username}
+                      onChange={(e) =>
+                        handleInputChange("username", e.target.value)
+                      }
                       className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
                     />
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
-                          Username
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={formData.username}
-                          onChange={(e) => handleInputChange("username", e.target.value)}
-                          className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
-                          Password
-                        </label>
-                        <div className="relative">
-                            <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-600" />
-                            <input
-                              type="password"
-                              value={formData.password}
-                              onChange={(e) => handleInputChange("password", e.target.value)}
-                              className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] pl-11 pr-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
-                            />
-                        </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
+                      Password
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-600" />
+                      <input
+                        type="password"
+                        value={formData.password}
+                        onChange={(e) =>
+                          handleInputChange("password", e.target.value)
+                        }
+                        className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] pl-11 pr-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
+                      />
                     </div>
                   </div>
+                </div>
               </div>
             </div>
 
@@ -388,7 +403,9 @@ const ConnectionDialog = ({
                   ) : (
                     <AlertCircle className="h-4 w-4" />
                   )}
-                  <span className="text-[10px] font-black uppercase tracking-widest">{testResult.message}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest">
+                    {testResult.message}
+                  </span>
                 </div>
               )}
             </div>
@@ -405,7 +422,8 @@ const ConnectionDialog = ({
                 Security Policy
               </span>
               <span className="text-[10px] text-zinc-600 font-medium">
-                This connection is restricted to your session and encrypted at rest.
+                This connection is restricted to your session and encrypted at
+                rest.
               </span>
             </div>
           </div>

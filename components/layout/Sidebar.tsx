@@ -163,9 +163,11 @@ const Sidebar = ({
           onClick={() => setIsConnectionDropdownOpen(!isConnectionDropdownOpen)}
           className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
         >
-          <div 
+          <div
             className="h-8 w-8 rounded bg-muted border border-border flex items-center justify-center text-white font-black text-xs transition-transform group-hover:scale-105"
-            style={{ borderLeft: `3px solid ${selectedCluster?.color || "#0dd"}` }}
+            style={{
+              borderLeft: `3px solid ${selectedCluster?.color || "#0dd"}`,
+            }}
           >
             {selectedCluster?.name?.[0].toUpperCase() || "C"}
           </div>
@@ -205,7 +207,9 @@ const Sidebar = ({
                   >
                     <div
                       className={`h-6 w-6 rounded flex items-center justify-center text-[10px] font-black ${selectedCluster?.id === cluster.id ? "bg-white/10 text-white" : "bg-zinc-800 text-muted-foreground"}`}
-                      style={{ borderLeft: `2px solid ${cluster.color || "#444"}` }}
+                      style={{
+                        borderLeft: `2px solid ${cluster.color || "#444"}`,
+                      }}
                     >
                       {cluster.name[0].toUpperCase()}
                     </div>

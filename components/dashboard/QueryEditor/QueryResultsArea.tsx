@@ -362,9 +362,9 @@ const QueryResultsArea = ({
 
       <div className="flex-1 overflow-auto bg-black/5 min-h-0 relative">
         {isRunning && (
-            <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px] z-50 flex items-center justify-center">
-                <Loader2 className="h-8 w-8 text-primary animate-spin opacity-50" />
-            </div>
+          <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px] z-50 flex items-center justify-center">
+            <Loader2 className="h-8 w-8 text-primary animate-spin opacity-50" />
+          </div>
         )}
         <DataContextMenu
           contextMenu={contextMenu}
@@ -435,9 +435,9 @@ const QueryResultsArea = ({
                   (resultSet.length === 0 || typeof resultSet[0] === "object");
                 const rows = isSelect ? (resultSet as any[]) : [];
                 const affectedRows = !isSelect
-                  ? (resultSet as any)?.affectedRows ??
+                  ? ((resultSet as any)?.affectedRows ??
                     (resultSet as any)?.rowCount ??
-                    null
+                    null)
                   : null;
 
                 return (
@@ -524,7 +524,9 @@ const QueryResultsArea = ({
                           )}
                         </td>
                         <td className="px-6 py-3 font-mono text-zinc-300">
-                            <div className="line-clamp-1 max-w-md">{log.query}</div>
+                          <div className="line-clamp-1 max-w-md">
+                            {log.query}
+                          </div>
                         </td>
                         <td className="px-6 py-3 font-mono text-zinc-500">
                           {log.executionTimeMs}ms

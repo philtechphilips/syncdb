@@ -40,14 +40,30 @@ const GenericDataTable = ({
 }: GenericDataTableProps) => {
   const { open: openModal } = useModalStore();
   const [rows, setRows] = useState<Record<string, unknown>[]>(data || []);
-  const [selectedRows, setSelectedRows] = useState<Set<string | number>>(new Set());
-  const [activeCell, setActiveCell] = useState<{ rowId: string | number; colName: string } | null>(null);
-  const [editingCell, setEditingCell] = useState<{ rowId: string | number; colName: string; value: string } | null>(null);
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; rowId: string | number; colName: string; type: "cell" | "row" } | null>(null);
+  const [selectedRows, setSelectedRows] = useState<Set<string | number>>(
+    new Set(),
+  );
+  const [activeCell, setActiveCell] = useState<{
+    rowId: string | number;
+    colName: string;
+  } | null>(null);
+  const [editingCell, setEditingCell] = useState<{
+    rowId: string | number;
+    colName: string;
+    value: string;
+  } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    rowId: string | number;
+    colName: string;
+    type: "cell" | "row";
+  } | null>(null);
 
   const [showCopyDropdown, setShowCopyDropdown] = useState(false);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
-  const [showGlobalExportDropdown, setShowGlobalExportDropdown] = useState(false);
+  const [showGlobalExportDropdown, setShowGlobalExportDropdown] =
+    useState(false);
   const [lastCopiedFormat, setLastCopiedFormat] = useState<string | null>(null);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showSelectedOnly, setShowSelectedOnly] = useState(false);
@@ -55,13 +71,19 @@ const GenericDataTable = ({
 
   const [showRowModal, setShowRowModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editingRow, setEditingRow] = useState<Record<string, unknown> | null>(null);
+  const [editingRow, setEditingRow] = useState<Record<string, unknown> | null>(
+    null,
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [nullFields, setNullFields] = useState<Set<string>>(new Set());
 
-  const [activeFilters, setActiveFilters] = useState<{ column: string; operator: string; value: string }[]>([]);
-  const [stagedFilters, setStagedFilters] = useState<{ column: string; operator: string; value: string }[]>([]);
+  const [activeFilters, setActiveFilters] = useState<
+    { column: string; operator: string; value: string }[]
+  >([]);
+  const [stagedFilters, setStagedFilters] = useState<
+    { column: string; operator: string; value: string }[]
+  >([]);
   const [showFilterPopover, setShowFilterPopover] = useState(false);
 
   useEffect(() => {
@@ -79,10 +101,18 @@ const GenericDataTable = ({
     return () => window.removeEventListener("click", closeMenu);
   }, [closeMenu]);
 
-  const handleContextMenu = (e: React.MouseEvent, rowId: string | number, colName: string) => {
+  const handleContextMenu = (
+    e: React.MouseEvent,
+    rowId: string | number,
+    colName: string,
+  ) => {
     e.preventDefault();
     const isRowSelected = selectedRows.has(rowId);
-    const { x, y } = calculateContextMenuPosition(e.clientX, e.clientY, isRowSelected);
+    const { x, y } = calculateContextMenuPosition(
+      e.clientX,
+      e.clientY,
+      isRowSelected,
+    );
     if (isRowSelected) {
       setContextMenu({ x, y, rowId, colName, type: "row" });
       setActiveCell(null);
@@ -101,19 +131,28 @@ const GenericDataTable = ({
 
   const toggleAll = () => {
     if (selectedRows.size === rows.length) setSelectedRows(new Set());
-    else setSelectedRows(new Set(rows.map((r) => r.id as string | number || r._id as string | number)));
+    else
+      setSelectedRows(
+        new Set(
+          rows.map(
+            (r) => (r.id as string | number) || (r._id as string | number),
+          ),
+        ),
+      );
   };
 
   const setAsNull = (rowId: string | number, colName: string) => {
     if (isReadOnly) return;
-    setRows(rows.map((r) => (r.id === rowId ? { ...r, [colName]: "NULL" } : r)));
+    setRows(
+      rows.map((r) => (r.id === rowId ? { ...r, [colName]: "NULL" } : r)),
+    );
   };
 
   const deleteRow = async (id: string | number) => {
     if (isReadOnly || !onDeleteRows) return;
     try {
       await onDeleteRows({ id });
-      setRows((prev) => prev.filter(r => (r.id || r._id) !== id));
+      setRows((prev) => prev.filter((r) => (r.id || r._id) !== id));
       toast.success("Row deleted");
     } catch {
       toast.error("Delete failed");
@@ -125,9 +164,11 @@ const GenericDataTable = ({
     try {
       // Bulk delete simulation/call
       for (const id of Array.from(selectedRows)) {
-         await onDeleteRows({ id });
+        await onDeleteRows({ id });
       }
-      setRows((prev) => prev.filter((r) => !selectedRows.has(r.id as any || r._id as any)));
+      setRows((prev) =>
+        prev.filter((r) => !selectedRows.has((r.id as any) || (r._id as any))),
+      );
       setSelectedRows(new Set());
       toast.success(`${selectedRows.size} rows deleted`);
     } catch {
@@ -135,7 +176,12 @@ const GenericDataTable = ({
     }
   };
 
-  const handleCopy = (format: string, dataToProcess: Record<string, unknown>[] = rows.filter((r) => selectedRows.has(r.id as any || r._id as any))) => {
+  const handleCopy = (
+    format: string,
+    dataToProcess: Record<string, unknown>[] = rows.filter((r) =>
+      selectedRows.has((r.id as any) || (r._id as any)),
+    ),
+  ) => {
     const content = formatData(format, dataToProcess, tableName || "results");
     if (typeof content === "string") {
       copyToClipboard(content);
@@ -145,12 +191,19 @@ const GenericDataTable = ({
     setShowCopyDropdown(false);
   };
 
-  const handleExport = async (format: string, dataToProcess?: Record<string, unknown>[]) => {
+  const handleExport = async (
+    format: string,
+    dataToProcess?: Record<string, unknown>[],
+  ) => {
     if (format === "modal") {
       setShowExportModal(true);
       return;
     }
-    let exportData = dataToProcess || (showSelectedOnly ? rows.filter(r => selectedRows.has(r.id as any || r._id as any)) : rows);
+    let exportData =
+      dataToProcess ||
+      (showSelectedOnly
+        ? rows.filter((r) => selectedRows.has((r.id as any) || (r._id as any)))
+        : rows);
     const content = formatData(format, exportData, tableName || "results");
     if (content) {
       downloadFile(content, `${tableName || "export"}.${format.toLowerCase()}`);
@@ -163,7 +216,10 @@ const GenericDataTable = ({
   const handleSaveCell = async () => {
     if (isReadOnly || !editingCell || !onUpdateRow) return;
     try {
-      await onUpdateRow({ [editingCell.colName]: editingCell.value }, { id: editingCell.rowId });
+      await onUpdateRow(
+        { [editingCell.colName]: editingCell.value },
+        { id: editingCell.rowId },
+      );
       setEditingCell(null);
       toast.success("Updated");
     } catch {
@@ -186,7 +242,12 @@ const GenericDataTable = ({
     }
   };
 
-  const filteredRows = applyFilters(rows, activeFilters, showSelectedOnly, selectedRows);
+  const filteredRows = applyFilters(
+    rows,
+    activeFilters,
+    showSelectedOnly,
+    selectedRows,
+  );
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden bg-background">
@@ -194,14 +255,29 @@ const GenericDataTable = ({
         contextMenu={contextMenu}
         onClose={closeMenu}
         onSetNull={setAsNull}
-        onCopyValue={(rid, col) => copyToClipboard(rows.find(r => (r.id || r._id) === rid)?.[col]?.toString() || "")}
+        onCopyValue={(rid, col) =>
+          copyToClipboard(
+            rows.find((r) => (r.id || r._id) === rid)?.[col]?.toString() || "",
+          )
+        }
         onFilterByValue={(rid, col) => {
-          const val = rows.find(r => (r.id || r._id) === rid)?.[col]?.toString() || "";
-          setActiveFilters([...activeFilters, { column: col, operator: "is", value: val }]);
+          const val =
+            rows.find((r) => (r.id || r._id) === rid)?.[col]?.toString() || "";
+          setActiveFilters([
+            ...activeFilters,
+            { column: col, operator: "is", value: val },
+          ]);
         }}
         onCopyColumn={copyToClipboard}
         onCopyRow={(format, rid) => {
-          const rowToCopy = rid === -1 ? rows.filter(r => selectedRows.has(r.id as any || r._id as any)) : [rows.find(r => (r.id || r._id) === rid)].filter(Boolean) as Record<string, unknown>[];
+          const rowToCopy =
+            rid === -1
+              ? rows.filter((r) =>
+                  selectedRows.has((r.id as any) || (r._id as any)),
+                )
+              : ([rows.find((r) => (r.id || r._id) === rid)].filter(
+                  Boolean,
+                ) as Record<string, unknown>[]);
           handleCopy(format, rowToCopy);
         }}
         onCloneRow={(rid) => {}}
@@ -233,22 +309,56 @@ const GenericDataTable = ({
         onCopy={handleCopy}
         showExportDropdown={showExportDropdown}
         setShowExportDropdown={setShowExportDropdown}
-        onExportSelection={(fmt) => handleExport(fmt, rows.filter(r => selectedRows.has(r.id as any)))}
+        onExportSelection={(fmt) =>
+          handleExport(
+            fmt,
+            rows.filter((r) => selectedRows.has(r.id as any)),
+          )
+        }
         onExportAll={handleExport}
         showFilterPopover={showFilterPopover}
         setShowFilterPopover={setShowFilterPopover}
         activeFiltersCount={activeFilters.length}
         stagedFilters={stagedFilters}
         onClearAllFilters={() => setActiveFilters([])}
-        onAddFilter={() => setStagedFilters([...stagedFilters, { column: Object.keys(rows[0] || {})[0], operator: "is", value: "" }])}
-        onRemoveFilter={(idx) => setStagedFilters(stagedFilters.filter((_, i) => i !== idx))}
-        onUpdateFilter={(idx, up) => setStagedFilters(stagedFilters.map((f, i) => i === idx ? { ...f, ...up } : f))}
-        onApplyFilters={() => { setActiveFilters(stagedFilters); setShowFilterPopover(false); }}
-        tableColumns={Object.keys(rows[0] || {}).map(k => ({ name: k, type: "varchar", nullable: "YES", columnKey: "", defaultValue: null })) as any}
+        onAddFilter={() =>
+          setStagedFilters([
+            ...stagedFilters,
+            {
+              column: Object.keys(rows[0] || {})[0],
+              operator: "is",
+              value: "",
+            },
+          ])
+        }
+        onRemoveFilter={(idx) =>
+          setStagedFilters(stagedFilters.filter((_, i) => i !== idx))
+        }
+        onUpdateFilter={(idx, up) =>
+          setStagedFilters(
+            stagedFilters.map((f, i) => (i === idx ? { ...f, ...up } : f)),
+          )
+        }
+        onApplyFilters={() => {
+          setActiveFilters(stagedFilters);
+          setShowFilterPopover(false);
+        }}
+        tableColumns={
+          Object.keys(rows[0] || {}).map((k) => ({
+            name: k,
+            type: "varchar",
+            nullable: "YES",
+            columnKey: "",
+            defaultValue: null,
+          })) as any
+        }
         rows={rows}
         showGlobalExportDropdown={showGlobalExportDropdown}
         setShowGlobalExportDropdown={setShowGlobalExportDropdown}
-        onOpenInsertModal={() => { setIsEditMode(false); setShowRowModal(true); }}
+        onOpenInsertModal={() => {
+          setIsEditMode(false);
+          setShowRowModal(true);
+        }}
         onDropTable={onDropTable}
       />
 
@@ -258,11 +368,20 @@ const GenericDataTable = ({
         selectedRows={selectedRows}
         onToggleRow={toggleRow}
         onToggleAll={toggleAll}
-        onOpenUpdateModal={(row) => { setIsEditMode(true); setEditingRow(row); setFormData(row); setShowRowModal(true); }}
+        onOpenUpdateModal={(row) => {
+          setIsEditMode(true);
+          setEditingRow(row);
+          setFormData(row);
+          setShowRowModal(true);
+        }}
         onContextMenu={handleContextMenu}
         editingCell={editingCell}
-        onStartEdit={(rid, col, val) => setEditingCell({ rowId: rid, colName: col, value: val })}
-        onEditValueChange={(val) => setEditingCell(prev => prev ? { ...prev, value: val } : null)}
+        onStartEdit={(rid, col, val) =>
+          setEditingCell({ rowId: rid, colName: col, value: val })
+        }
+        onEditValueChange={(val) =>
+          setEditingCell((prev) => (prev ? { ...prev, value: val } : null))
+        }
         onSaveEdit={handleSaveCell}
         onCancelEdit={() => setEditingCell(null)}
         activeCell={activeCell}
@@ -287,10 +406,18 @@ const GenericDataTable = ({
           onSubmit={handleSubmitRow}
           isSaving={isSaving}
           selectedTable={tableName || "results"}
-          tableColumns={Object.keys(rows[0] || {}).map(k => ({ name: k, type: "varchar", nullable: "YES", columnKey: "", defaultValue: null })) as any}
+          tableColumns={
+            Object.keys(rows[0] || {}).map((k) => ({
+              name: k,
+              type: "varchar",
+              nullable: "YES",
+              columnKey: "",
+              defaultValue: null,
+            })) as any
+          }
           formData={formData}
           nullFields={nullFields}
-          onInputChange={(k, v) => setFormData(prev => ({ ...prev, [k]: v }))}
+          onInputChange={(k, v) => setFormData((prev) => ({ ...prev, [k]: v }))}
           onToggleNull={(k) => {}}
           selectedClusterId={clusterId}
         />

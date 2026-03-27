@@ -80,7 +80,10 @@ const QueryEditor = () => {
 
     const onMouseMove = (moveEvent: MouseEvent) => {
       const delta = startY - moveEvent.pageY;
-      const newHeight = Math.max(150, Math.min(window.innerHeight * 0.8, startHeight + delta));
+      const newHeight = Math.max(
+        150,
+        Math.min(window.innerHeight * 0.8, startHeight + delta),
+      );
       setResultsHeight(newHeight);
     };
 
@@ -543,13 +546,19 @@ const QueryEditor = () => {
         />
 
         {queryResults && (
-            <div
-                onMouseDown={startResizing}
-                className="h-1.5 w-full cursor-row-resize bg-border/20 hover:bg-primary/50 transition-colors z-30"
-            />
+          <div
+            onMouseDown={startResizing}
+            className="h-1.5 w-full cursor-row-resize bg-border/20 hover:bg-primary/50 transition-colors z-30"
+          />
         )}
 
-        <div style={{ height: queryResults ? resultsHeight : 0, transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }} className="shrink-0 overflow-hidden flex flex-col">
+        <div
+          style={{
+            height: queryResults ? resultsHeight : 0,
+            transition: "height 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
+          className="shrink-0 overflow-hidden flex flex-col"
+        >
           <QueryResultsArea
             queryResults={queryResults}
             queryTotals={queryTotals}
@@ -563,7 +572,9 @@ const QueryEditor = () => {
             queryHistory={queryHistory}
             isRunning={isRunning}
             onRestoreQuery={(q) => handleUpdateCode(q)}
-            onPageChange={(page: number) => proceedWithExecution(activeQuery.code, page)}
+            onPageChange={(page: number) =>
+              proceedWithExecution(activeQuery.code, page)
+            }
             isPagingEnabled={isPagingEnabled}
           />
         </div>
