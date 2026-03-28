@@ -226,12 +226,15 @@ const QueryEditor = () => {
   const proceedWithExecution = useCallback(
     async (sql: string, page: number = 1) => {
       // Safety: Destructive Action Lock
-      const isDestructive = ["DROP ", "TRUNCATE "].some(k => sql.toUpperCase().includes(k));
+      const isDestructive = ["DROP ", "TRUNCATE "].some((k) =>
+        sql.toUpperCase().includes(k),
+      );
       if (isDestructive && settings.destructiveActionLock) {
-          toast.error("Execution Blocked", {
-              description: "Destructive commands (DROP/TRUNCATE) are locked in Project Settings."
-          });
-          return;
+        toast.error("Execution Blocked", {
+          description:
+            "Destructive commands (DROP/TRUNCATE) are locked in Project Settings.",
+        });
+        return;
       }
 
       setIsRunning(true);
@@ -242,7 +245,7 @@ const QueryEditor = () => {
           selectedCluster!.id,
           sql,
           isPagingEnabled ? page : undefined,
-          isPagingEnabled ? (settings.safetyLimit || 50) : undefined,
+          isPagingEnabled ? settings.safetyLimit || 50 : undefined,
         );
         const resultsSets = response.results;
         const resultsTotals = response.totals;

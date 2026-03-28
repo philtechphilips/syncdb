@@ -34,13 +34,23 @@ export const SettingsSection = ({
       }}
       className={`rounded-2xl border ${isDanger ? "border-red-500/15 bg-red-500/[0.03]" : "border-white/5 bg-white/[0.01]"} overflow-hidden`}
     >
-      <div className={`flex items-start gap-4 px-6 py-5 border-b ${isDanger ? "border-red-500/10" : "border-white/5 bg-white/[0.01]"}`}>
-        <div className={`h-9 w-9 rounded-xl ${isDanger ? "bg-red-500/10 border-red-500/20" : "bg-primary/10 border-primary/20"} border flex items-center justify-center shrink-0`}>
-          <Icon className={`h-4.5 w-4.5 ${isDanger ? "text-red-500" : "text-primary"}`} />
+      <div
+        className={`flex items-start gap-4 px-6 py-5 border-b ${isDanger ? "border-red-500/10" : "border-white/5 bg-white/[0.01]"}`}
+      >
+        <div
+          className={`h-9 w-9 rounded-xl ${isDanger ? "bg-red-500/10 border-red-500/20" : "bg-primary/10 border-primary/20"} border flex items-center justify-center shrink-0`}
+        >
+          <Icon
+            className={`h-4.5 w-4.5 ${isDanger ? "text-red-500" : "text-primary"}`}
+          />
         </div>
         <div>
-          <h2 className="text-sm font-bold text-white tracking-tight">{title}</h2>
-          <p className="text-xs text-zinc-500 mt-1 leading-relaxed">{description}</p>
+          <h2 className="text-sm font-bold text-white tracking-tight">
+            {title}
+          </h2>
+          <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+            {description}
+          </p>
         </div>
       </div>
       <div className="px-6 py-6">{children}</div>
@@ -63,7 +73,9 @@ export const SettingsToggle = ({
 }: ToggleProps) => (
   <div className="flex items-center justify-between group">
     <div className="flex-1 pr-4">
-      <p className="text-[11px] font-bold text-zinc-300 group-hover:text-white transition-colors">{label}</p>
+      <p className="text-[11px] font-bold text-zinc-300 group-hover:text-white transition-colors">
+        {label}
+      </p>
       <p className="text-[10px] text-zinc-600 mt-0.5">{description}</p>
     </div>
     <button

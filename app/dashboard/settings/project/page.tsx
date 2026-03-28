@@ -19,7 +19,11 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "sonner";
 
 import { UI_CLASSES } from "@/lib/constants";
-import { SettingsSection, SettingsToggle, SettingsLabel } from "@/components/ui/SettingsUI";
+import {
+  SettingsSection,
+  SettingsToggle,
+  SettingsLabel,
+} from "@/components/ui/SettingsUI";
 
 export default function ProjectSettingsPage() {
   const { user, updateSettings, isLoading } = useAuthStore();
@@ -39,7 +43,7 @@ export default function ProjectSettingsPage() {
 
   useEffect(() => {
     if (user?.settings) {
-      setSettings(prev => ({ ...prev, ...user.settings }));
+      setSettings((prev) => ({ ...prev, ...user.settings }));
     }
   }, [user?.settings]);
 
@@ -55,7 +59,7 @@ export default function ProjectSettingsPage() {
   };
 
   const update = (key: string, value: any) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
   return (
@@ -68,7 +72,8 @@ export default function ProjectSettingsPage() {
               Project Settings
             </h1>
             <p className="text-sm text-zinc-500 mt-1.5 font-medium leading-relaxed">
-              Global configurations for your workspace, safety, and AI assistance.
+              Global configurations for your workspace, safety, and AI
+              assistance.
             </p>
           </div>
           <button
@@ -98,7 +103,7 @@ export default function ProjectSettingsPage() {
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <SettingsLabel>AI Service Provider</SettingsLabel>
-                  <select 
+                  <select
                     className={UI_CLASSES.select}
                     value={settings.aiModel}
                     onChange={(e) => update("aiModel", e.target.value)}
@@ -109,19 +114,19 @@ export default function ProjectSettingsPage() {
                   </select>
                 </div>
                 <div className="space-y-2">
-                    <SettingsLabel>Response Style</SettingsLabel>
-                    <select 
-                        className={UI_CLASSES.select}
-                        value={settings.aiVerbosity}
-                        onChange={(e) => update("aiVerbosity", e.target.value)}
-                    >
-                        <option value="concise">Concise & Direct</option>
-                        <option value="balanced">Balanced Explanation</option>
-                        <option value="educational">Deep Technical Detail</option>
-                    </select>
+                  <SettingsLabel>Response Style</SettingsLabel>
+                  <select
+                    className={UI_CLASSES.select}
+                    value={settings.aiVerbosity}
+                    onChange={(e) => update("aiVerbosity", e.target.value)}
+                  >
+                    <option value="concise">Concise & Direct</option>
+                    <option value="balanced">Balanced Explanation</option>
+                    <option value="educational">Deep Technical Detail</option>
+                  </select>
                 </div>
               </div>
-              <SettingsToggle 
+              <SettingsToggle
                 label="Automatic Contextual Learning"
                 description="Include schema metadata in all AI prompts for highly accurate SQL generation."
                 enabled={settings.aiContextEnabled}
@@ -138,34 +143,40 @@ export default function ProjectSettingsPage() {
             delay={0.1}
           >
             <div className="space-y-6">
-                <SettingsToggle 
-                    label="Destructive Action Lock"
-                    description="Disable direct execution of DROP and TRUNCATE commands in the SQL terminal."
-                    enabled={settings.destructiveActionLock}
-                    onChange={(v) => update("destructiveActionLock", v)}
-                />
-                <div className="h-px bg-white/5"></div>
-                <SettingsToggle 
-                    label="Enhanced Production Confirmation"
-                    description="Require a secondary confirmation dialog for all write operations on Production clusters."
-                    enabled={settings.productionConfirmations}
-                    onChange={(v) => update("productionConfirmations", v)}
-                />
-                <div className="h-px bg-white/5"></div>
-                <div className="flex items-center justify-between">
-                    <div>
-                        <p className="text-[11px] font-bold text-zinc-300">Safety Result Limit</p>
-                        <p className="text-[10px] text-zinc-600 mt-0.5">Protect memory by capping maximum ad-hoc query results.</p>
-                    </div>
-                    <div className="w-24">
-                        <input 
-                            type="number" 
-                            className={`${UI_CLASSES.input} text-center font-bold`}
-                            value={settings.safetyLimit}
-                            onChange={(e) => update("safetyLimit", parseInt(e.target.value))}
-                        />
-                    </div>
+              <SettingsToggle
+                label="Destructive Action Lock"
+                description="Disable direct execution of DROP and TRUNCATE commands in the SQL terminal."
+                enabled={settings.destructiveActionLock}
+                onChange={(v) => update("destructiveActionLock", v)}
+              />
+              <div className="h-px bg-white/5"></div>
+              <SettingsToggle
+                label="Enhanced Production Confirmation"
+                description="Require a secondary confirmation dialog for all write operations on Production clusters."
+                enabled={settings.productionConfirmations}
+                onChange={(v) => update("productionConfirmations", v)}
+              />
+              <div className="h-px bg-white/5"></div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[11px] font-bold text-zinc-300">
+                    Safety Result Limit
+                  </p>
+                  <p className="text-[10px] text-zinc-600 mt-0.5">
+                    Protect memory by capping maximum ad-hoc query results.
+                  </p>
                 </div>
+                <div className="w-24">
+                  <input
+                    type="number"
+                    className={`${UI_CLASSES.input} text-center font-bold`}
+                    value={settings.safetyLimit}
+                    onChange={(e) =>
+                      update("safetyLimit", parseInt(e.target.value))
+                    }
+                  />
+                </div>
+              </div>
             </div>
           </SettingsSection>
 
@@ -177,42 +188,44 @@ export default function ProjectSettingsPage() {
             delay={0.2}
           >
             <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <SettingsLabel>Editor Font Size (PX)</SettingsLabel>
-                        <input 
-                            type="number"
-                            className={UI_CLASSES.input}
-                            value={settings.editorFontSize}
-                            onChange={(e) => update("editorFontSize", parseInt(e.target.value))}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <SettingsLabel>Monaco Theme</SettingsLabel>
-                        <select 
-                            className={UI_CLASSES.select}
-                            value={settings.monacoTheme}
-                            onChange={(e) => update("monacoTheme", e.target.value)}
-                        >
-                            <option value="vs-dark">Synq Dark (Standard)</option>
-                            <option value="monokai">Monokai Legend</option>
-                            <option value="github-dark">GitHub Dark</option>
-                        </select>
-                    </div>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <SettingsLabel>Editor Font Size (PX)</SettingsLabel>
+                  <input
+                    type="number"
+                    className={UI_CLASSES.input}
+                    value={settings.editorFontSize}
+                    onChange={(e) =>
+                      update("editorFontSize", parseInt(e.target.value))
+                    }
+                  />
                 </div>
-                <SettingsToggle 
-                    label="Auto-Save Cloud History"
-                    description="Sync all executed queries to your project history automatically."
-                    enabled={settings.autoSaveQueries}
-                    onChange={(v) => update("autoSaveQueries", v)}
-                />
-                <div className="h-px bg-white/5"></div>
-                <SettingsToggle 
-                    label="Bracket Pair Colorization"
-                    description="Highlight matching brackets to navigate complex SQL statements faster."
-                    enabled={settings.bracketPairColorization}
-                    onChange={(v) => update("bracketPairColorization", v)}
-                />
+                <div className="space-y-2">
+                  <SettingsLabel>Monaco Theme</SettingsLabel>
+                  <select
+                    className={UI_CLASSES.select}
+                    value={settings.monacoTheme}
+                    onChange={(e) => update("monacoTheme", e.target.value)}
+                  >
+                    <option value="vs-dark">Synq Dark (Standard)</option>
+                    <option value="monokai">Monokai Legend</option>
+                    <option value="github-dark">GitHub Dark</option>
+                  </select>
+                </div>
+              </div>
+              <SettingsToggle
+                label="Auto-Save Cloud History"
+                description="Sync all executed queries to your project history automatically."
+                enabled={settings.autoSaveQueries}
+                onChange={(v) => update("autoSaveQueries", v)}
+              />
+              <div className="h-px bg-white/5"></div>
+              <SettingsToggle
+                label="Bracket Pair Colorization"
+                description="Highlight matching brackets to navigate complex SQL statements faster."
+                enabled={settings.bracketPairColorization}
+                onChange={(v) => update("bracketPairColorization", v)}
+              />
             </div>
           </SettingsSection>
 
@@ -220,10 +233,14 @@ export default function ProjectSettingsPage() {
           <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex gap-4 animate-in fade-in slide-in-from-bottom-2 duration-700 delay-300">
             <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0" />
             <div className="flex-1">
-                <h4 className="text-[11px] font-black uppercase tracking-widest text-amber-500">Workspace Impact</h4>
-                <p className="text-[10px] text-zinc-500 mt-1 leading-relaxed">
-                    Changes to AI context and safety limits will affect all future query executions. Destructive locks apply to both the SQL Editor and the Table Explorer.
-                </p>
+              <h4 className="text-[11px] font-black uppercase tracking-widest text-amber-500">
+                Workspace Impact
+              </h4>
+              <p className="text-[10px] text-zinc-500 mt-1 leading-relaxed">
+                Changes to AI context and safety limits will affect all future
+                query executions. Destructive locks apply to both the SQL Editor
+                and the Table Explorer.
+              </p>
             </div>
           </div>
         </div>

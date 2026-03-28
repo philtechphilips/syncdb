@@ -94,7 +94,8 @@ const GenericDataTable = ({
       setSelectedRows(
         new Set(
           rows.map(
-            (r, i) => (r.id as string | number) || (r._id as string | number) || i,
+            (r, i) =>
+              (r.id as string | number) || (r._id as string | number) || i,
           ),
         ),
       );

@@ -101,7 +101,9 @@ const DataTableBody = ({
                   return (
                     <td
                       key={col}
-                      onContextMenu={(e) => onContextMenu(e, rowId, col, row[col])}
+                      onContextMenu={(e) =>
+                        onContextMenu(e, rowId, col, row[col])
+                      }
                       onDoubleClick={() =>
                         col !== "id" &&
                         onStartEdit(rowId, col, String(row[col]))

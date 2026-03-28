@@ -385,7 +385,7 @@ const Sidebar = ({
             </span>
           </div>
           <nav className="space-y-1">
-            <button 
+            <button
               onClick={() => router.push("/dashboard/settings/project")}
               className={`flex w-full items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-all ${pathname === "/dashboard/settings/project" ? "bg-primary/10 text-white" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"}`}
             >

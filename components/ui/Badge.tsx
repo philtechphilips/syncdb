@@ -30,8 +30,9 @@ export const Badge = ({
   pulse = false,
   className = "",
 }: BadgeProps) => {
-  const baseClasses = "flex items-center gap-2 rounded-full px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all";
-  
+  const baseClasses =
+    "flex items-center gap-2 rounded-full px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all";
+
   const variants = {
     glass: "bg-white/5 border border-white/10 text-zinc-400",
     filled: "text-white",
@@ -39,12 +40,18 @@ export const Badge = ({
   };
 
   return (
-    <div 
+    <div
       className={`${baseClasses} ${variants[variant]} ${className}`}
-      style={variant === "filled" ? { backgroundColor: `${color}20`, borderColor: `${color}40`, color } : color ? { borderColor: `${color}40`, color } : {}}
+      style={
+        variant === "filled"
+          ? { backgroundColor: `${color}20`, borderColor: `${color}40`, color }
+          : color
+            ? { borderColor: `${color}40`, color }
+            : {}
+      }
     >
       {dot && (
-        <div 
+        <div
           className={`h-1.5 w-1.5 rounded-full ${pulse ? "animate-pulse" : ""}`}
           style={{ backgroundColor: color || "currentColor" }}
         />

@@ -25,7 +25,8 @@ const Navbar = ({ onOpenConnect, onOpenSidebar }: NavbarProps) => {
   const { selectedCluster, activeTab } = useClusterStore();
   const { requestRun } = useQueryStore();
 
-  const themeColor = selectedCluster?.color || getEnvColor(selectedCluster?.environment);
+  const themeColor =
+    selectedCluster?.color || getEnvColor(selectedCluster?.environment);
 
   return (
     <nav className="fixed right-0 top-0 z-30 flex h-14 w-full lg:w-[calc(100%-16rem)] items-center justify-between border-b border-white/5 bg-background px-4 lg:px-6 font-sans overflow-hidden">
@@ -53,17 +54,15 @@ const Navbar = ({ onOpenConnect, onOpenSidebar }: NavbarProps) => {
         {selectedCluster && (
           <>
             <div className="h-4 w-px bg-border mx-1 lg:mx-2 hidden sm:block"></div>
-            <Badge 
-              color={themeColor} 
-              dot 
+            <Badge
+              color={themeColor}
+              dot
               pulse={selectedCluster.environment === "production"}
             >
               {selectedCluster.environment}
             </Badge>
 
-            <Badge>
-              {selectedCluster.type}
-            </Badge>
+            <Badge>{selectedCluster.type}</Badge>
           </>
         )}
       </div>
