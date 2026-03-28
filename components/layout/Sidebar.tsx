@@ -28,7 +28,7 @@ interface SidebarProps {
   onCloseMobile?: () => void;
 }
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useClusterStore } from "@/store/useClusterStore";
 import { useModalStore } from "@/store/useModalStore";
@@ -65,6 +65,7 @@ const Sidebar = ({
     table: string | null;
   } | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
   const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false);
   const [confirmDisconnect, setConfirmDisconnect] = React.useState<
     string | null
@@ -384,7 +385,10 @@ const Sidebar = ({
             </span>
           </div>
           <nav className="space-y-1">
-            <button className="flex w-full items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all">
+            <button 
+              onClick={() => router.push("/dashboard/settings/project")}
+              className={`flex w-full items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-all ${pathname === "/dashboard/settings/project" ? "bg-primary/10 text-white" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"}`}
+            >
               <Settings className="h-4 w-4" />
               Project Settings
             </button>

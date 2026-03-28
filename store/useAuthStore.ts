@@ -24,6 +24,7 @@ export interface User {
   full_name: string;
   role: string;
   profile_picture?: string;
+  settings?: Record<string, any>;
 }
 
 interface AuthState {
@@ -54,6 +55,7 @@ interface AuthState {
     current_password: string;
     new_password: string;
   }) => Promise<void>;
+  updateSettings: (settings: Record<string, any>) => Promise<void>;
   clearError: () => void;
 }
 
@@ -213,6 +215,20 @@ export const useAuthStore = create<AuthState>()(
         try {
           await api.patch("/v1/auth/password", data);
           set({ isLoading: false });
+        } catch (error: unknown) {
+          set({ isLoading: false, error: getErrorMessage(error) });
+          throw error;
+        }
+      },
+
+      updateSettings: async (settings) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await api.patch("/v1/auth/profile", { settings });
+          set({
+            user: { ...get().user!, settings: response.data.settings },
+            isLoading: false,
+          });
         } catch (error: unknown) {
           set({ isLoading: false, error: getErrorMessage(error) });
           throw error;

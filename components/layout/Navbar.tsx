@@ -19,24 +19,13 @@ interface NavbarProps {
   onOpenSidebar: () => void;
 }
 
+import { Badge, getEnvColor } from "@/components/ui/Badge";
+
 const Navbar = ({ onOpenConnect, onOpenSidebar }: NavbarProps) => {
   const { selectedCluster, activeTab } = useClusterStore();
   const { requestRun } = useQueryStore();
 
-  const getEnvColor = (env: string) => {
-    switch (env) {
-      case "production":
-        return "#EF4444";
-      case "staging":
-        return "#F59E0B";
-      default:
-        return "#3B82F6";
-    }
-  };
-
-  const themeColor =
-    selectedCluster?.color ||
-    getEnvColor(selectedCluster?.environment || "development");
+  const themeColor = selectedCluster?.color || getEnvColor(selectedCluster?.environment);
 
   return (
     <nav className="fixed right-0 top-0 z-30 flex h-14 w-full lg:w-[calc(100%-16rem)] items-center justify-between border-b border-white/5 bg-background px-4 lg:px-6 font-sans overflow-hidden">
@@ -64,17 +53,17 @@ const Navbar = ({ onOpenConnect, onOpenSidebar }: NavbarProps) => {
         {selectedCluster && (
           <>
             <div className="h-4 w-px bg-border mx-1 lg:mx-2 hidden sm:block"></div>
-            <div className="flex items-center gap-2 rounded-full px-2.5 py-0.5 text-[9px] font-black border border-white/10 bg-white/5 text-zinc-400 whitespace-nowrap uppercase tracking-widest">
-              <div
-                className={`h-1.5 w-1.5 rounded-full ${selectedCluster.environment === "production" ? "animate-ping" : "animate-pulse"}`}
-                style={{ backgroundColor: themeColor }}
-              ></div>
+            <Badge 
+              color={themeColor} 
+              dot 
+              pulse={selectedCluster.environment === "production"}
+            >
               {selectedCluster.environment}
-            </div>
+            </Badge>
 
-            <div className="flex items-center gap-2 rounded-full bg-white/5 px-2.5 py-0.5 text-[9px] font-black text-zinc-500 border border-white/10 whitespace-nowrap uppercase tracking-tighter">
+            <Badge>
               {selectedCluster.type}
-            </div>
+            </Badge>
           </>
         )}
       </div>

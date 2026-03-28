@@ -12,6 +12,7 @@ interface DataTableBodyProps {
     e: React.MouseEvent,
     rowId: string | number,
     colName: string,
+    value: any,
   ) => void;
   editingCell: {
     rowId: string | number;
@@ -100,7 +101,7 @@ const DataTableBody = ({
                   return (
                     <td
                       key={col}
-                      onContextMenu={(e) => onContextMenu(e, rowId, col)}
+                      onContextMenu={(e) => onContextMenu(e, rowId, col, row[col])}
                       onDoubleClick={() =>
                         col !== "id" &&
                         onStartEdit(rowId, col, String(row[col]))

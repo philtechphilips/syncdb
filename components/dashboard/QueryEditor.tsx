@@ -10,6 +10,7 @@ import api from "@/lib/api";
 import { useModalStore } from "@/store/useModalStore";
 import { useQueryStore } from "@/store/useQueryStore";
 import { useSavedQueryStore } from "@/store/useSavedQueryStore";
+import { useAuthStore } from "@/store/useAuthStore";
 
 // Sub-components
 import QueryTabs from "./QueryEditor/QueryTabs";
@@ -22,8 +23,11 @@ import SaveQueryDialog from "./QueryEditor/SaveQueryDialog";
 const QueryEditor = () => {
   const { selectedCluster, executeQuery, fetchSchema, fetchQueryLogs } =
     useClusterStore();
+  const { user } = useAuthStore();
   const { open: openModal } = useModalStore();
   const monaco = useMonaco();
+
+  const settings = user?.settings || {};
 
   const {
     queries,
@@ -221,6 +225,15 @@ const QueryEditor = () => {
 
   const proceedWithExecution = useCallback(
     async (sql: string, page: number = 1) => {
+      // Safety: Destructive Action Lock
+      const isDestructive = ["DROP ", "TRUNCATE "].some(k => sql.toUpperCase().includes(k));
+      if (isDestructive && settings.destructiveActionLock) {
+          toast.error("Execution Blocked", {
+              description: "Destructive commands (DROP/TRUNCATE) are locked in Project Settings."
+          });
+          return;
+      }
+
       setIsRunning(true);
       setQueryResults(null);
       setQueryTotals([]);
@@ -229,7 +242,7 @@ const QueryEditor = () => {
           selectedCluster!.id,
           sql,
           isPagingEnabled ? page : undefined,
-          isPagingEnabled ? 50 : undefined,
+          isPagingEnabled ? (settings.safetyLimit || 50) : undefined,
         );
         const resultsSets = response.results;
         const resultsTotals = response.totals;
@@ -330,6 +343,44 @@ const QueryEditor = () => {
 
   const handleEditorMount = (editor: any, monaco: any) => {
     editorRef.current = editor;
+
+    // Monokai
+    monaco.editor.defineTheme("monokai", {
+      base: "vs-dark",
+      inherit: true,
+      rules: [
+        { token: "keyword", foreground: "f92672" },
+        { token: "string", foreground: "e6db74" },
+        { token: "comment", foreground: "75715e" },
+        { token: "number", foreground: "ae81ff" },
+      ],
+      colors: {
+        "editor.background": "#272822",
+        "editor.foreground": "#f8f8f2",
+        "editorCursor.foreground": "#f8f8f0",
+        "editor.lineHighlightBackground": "#3e3d32",
+        "editorLineNumber.foreground": "#90908a",
+      },
+    });
+
+    // GitHub Dark
+    monaco.editor.defineTheme("github-dark", {
+      base: "vs-dark",
+      inherit: true,
+      rules: [
+        { token: "keyword", foreground: "ff7b72" },
+        { token: "string", foreground: "a5d6ff" },
+        { token: "comment", foreground: "8b949e" },
+        { token: "number", foreground: "d2a8ff" },
+      ],
+      colors: {
+        "editor.background": "#0d1117",
+        "editor.foreground": "#c9d1d9",
+        "editorCursor.foreground": "#58a6ff",
+        "editor.lineHighlightBackground": "#161b22",
+        "editorLineNumber.foreground": "#484f58",
+      },
+    });
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
       handleRunQuery();
     });
@@ -505,13 +556,13 @@ const QueryEditor = () => {
           <Editor
             height="100%"
             defaultLanguage="sql"
-            theme="vs-dark"
+            theme={settings.monacoTheme || "vs-dark"}
             value={activeQuery.code}
             onChange={(val) => handleUpdateCode(val || "")}
             onMount={handleEditorMount}
             options={{
               minimap: { enabled: false },
-              fontSize: 13,
+              fontSize: settings.editorFontSize || 13,
               lineNumbers: "on",
               scrollBeyondLastLine: false,
               readOnly: isRunning || isGenerating,
@@ -519,6 +570,9 @@ const QueryEditor = () => {
               padding: { top: 20 },
               fontFamily:
                 "JetBrains Mono, Menlo, Monaco, Courier New, monospace",
+              bracketPairColorization: {
+                enabled: settings.bracketPairColorization ?? true,
+              },
             }}
           />
 

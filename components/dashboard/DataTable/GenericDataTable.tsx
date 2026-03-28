@@ -27,6 +27,8 @@ interface GenericDataTableProps {
   isReadOnly?: boolean;
 }
 
+import { useDataExplorer } from "@/hooks/useDataExplorer";
+
 const GenericDataTable = ({
   data,
   tableName,
@@ -40,25 +42,20 @@ const GenericDataTable = ({
 }: GenericDataTableProps) => {
   const { open: openModal } = useModalStore();
   const [rows, setRows] = useState<Record<string, unknown>[]>(data || []);
-  const [selectedRows, setSelectedRows] = useState<Set<string | number>>(
-    new Set(),
-  );
-  const [activeCell, setActiveCell] = useState<{
-    rowId: string | number;
-    colName: string;
-  } | null>(null);
-  const [editingCell, setEditingCell] = useState<{
-    rowId: string | number;
-    colName: string;
-    value: string;
-  } | null>(null);
-  const [contextMenu, setContextMenu] = useState<{
-    x: number;
-    y: number;
-    rowId: string | number;
-    colName: string;
-    type: "cell" | "row";
-  } | null>(null);
+
+  const {
+    selectedRows,
+    setSelectedRows,
+    activeCell,
+    setActiveCell,
+    editingCell,
+    setEditingCell,
+    contextMenu,
+    setContextMenu,
+    closeMenu,
+    handleContextMenu,
+    toggleRowSelection,
+  } = useDataExplorer(data);
 
   const [showCopyDropdown, setShowCopyDropdown] = useState(false);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
@@ -91,51 +88,13 @@ const GenericDataTable = ({
     setSelectedRows(new Set());
   }, [data]);
 
-  const closeMenu = useCallback(() => {
-    setContextMenu(null);
-    setActiveCell(null);
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener("click", closeMenu);
-    return () => window.removeEventListener("click", closeMenu);
-  }, [closeMenu]);
-
-  const handleContextMenu = (
-    e: React.MouseEvent,
-    rowId: string | number,
-    colName: string,
-  ) => {
-    e.preventDefault();
-    const isRowSelected = selectedRows.has(rowId);
-    const { x, y } = calculateContextMenuPosition(
-      e.clientX,
-      e.clientY,
-      isRowSelected,
-    );
-    if (isRowSelected) {
-      setContextMenu({ x, y, rowId, colName, type: "row" });
-      setActiveCell(null);
-    } else {
-      setContextMenu({ x, y, rowId, colName, type: "cell" });
-      setActiveCell({ rowId, colName });
-    }
-  };
-
-  const toggleRow = (id: string | number) => {
-    const next = new Set(selectedRows);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setSelectedRows(next);
-  };
-
   const toggleAll = () => {
     if (selectedRows.size === rows.length) setSelectedRows(new Set());
     else
       setSelectedRows(
         new Set(
           rows.map(
-            (r) => (r.id as string | number) || (r._id as string | number),
+            (r, i) => (r.id as string | number) || (r._id as string | number) || i,
           ),
         ),
       );
@@ -366,7 +325,7 @@ const GenericDataTable = ({
         rows={rows}
         filteredRows={filteredRows}
         selectedRows={selectedRows}
-        onToggleRow={toggleRow}
+        onToggleRow={toggleRowSelection}
         onToggleAll={toggleAll}
         onOpenUpdateModal={(row) => {
           setIsEditMode(true);
