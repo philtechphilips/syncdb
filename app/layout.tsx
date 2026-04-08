@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
@@ -22,7 +22,16 @@ const instrumentSerif = Instrument_Serif({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#021016",
+  colorScheme: "dark",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
+  metadataBase: new URL("https://synqdb.com"),
   title: "SynqDB | The Professional Database Management Platform",
   description:
     "Industry-standard database management for modern engineering teams. Scale your data infrastructure with zero friction. Query, visualize, and manage your clusters in one place.",
@@ -40,13 +49,6 @@ export const metadata: Metadata = {
     "query editor",
   ],
   referrer: "origin-when-cross-origin",
-  themeColor: "#021016",
-  colorScheme: "dark",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
   creator: "SynqDB",
   publisher: "SynqDB",
   formatDetection: {

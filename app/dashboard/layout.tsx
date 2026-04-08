@@ -14,8 +14,9 @@ import { useClusterStore } from "@/store/useClusterStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { Suspense } from "react";
 
-export default function DashboardLayout({
+function DashboardLayoutInner({
   children,
 }: {
   children: React.ReactNode;
@@ -188,5 +189,26 @@ export default function DashboardLayout({
         )}
       </div>
     </ClusterGate>
+  );
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+          <Loader2 className="h-8 w-8 text-primary animate-spin" />
+          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 animate-pulse">
+            Initializing Session...
+          </p>
+        </div>
+      }
+    >
+      <DashboardLayoutInner>{children}</DashboardLayoutInner>
+    </Suspense>
   );
 }
