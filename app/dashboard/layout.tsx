@@ -16,11 +16,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Suspense } from "react";
 
-function DashboardLayoutInner({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const {
     isAuthenticated,
     isLoading: isAuthLoading,
