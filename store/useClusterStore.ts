@@ -88,6 +88,8 @@ interface ClusterState {
     format: "sql" | "csv" | "json",
     data: unknown,
   ) => Promise<void>;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
 }
 
 export const useClusterStore = create<ClusterState>()(
@@ -106,6 +108,7 @@ export const useClusterStore = create<ClusterState>()(
       error: null,
       activeTab: "query",
       selectedTable: "",
+      searchQuery: "",
 
       fetchClusters: async () => {
         set({ isLoading: true, error: null });
@@ -474,6 +477,7 @@ export const useClusterStore = create<ClusterState>()(
           throw error;
         }
       },
+      setSearchQuery: (query) => set({ searchQuery: query }),
     }),
     {
       name: "cluster-storage",

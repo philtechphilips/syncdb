@@ -72,7 +72,7 @@ const DataTableHeader = ({
 }: DataTableHeaderProps) => {
   const { open: openModal } = useModalStore();
   return (
-    <div className="flex flex-col lg:flex-row lg:items-center justify-between px-4 lg:px-6 py-4 border-b border-border bg-[#021016]/50 gap-4">
+    <div className="flex flex-col lg:flex-row lg:items-center justify-between px-4 lg:px-6 py-2 border-b border-border/50 bg-muted/20 gap-4 shrink-0">
       <div className="flex flex-wrap items-center gap-4 lg:gap-6">
         <div className="flex items-center gap-3">
           <span className="text-[10px] font-black text-white tracking-widest uppercase">

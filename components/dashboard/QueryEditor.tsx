@@ -106,7 +106,7 @@ const QueryEditor = () => {
   // Effects
   // -------------------------------------------------------------------------
 
-  // Autocomplete Setup
+  // Autocomplete & Theme Setup
   useEffect(() => {
     if (selectedCluster)
       fetchSchema(selectedCluster.id).then((res) =>
@@ -115,6 +115,67 @@ const QueryEditor = () => {
         ),
       );
   }, [selectedCluster, fetchSchema]);
+
+  useEffect(() => {
+    if (!monaco) return;
+
+    // Synq Dark (App Matching)
+    monaco.editor.defineTheme("synq-dark", {
+      base: "vs-dark",
+      inherit: true,
+      rules: [
+        { token: "keyword", foreground: "277955" },
+        { token: "string", foreground: "a5d6ff" },
+        { token: "comment", foreground: "8b949e" },
+        { token: "number", foreground: "d2a8ff" },
+      ],
+      colors: {
+        "editor.background": "#040d12",
+        "editor.foreground": "#f8fafc",
+        "editorCursor.foreground": "#277955",
+        "editor.lineHighlightBackground": "#0d1e25",
+        "editorLineNumber.foreground": "#1e3a44",
+      },
+    });
+
+    // Monokai
+    monaco.editor.defineTheme("monokai", {
+      base: "vs-dark",
+      inherit: true,
+      rules: [
+        { token: "keyword", foreground: "f92672" },
+        { token: "string", foreground: "e6db74" },
+        { token: "comment", foreground: "75715e" },
+        { token: "number", foreground: "ae81ff" },
+      ],
+      colors: {
+        "editor.background": "#272822",
+        "editor.foreground": "#f8f8f2",
+        "editorCursor.foreground": "#f8f8f0",
+        "editor.lineHighlightBackground": "#3e3d32",
+        "editorLineNumber.foreground": "#90908a",
+      },
+    });
+
+    // GitHub Dark
+    monaco.editor.defineTheme("github-dark", {
+      base: "vs-dark",
+      inherit: true,
+      rules: [
+        { token: "keyword", foreground: "ff7b72" },
+        { token: "string", foreground: "a5d6ff" },
+        { token: "comment", foreground: "8b949e" },
+        { token: "number", foreground: "d2a8ff" },
+      ],
+      colors: {
+        "editor.background": "#0d1117",
+        "editor.foreground": "#c9d1d9",
+        "editorCursor.foreground": "#58a6ff",
+        "editor.lineHighlightBackground": "#161b22",
+        "editorLineNumber.foreground": "#484f58",
+      },
+    });
+  }, [monaco]);
 
   useEffect(() => {
     if (!monaco || schemaMetadata.length === 0) return;
@@ -347,43 +408,6 @@ const QueryEditor = () => {
   const handleEditorMount = (editor: any, monaco: any) => {
     editorRef.current = editor;
 
-    // Monokai
-    monaco.editor.defineTheme("monokai", {
-      base: "vs-dark",
-      inherit: true,
-      rules: [
-        { token: "keyword", foreground: "f92672" },
-        { token: "string", foreground: "e6db74" },
-        { token: "comment", foreground: "75715e" },
-        { token: "number", foreground: "ae81ff" },
-      ],
-      colors: {
-        "editor.background": "#272822",
-        "editor.foreground": "#f8f8f2",
-        "editorCursor.foreground": "#f8f8f0",
-        "editor.lineHighlightBackground": "#3e3d32",
-        "editorLineNumber.foreground": "#90908a",
-      },
-    });
-
-    // GitHub Dark
-    monaco.editor.defineTheme("github-dark", {
-      base: "vs-dark",
-      inherit: true,
-      rules: [
-        { token: "keyword", foreground: "ff7b72" },
-        { token: "string", foreground: "a5d6ff" },
-        { token: "comment", foreground: "8b949e" },
-        { token: "number", foreground: "d2a8ff" },
-      ],
-      colors: {
-        "editor.background": "#0d1117",
-        "editor.foreground": "#c9d1d9",
-        "editorCursor.foreground": "#58a6ff",
-        "editor.lineHighlightBackground": "#161b22",
-        "editorLineNumber.foreground": "#484f58",
-      },
-    });
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
       handleRunQuery();
     });
@@ -418,58 +442,32 @@ const QueryEditor = () => {
 
     try {
       if (aiMode === "generate") {
-        const { useAuthStore } = require("@/store/useAuthStore");
-        const token = useAuthStore.getState().access_token;
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/v1/ai/${selectedCluster.id}/generate-stream`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ prompt: aiPrompt }),
-          },
+        const response = await api.post(
+          `/v1/ai/${selectedCluster.id}/generate-stream`,
+          { prompt: aiPrompt },
+          { responseType: "text" },
         );
 
-        if (!response.ok) throw new Error("Stream failed");
+        if (response.status >= 400) throw new Error("Generation failed");
 
-        const reader = response.body?.getReader();
-        const decoder = new TextDecoder();
-        let fullGeneratedSql = "";
-        const initialCode = activeQuery.code.trim();
-
-        if (reader) {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value);
-            const lines = chunk.split("\n\n");
-
-            for (const line of lines) {
-              if (line.startsWith("data: ")) {
-                const dataStr = line.replace("data: ", "");
-                if (dataStr === "[DONE]") break;
-
-                try {
-                  const parsed = JSON.parse(dataStr);
-                  if (parsed.chunk) {
-                    fullGeneratedSql += parsed.chunk;
-                    // Real-time update in editor
-                    const finalSql = initialCode
-                      ? `${initialCode}\n\n${fullGeneratedSql}`
-                      : fullGeneratedSql;
-                    handleUpdateCode(finalSql);
-                  }
-                } catch (e) {
-                  console.error("Error parsing stream chunk", e);
-                }
-              }
+        // Parse SSE chunks: each line is "data: {"chunk":"..."}" or "data: [DONE]"
+        const fullGeneratedSql = (response.data as string)
+          .split("\n")
+          .filter((line: string) => line.startsWith("data: ") && line !== "data: [DONE]")
+          .map((line: string) => {
+            try {
+              return JSON.parse(line.slice(6)).chunk ?? "";
+            } catch {
+              return "";
             }
-          }
-        }
-
+          })
+          .join("")
+          .trim();
+        const initialCode = activeQuery.code.trim();
+        const finalSql = initialCode
+          ? `${initialCode}\n\n${fullGeneratedSql}`
+          : fullGeneratedSql;
+        handleUpdateCode(finalSql);
         setIsAiOpen(false);
         setAiPrompt("");
         toast.success("SQL generated");
@@ -554,12 +552,12 @@ const QueryEditor = () => {
         />
 
         <div
-          className={`flex flex-col w-full overflow-hidden relative font-mono text-sm group transition-all duration-500 min-h-0 ${queryResults ? "flex-[1.5]" : "flex-1"}`}
+          className={`flex flex-col w-full overflow-hidden relative font-mono text-sm group transition-all duration-500 min-h-0 ${queryResults ? "flex-[1.8]" : "flex-1"}`}
         >
           <Editor
             height="100%"
             defaultLanguage="sql"
-            theme={settings.monacoTheme || "vs-dark"}
+            theme={settings.monacoTheme || "synq-dark"}
             value={activeQuery.code}
             onChange={(val) => handleUpdateCode(val || "")}
             onMount={handleEditorMount}

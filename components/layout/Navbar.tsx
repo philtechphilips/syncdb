@@ -13,6 +13,7 @@ import {
 
 import { useClusterStore } from "@/store/useClusterStore";
 import { useQueryStore } from "@/store/useQueryStore";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface NavbarProps {
   onOpenConnect: () => void;
@@ -22,8 +23,18 @@ interface NavbarProps {
 import { Badge, getEnvColor } from "@/components/ui/Badge";
 
 const Navbar = ({ onOpenConnect, onOpenSidebar }: NavbarProps) => {
-  const { selectedCluster, activeTab } = useClusterStore();
+  const { selectedCluster, activeTab, searchQuery, setSearchQuery } =
+    useClusterStore();
   const { requestRun } = useQueryStore();
+  const { user } = useAuthStore();
+
+  const initials = user?.full_name
+    ? user.full_name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+    : "??";
 
   const themeColor =
     selectedCluster?.color || getEnvColor(selectedCluster?.environment);
@@ -94,15 +105,21 @@ const Navbar = ({ onOpenConnect, onOpenSidebar }: NavbarProps) => {
             <input
               type="text"
               placeholder="Search Workspace..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="h-8 w-32 lg:w-48 rounded-md border border-border bg-muted/20 pl-9 pr-3 text-[10px] font-black text-white focus:outline-none focus:ring-1 focus:ring-white/20 transition-all uppercase tracking-widest"
             />
           </div>
-          <button className="h-8 w-8 flex items-center justify-center rounded-md border border-border text-white hover:bg-white/5 transition-all relative">
-            <Bell className="h-4 w-4" />
-            <div className="absolute top-2 right-2 h-1.5 w-1.5 bg-red-500 rounded-full"></div>
-          </button>
-          <div className="h-8 w-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-[10px] font-black text-primary cursor-pointer hover:scale-105 transition-transform">
-            JD
+          <div className="h-8 w-8 rounded-full overflow-hidden bg-primary/20 border border-primary/40 flex items-center justify-center text-[10px] font-black text-primary cursor-pointer hover:scale-105 transition-transform ml-2">
+            {user?.profile_picture ? (
+              <img
+                src={user.profile_picture}
+                alt={user.full_name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              initials
+            )}
           </div>
         </div>
       </div>

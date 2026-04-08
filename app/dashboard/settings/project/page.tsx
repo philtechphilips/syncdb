@@ -36,7 +36,7 @@ export default function ProjectSettingsPage() {
     editorFontSize: 13,
     safetyLimit: 500,
     autoSaveQueries: true,
-    monacoTheme: "vs-dark",
+    monacoTheme: "synq-dark",
     bracketPairColorization: true,
   });
   const [isSaved, setIsSaved] = useState(false);
@@ -207,7 +207,7 @@ export default function ProjectSettingsPage() {
                     value={settings.monacoTheme}
                     onChange={(e) => update("monacoTheme", e.target.value)}
                   >
-                    <option value="vs-dark">Synq Dark (Standard)</option>
+                    <option value="synq-dark">Synq Dark (Pro)</option>
                     <option value="monokai">Monokai Legend</option>
                     <option value="github-dark">GitHub Dark</option>
                   </select>

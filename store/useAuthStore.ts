@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import axios from "axios";
 import api from "@/lib/api";
 import { getErrorMessage } from "@/lib/errorUtils";
 
@@ -161,9 +160,13 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
           try {
-            const res = await axios.post(`${API_URL}/v1/auth/refresh`, {
-              refresh_token: storedRefresh,
-            });
+            const res = await api.post(
+              `/v1/auth/refresh`,
+              {
+                refresh_token: storedRefresh,
+              },
+              { _retry: true } as any,
+            );
             const { access_token: newAccess, refresh_token: newRefresh } =
               res.data;
             saveRefreshToken(newRefresh ?? storedRefresh);

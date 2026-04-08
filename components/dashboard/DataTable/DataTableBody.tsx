@@ -41,12 +41,35 @@ const DataTableBody = ({
   onCancelEdit,
   activeCell,
 }: DataTableBodyProps) => {
+  const [columnWidths, setColumnWidths] = React.useState<Record<string, number>>({});
+
+  const startResize = React.useCallback(
+    (e: React.MouseEvent, key: string) => {
+      e.preventDefault();
+      const startX = e.pageX;
+      const startWidth = columnWidths[key] || 150;
+
+      const handleMouseMove = (moveEvent: MouseEvent) => {
+        const newWidth = Math.max(80, startWidth + (moveEvent.pageX - startX));
+        setColumnWidths((prev) => ({ ...prev, [key]: newWidth }));
+      };
+
+      const handleMouseUp = () => {
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+      };
+
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    },
+    [columnWidths],
+  );
   return (
-    <div className="flex-1 overflow-auto scrollbar-hide">
-      <table className="w-full text-left border-collapse min-w-[800px]">
-        <thead>
-          <tr className="bg-[#021016]/80 border-b border-border sticky top-0 z-10 backdrop-blur-md">
-            <th className="px-6 py-4 w-12 text-center">
+    <div className="flex-1 overflow-auto scrollbar-hide bg-black/5">
+      <table className="w-full text-left border-collapse min-w-max table-fixed">
+        <thead className="sticky top-0 bg-[#021016]/80 backdrop-blur-md z-10 shadow-sm border-b border-border/50">
+          <tr>
+            <th className="px-6 py-3 w-12 text-center border-r border-border/30">
               <input
                 type="checkbox"
                 checked={selectedRows.size === rows.length && rows.length > 0}
@@ -54,45 +77,50 @@ const DataTableBody = ({
                 className="accent-primary w-3.5 h-3.5 rounded border-white/20 bg-white/5"
               />
             </th>
+            <th className="px-4 py-3 w-10 text-center border-r border-border/30"></th>
             {rows.length > 0 &&
               Object.keys(rows[0]).map((col) => (
                 <th
                   key={col}
-                  className="px-6 py-4 text-[10px] font-black text-zinc-300 tracking-widest border-r border-border last:border-0 cursor-default hover:text-white transition-colors"
+                  style={{ width: columnWidths[col] || 150 }}
+                  className="px-6 py-3 text-[11px] font-bold text-zinc-400 tracking-widest border-r border-border/30 last:border-0 relative group/header font-mono"
                 >
-                  <div className="flex items-center gap-2">
-                    {col}
-                    <ArrowUpDown className="h-2.5 w-2.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="flex items-center justify-between">
+                    <span className="truncate">{col}</span>
+                    <div
+                      onMouseDown={(e) => startResize(e, col)}
+                      className="absolute top-0 right-0 w-[3px] h-full cursor-col-resize bg-white/[0.08] hover:bg-primary/50 transition-colors z-20 border-r border-white/[0.1] active:bg-primary"
+                    />
                   </div>
                 </th>
               ))}
-            <th className="px-6 py-4"></th>
+            <th className="px-6 py-3 w-10"></th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/10">
+        <tbody className="divide-y divide-white/[0.03]">
           {filteredRows.map((row) => {
             const rowId = row.id as string | number;
             return (
               <tr
                 key={rowId}
-                className={`group bg-white/[0.04] hover:bg-white/[0.08] border-l-2 border-transparent hover:border-l-primary/60 transition-all ${selectedRows.has(rowId) ? "bg-primary/20 border-l-primary" : ""}`}
+                className={`group bg-white/[0.01] hover:bg-white/[0.04] transition-all border-l-2 border-transparent hover:border-l-primary/40 ${selectedRows.has(rowId) ? "bg-primary/5 border-l-primary/60" : ""}`}
               >
-                <td className="px-6 py-4 w-12 text-center">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedRows.has(rowId)}
-                      onChange={() => onToggleRow(rowId)}
-                      className="accent-primary w-3.5 h-3.5 rounded border-white/20 bg-white/10"
-                    />
-                    <button
-                      onClick={() => onOpenUpdateModal(row)}
-                      className="p-1 rounded opacity-0 group-hover:opacity-100 bg-white/10 text-zinc-400 hover:text-white hover:bg-primary/30 transition-all border border-transparent hover:border-primary/30"
-                      title="Update Row"
-                    >
-                      <Maximize2 className="h-2.5 w-2.5" />
-                    </button>
-                  </div>
+                <td className="px-6 py-3 w-12 text-center border-r border-border/10">
+                  <input
+                    type="checkbox"
+                    checked={selectedRows.has(rowId)}
+                    onChange={() => onToggleRow(rowId)}
+                    className="accent-primary w-3.5 h-3.5 rounded border-white/20 bg-white/10"
+                  />
+                </td>
+                <td className="px-4 py-3 w-10 text-center border-r border-border/10">
+                  <button
+                    onClick={() => onOpenUpdateModal(row)}
+                    className="p-1 rounded opacity-0 group-hover:opacity-100 bg-white/10 text-zinc-400 hover:text-white hover:bg-primary/30 transition-all border border-transparent hover:border-primary/30"
+                    title="Update Row"
+                  >
+                    <Maximize2 className="h-2.5 w-2.5" />
+                  </button>
                 </td>
                 {Object.keys(row).map((col) => {
                   const isEditing =
@@ -108,22 +136,21 @@ const DataTableBody = ({
                         col !== "id" &&
                         onStartEdit(rowId, col, String(row[col]))
                       }
-                      className={`px-6 py-4 text-xs font-semibold border-r border-border/50 last:border-0 relative transition-all ${
-                        col === "id"
-                          ? "font-mono text-muted-foreground"
-                          : "text-zinc-200"
+                      style={{ width: columnWidths[col] || 150 }}
+                      className={`px-6 py-3 font-mono text-[11px] border-r border-border/10 last:border-0 relative transition-all break-words whitespace-pre-wrap ${
+                        col === "id" ? "text-muted-foreground" : "text-zinc-300"
                       } ${row[col] === "NULL" ? "italic text-zinc-600" : ""} ${
                         activeCell?.rowId === rowId &&
                         activeCell?.colName === col
-                          ? "outline outline-1 outline-primary/60 bg-primary/10 z-20 shadow-[0_0_15px_rgba(0,237,100,0.15)]"
+                          ? "outline outline-1 outline-primary/30 bg-primary/5 z-10 shadow-[0_0_15px_rgba(0,237,100,0.05)]"
                           : ""
                       }`}
                     >
                       {isEditing ? (
-                        <div className="absolute inset-0 z-50 bg-card border-2 border-primary shadow-2xl rounded-md flex items-center p-1 animate-in zoom-in-95 duration-150">
+                        <div className="absolute inset-0 z-50 bg-card border border-primary shadow-xl rounded flex items-center p-0.5 animate-in zoom-in-95 duration-150">
                           <textarea
                             autoFocus
-                            className="w-full h-full bg-transparent border-none outline-none text-[11px] font-medium text-white resize-none scrollbar-hide py-1.5 px-3 leading-relaxed"
+                            className="w-full h-full bg-transparent border-none outline-none text-[11px] text-white px-2 py-1 resize-none font-mono"
                             value={editingCell?.value}
                             onChange={(e) => onEditValueChange(e.target.value)}
                             onBlur={onSaveEdit}
@@ -150,18 +177,16 @@ const DataTableBody = ({
                           </span>
                         </div>
                       ) : (
-                        <span className="line-clamp-2">
+                        <div className="max-h-[100px] overflow-y-auto scrollbar-hide font-mono">
                           {typeof row[col] === "object"
                             ? JSON.stringify(row[col])
-                            : String(row[col]).length > 70
-                              ? `${String(row[col]).substring(0, 70)}...`
-                              : (row[col] as React.ReactNode)}
-                        </span>
+                            : String(row[col])}
+                        </div>
                       )}
                     </td>
                   );
                 })}
-                <td className="px-6 py-4 text-right">
+                <td className="px-6 py-3 text-right">
                   <button className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-white/5 transition-all outline-none">
                     <MoreHorizontal className="h-4 w-4 text-zinc-600 hover:text-white" />
                   </button>

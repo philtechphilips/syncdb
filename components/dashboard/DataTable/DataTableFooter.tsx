@@ -23,7 +23,7 @@ const DataTableFooter = ({
   const endRange = Math.min(currentPage * rowsPerPage, totalRows);
 
   return (
-    <div className="px-6 py-3 border-t border-border/50 bg-[#021016]/30 flex items-center justify-between">
+    <div className="px-6 py-3 border-t border-white/5 bg-black/20 flex items-center justify-between">
       <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
         <div className="flex items-center gap-2">
           <button

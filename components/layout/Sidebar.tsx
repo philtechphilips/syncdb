@@ -54,6 +54,7 @@ const Sidebar = ({
     dropTable,
     deleteCluster,
     isTablesLoading,
+    searchQuery,
   } = useClusterStore();
   const { open: openModal } = useModalStore();
   const [isTablesExpanded, setIsTablesExpanded] = React.useState(true);
@@ -327,7 +328,11 @@ const Sidebar = ({
               <Table className="h-4 w-4 text-primary/80" />
               <span>Tables</span>
               <span className="ml-auto text-[10px] bg-muted px-1.5 py-0.5 rounded font-mono text-muted-foreground">
-                {tables.length}
+                {
+                  tables.filter((t) =>
+                    t.name.toLowerCase().includes(searchQuery.toLowerCase()),
+                  ).length
+                }
               </span>
             </div>
 
@@ -349,7 +354,13 @@ const Sidebar = ({
                         />
                       </div>
                     ))
-                  : tables.map((table: { name: string }) => (
+                  : tables
+                      .filter((t) =>
+                        t.name
+                          .toLowerCase()
+                          .includes(searchQuery.toLowerCase()),
+                      )
+                      .map((table: { name: string }) => (
                       <div
                         key={table.name}
                         onClick={() => onTableSelect(table.name)}
