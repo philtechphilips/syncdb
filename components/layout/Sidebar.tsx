@@ -361,28 +361,30 @@ const Sidebar = ({
                           .includes(searchQuery.toLowerCase()),
                       )
                       .map((table: { name: string }) => (
-                      <div
-                        key={table.name}
-                        onClick={() => onTableSelect(table.name)}
-                        onContextMenu={(e) => handleContextMenu(e, table.name)}
-                        className={`flex items-center gap-3 ml-6 mr-1 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer group/item hover:bg-white/[0.05] ${selectedTable === table.name ? "text-white bg-primary/10" : "text-muted-foreground/80 hover:text-white"}`}
-                      >
                         <div
-                          className={`h-1 w-1 rounded-full ${selectedTable === table.name ? "bg-primary" : "bg-zinc-700"}`}
-                        ></div>
-                        <span className="truncate flex-1">{table.name}</span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDropTable(table.name);
-                          }}
-                          className="opacity-0 group-hover/item:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-500 rounded transition-all"
-                          title="Drop Table"
+                          key={table.name}
+                          onClick={() => onTableSelect(table.name)}
+                          onContextMenu={(e) =>
+                            handleContextMenu(e, table.name)
+                          }
+                          className={`flex items-center gap-3 ml-6 mr-1 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer group/item hover:bg-white/[0.05] ${selectedTable === table.name ? "text-white bg-primary/10" : "text-muted-foreground/80 hover:text-white"}`}
                         >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
+                          <div
+                            className={`h-1 w-1 rounded-full ${selectedTable === table.name ? "bg-primary" : "bg-zinc-700"}`}
+                          ></div>
+                          <span className="truncate flex-1">{table.name}</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDropTable(table.name);
+                            }}
+                            className="opacity-0 group-hover/item:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-500 rounded transition-all"
+                            title="Drop Table"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
               </div>
             )}
           </div>

@@ -453,7 +453,10 @@ const QueryEditor = () => {
         // Parse SSE chunks: each line is "data: {"chunk":"..."}" or "data: [DONE]"
         const fullGeneratedSql = (response.data as string)
           .split("\n")
-          .filter((line: string) => line.startsWith("data: ") && line !== "data: [DONE]")
+          .filter(
+            (line: string) =>
+              line.startsWith("data: ") && line !== "data: [DONE]",
+          )
           .map((line: string) => {
             try {
               return JSON.parse(line.slice(6)).chunk ?? "";

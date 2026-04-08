@@ -41,7 +41,9 @@ const DataTableBody = ({
   onCancelEdit,
   activeCell,
 }: DataTableBodyProps) => {
-  const [columnWidths, setColumnWidths] = React.useState<Record<string, number>>({});
+  const [columnWidths, setColumnWidths] = React.useState<
+    Record<string, number>
+  >({});
 
   const startResize = React.useCallback(
     (e: React.MouseEvent, key: string) => {
