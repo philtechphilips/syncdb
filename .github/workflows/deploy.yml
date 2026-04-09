@@ -47,6 +47,6 @@ jobs:
             source "$NVM_DIR/nvm.sh"
 
             echo "--- Restarting app ---"
-            pm2 restart synqdb-ui || pm2 start npm --name "syncdb-ui" -- start
+            pm2 restart synqdb-ui
 
             echo "--- Deployment successful ---"
