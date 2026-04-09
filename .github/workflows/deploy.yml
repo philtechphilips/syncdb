@@ -35,7 +35,7 @@ jobs:
             set -e
 
             echo "--- Pulling latest frontend code ---"
-            cd /var/www/synqdb/synqdb
+            cd /var/www/synqdb/syncdb
 
             git pull origin main
 
