@@ -33,19 +33,29 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const restorerRef = React.useRef(false);
+  const handshakeRan = React.useRef(false);
 
-  // Master Handshake
+  // Master Handshake — runs once on mount only
   React.useEffect(() => {
+    if (handshakeRan.current) return;
+    handshakeRan.current = true;
+
     const handshake = async () => {
-      if (!isAuthenticated) await checkAuth();
-      const fetched = clusters.length === 0 ? await fetchClusters() : clusters;
+      // Always verify session on mount — access_token is never persisted so we
+      // must refresh it even when isAuthenticated:true is read from localStorage.
+      await checkAuth();
+      // Mark initialized regardless of auth result so the protection effect
+      // can fire and redirect to /auth/login when not authenticated.
       setIsInitialized(true);
+      const { isAuthenticated: authed } = useAuthStore.getState();
+      if (!authed) return;
+      const fetched = await fetchClusters();
       if (fetched.length === 0 && shouldShowOnboarding()) {
         setShowOnboarding(true);
       }
     };
     handshake();
-  }, [isAuthenticated, checkAuth, clusters.length, fetchClusters]);
+  }, []);
 
   // Session Restoration (Cluster from URL)
   React.useEffect(() => {
@@ -82,14 +92,18 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       }
     }
   }, [selectedCluster?.id, pathname, searchParams, router, isInitialized]);
-  // Reset navigation when switching clusters while on a table route
+  const prevClusterIdRef = React.useRef<string | undefined>(undefined);
+  // Reset to query only when the user actively SWITCHES to a different cluster
+  // while already on a table route — not on initial load.
   React.useEffect(() => {
-    if (selectedCluster?.id && isInitialized) {
-      if (pathname.includes("/dashboard/table/")) {
-        router.push(`/dashboard/query?cluster=${selectedCluster.id}`);
-      }
+    if (!isInitialized || !selectedCluster?.id) return;
+    const prev = prevClusterIdRef.current;
+    prevClusterIdRef.current = selectedCluster.id;
+    // Only redirect if the cluster actually changed (not the first mount)
+    if (prev && prev !== selectedCluster.id && pathname.includes("/dashboard/table/")) {
+      router.push(`/dashboard/query?cluster=${selectedCluster.id}`);
     }
-  }, [selectedCluster?.id, isInitialized, router]);
+  }, [selectedCluster?.id, isInitialized, pathname, router]);
 
   const { activeTab, setActiveTab, selectedTable, setSelectedTable } =
     useClusterStore();

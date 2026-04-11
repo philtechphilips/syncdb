@@ -9,6 +9,7 @@ export interface Cluster {
   type: "mysql" | "postgres" | "mssql";
   environment: "development" | "staging" | "production";
   color?: string;
+  isLocal?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -90,6 +91,11 @@ interface ClusterState {
   ) => Promise<void>;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  fetchAgentStatus: (
+    clusterId: string,
+  ) => Promise<{ isLocal: boolean; connected: boolean | null }>;
+  fetchAgentKey: (clusterId: string) => Promise<{ agentKey: string }>;
+  rotateAgentKey: (clusterId: string) => Promise<{ agentKey: string }>;
 }
 
 export const useClusterStore = create<ClusterState>()(
@@ -478,6 +484,35 @@ export const useClusterStore = create<ClusterState>()(
         }
       },
       setSearchQuery: (query) => set({ searchQuery: query }),
+
+      fetchAgentStatus: async (clusterId: string) => {
+        try {
+          const response = await api.get(
+            `/v1/clusters/${clusterId}/agent-status`,
+            { _skipToast: true } as any,
+          );
+          return response.data;
+        } catch {
+          return { isLocal: false, connected: null };
+        }
+      },
+
+      fetchAgentKey: async (clusterId: string) => {
+        const response = await api.get(
+          `/v1/clusters/${clusterId}/agent-key`,
+          { _skipToast: true } as any,
+        );
+        return response.data;
+      },
+
+      rotateAgentKey: async (clusterId: string) => {
+        const response = await api.post(
+          `/v1/clusters/${clusterId}/rotate-agent-key`,
+          {},
+          { _skipToast: true } as any,
+        );
+        return response.data;
+      },
     }),
     {
       name: "cluster-storage",

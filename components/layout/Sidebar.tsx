@@ -30,7 +30,7 @@ interface SidebarProps {
 
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useClusterStore } from "@/store/useClusterStore";
+import { useClusterStore, Cluster } from "@/store/useClusterStore";
 import { useModalStore } from "@/store/useModalStore";
 import { SynqLogo } from "@/components/ui/SynqLogo";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -53,9 +53,30 @@ const Sidebar = ({
     fetchTables,
     dropTable,
     deleteCluster,
+    fetchAgentStatus,
     isTablesLoading,
     searchQuery,
   } = useClusterStore();
+  const [agentStatuses, setAgentStatuses] = React.useState<Record<string, boolean | null>>({});
+
+  React.useEffect(() => {
+    const localClusters = clusters.filter((c) => c.isLocal);
+    if (localClusters.length === 0) return;
+
+    const poll = async () => {
+      const results = await Promise.all(
+        localClusters.map(async (c) => {
+          const status = await fetchAgentStatus(c.id);
+          return [c.id, status.connected] as [string, boolean | null];
+        }),
+      );
+      setAgentStatuses(Object.fromEntries(results));
+    };
+
+    poll();
+    const interval = setInterval(poll, 15_000);
+    return () => clearInterval(interval);
+  }, [clusters, fetchAgentStatus]);
   const { open: openModal } = useModalStore();
   const [isTablesExpanded, setIsTablesExpanded] = React.useState(true);
   const [isConnectionDropdownOpen, setIsConnectionDropdownOpen] =
@@ -215,7 +236,7 @@ const Sidebar = ({
                     >
                       {cluster.name[0].toUpperCase()}
                     </div>
-                    <div className="flex flex-col items-start translate-y-[-1px]">
+                    <div className="flex flex-col items-start -translate-y-px">
                       <span>{cluster.name}</span>
                       <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-tighter">
                         {cluster.type}
@@ -224,6 +245,12 @@ const Sidebar = ({
                   </div>
 
                   <div className="flex items-center gap-2">
+                    {cluster.isLocal && (
+                      <div
+                        className={`h-1.5 w-1.5 rounded-full ${agentStatuses[cluster.id] === true ? "bg-primary" : "bg-zinc-600"}`}
+                        title={agentStatuses[cluster.id] === true ? "Agent connected" : "Agent offline"}
+                      />
+                    )}
                     {selectedCluster?.id === cluster.id && (
                       <div className="h-1.5 w-1.5 rounded-full bg-primary"></div>
                     )}
@@ -367,7 +394,7 @@ const Sidebar = ({
                           onContextMenu={(e) =>
                             handleContextMenu(e, table.name)
                           }
-                          className={`flex items-center gap-3 ml-6 mr-1 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer group/item hover:bg-white/[0.05] ${selectedTable === table.name ? "text-white bg-primary/10" : "text-muted-foreground/80 hover:text-white"}`}
+                          className={`flex items-center gap-3 ml-6 mr-1 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer group/item hover:bg-white/5 ${selectedTable === table.name ? "text-white bg-primary/10" : "text-muted-foreground/80 hover:text-white"}`}
                         >
                           <div
                             className={`h-1 w-1 rounded-full ${selectedTable === table.name ? "bg-primary" : "bg-zinc-700"}`}
@@ -432,7 +459,7 @@ const Sidebar = ({
                 className="h-full w-full object-cover"
               />
             ) : (
-              <div className="h-full w-full bg-gradient-to-tr from-primary/40 to-secondary/40 flex items-center justify-center text-[10px] font-black">
+              <div className="h-full w-full bg-linear-to-tr from-primary/40 to-secondary/40 flex items-center justify-center text-[10px] font-black">
                 {user?.full_name
                   ?.split(" ")
                   .map((n) => n[0])
@@ -483,7 +510,7 @@ const Sidebar = ({
       {/* Context Menu */}
       {contextMenu && (
         <div
-          className="fixed z-[100] w-48 bg-card border border-border rounded-xl shadow-2xl py-1.5 shadow-black/50 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+          className="fixed z-100 w-48 bg-card border border-border rounded-xl shadow-2xl py-1.5 shadow-black/50 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
           style={{ left: contextMenu.x, top: contextMenu.y }}
         >
           <div className="px-3 py-1.5 border-b border-border mb-1.5">

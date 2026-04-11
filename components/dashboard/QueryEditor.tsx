@@ -116,10 +116,7 @@ const QueryEditor = () => {
       );
   }, [selectedCluster, fetchSchema]);
 
-  useEffect(() => {
-    if (!monaco) return;
-
-    // Synq Dark (App Matching)
+  const defineThemes = (monaco: any) => {
     monaco.editor.defineTheme("synq-dark", {
       base: "vs-dark",
       inherit: true,
@@ -138,7 +135,6 @@ const QueryEditor = () => {
       },
     });
 
-    // Monokai
     monaco.editor.defineTheme("monokai", {
       base: "vs-dark",
       inherit: true,
@@ -157,7 +153,6 @@ const QueryEditor = () => {
       },
     });
 
-    // GitHub Dark
     monaco.editor.defineTheme("github-dark", {
       base: "vs-dark",
       inherit: true,
@@ -175,7 +170,7 @@ const QueryEditor = () => {
         "editorLineNumber.foreground": "#484f58",
       },
     });
-  }, [monaco]);
+  };
 
   useEffect(() => {
     if (!monaco || schemaMetadata.length === 0) return;
@@ -563,6 +558,7 @@ const QueryEditor = () => {
             theme={settings.monacoTheme || "synq-dark"}
             value={activeQuery.code}
             onChange={(val) => handleUpdateCode(val || "")}
+            beforeMount={defineThemes}
             onMount={handleEditorMount}
             options={{
               minimap: { enabled: false },

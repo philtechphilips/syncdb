@@ -9,6 +9,7 @@ import { Workloads } from "@/components/landing/Workloads";
 import { DataExplorerSection } from "@/components/landing/DataExplorerSection";
 import { EngineGrid } from "@/components/landing/EngineGrid";
 import { DeveloperExperience } from "@/components/landing/DeveloperExperience";
+import { LocalAgentSection } from "@/components/landing/LocalAgentSection";
 import { SecuritySection } from "@/components/landing/SecuritySection";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { Pricing } from "@/components/landing/Pricing";
@@ -31,6 +32,7 @@ export default function Home() {
         <Features />
         <DataExplorerSection />
         <DeveloperExperience />
+        <LocalAgentSection />
         <SecuritySection />
         <Testimonials />
         <Pricing />

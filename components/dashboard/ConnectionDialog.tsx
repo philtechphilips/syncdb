@@ -4,16 +4,15 @@ import React, { useState } from "react";
 import {
   X,
   Database,
-  Shield,
   Globe,
   Lock,
   Loader2,
   CheckCircle2,
   AlertCircle,
-  Palette,
-  Flag,
+  Laptop,
 } from "lucide-react";
 import { useClusterStore } from "@/store/useClusterStore";
+import AgentSetupModal from "./AgentSetupModal";
 
 const ConnectionDialog = ({
   isOpen,
@@ -38,6 +37,8 @@ const ConnectionDialog = ({
     environment: "development" as "development" | "staging" | "production",
     color: "#00ED64",
   });
+  const [isLocal, setIsLocal] = useState(false);
+  const [agentKey, setAgentKey] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<{
     success: boolean;
     message: string;
@@ -110,12 +111,12 @@ const ConnectionDialog = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createCluster({
+      const result = await createCluster({
         ...formData,
         type: selectedDb,
         port: parseInt(formData.port),
-      });
-      onClose();
+        isLocal,
+      }) as any;
       // Reset form
       setFormData({
         name: "",
@@ -127,10 +128,28 @@ const ConnectionDialog = ({
         environment: "development",
         color: "#00ED64",
       });
+      if (isLocal && result?.agentKey) {
+        setAgentKey(result.agentKey);
+        setIsLocal(false);
+      } else {
+        onClose();
+      }
     } catch {
       // Error is handled by store
     }
   };
+
+  if (agentKey) {
+    return (
+      <AgentSetupModal
+        agentKey={agentKey}
+        onDone={() => {
+          setAgentKey(null);
+          onClose();
+        }}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
@@ -196,6 +215,23 @@ const ConnectionDialog = ({
               </div>
             </div>
 
+            <button
+              type="button"
+              onClick={() => { setIsLocal(!isLocal); setTestResult(null); }}
+              className={`flex items-center gap-3 w-full rounded-2xl border p-3.5 transition-all ${isLocal ? "border-primary/50 bg-primary/5 shadow-[0_0_20px_rgba(0,237,100,0.07)]" : "bg-white/2 border-border/50 hover:border-white/20"}`}
+            >
+              <div className={`p-2 rounded-xl bg-white/5 border border-border/50 ${isLocal ? "text-primary" : "text-muted-foreground"}`}>
+                <Laptop className="h-4 w-4" />
+              </div>
+              <div className="text-left">
+                <div className={`text-xs font-bold ${isLocal ? "text-white" : "text-zinc-400"}`}>Local Database</div>
+                <div className="text-[9px] text-zinc-600 font-medium">Connect via local relay agent</div>
+              </div>
+              <div className={`ml-auto h-4 w-8 rounded-full transition-all ${isLocal ? "bg-primary" : "bg-white/10"} relative`}>
+                <span className={`absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all ${isLocal ? "left-4" : "left-0.5"}`} />
+              </div>
+            </button>
+
             <div className="space-y-4">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">
                 2. Environment Label
@@ -233,7 +269,7 @@ const ConnectionDialog = ({
 
             <div className="space-y-4">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">
-                3. UI Theme Color
+                3. Cluster Name Tag
               </span>
               <div className="flex flex-wrap gap-2 px-1">
                 {presetColors.map((c) => (
@@ -255,6 +291,18 @@ const ConnectionDialog = ({
                     className="absolute inset-0 h-10 w-10 -translate-x-1/4 -translate-y-1/4 cursor-pointer"
                   />
                 </div>
+              </div>
+              {/* Preview of the cluster name tag */}
+              <div className="flex items-center gap-2 px-1">
+                <div
+                  className="h-5 w-5 rounded flex items-center justify-center text-[9px] font-black text-white shrink-0"
+                  style={{ borderLeft: `2px solid ${formData.color}`, backgroundColor: "rgba(255,255,255,0.05)" }}
+                >
+                  {formData.name ? formData.name[0].toUpperCase() : "A"}
+                </div>
+                <span className="text-[10px] text-zinc-500 font-medium">
+                  {formData.name || "Cluster name"} preview
+                </span>
               </div>
             </div>
           </div>
@@ -366,28 +414,42 @@ const ConnectionDialog = ({
               </div>
             </div>
 
+            {isLocal && (
+              <div className="flex items-start gap-3 p-4 rounded-xl border border-primary/20 bg-primary/5 text-primary">
+                <Laptop className="h-4 w-4 mt-0.5 shrink-0" />
+                <span className="text-[10px] font-bold leading-relaxed">
+                  A relay agent key will be generated. Run it locally with{" "}
+                  <code className="font-mono bg-white/10 px-1 rounded">npx synqdb-agent &lt;key&gt;</code> to connect.
+                  Enter your local DB credentials below.
+                </span>
+              </div>
+            )}
+
             <div className="flex flex-col gap-4">
               <div className="flex gap-4">
-                <button
-                  type="button"
-                  disabled={isLoading}
-                  onClick={handleTest}
-                  className="flex-1 rounded-xl px-8 py-4 text-xs font-black text-white bg-white/5 border border-border hover:bg-white/10 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 uppercase tracking-widest"
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    "Verify Network"
-                  )}
-                </button>
+                {!isLocal && (
+                  <button
+                    type="button"
+                    disabled={isLoading}
+                    onClick={handleTest}
+                    className="flex-1 rounded-xl px-8 py-4 text-xs font-black text-white bg-white/5 border border-border hover:bg-white/10 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 uppercase tracking-widest"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "Verify Network"
+                    )}
+                  </button>
+                )}
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-[2] flex items-center justify-center gap-3 rounded-xl bg-primary px-10 py-4 text-xs font-black text-primary-foreground shadow-[0_0_20px_rgba(0,237,100,0.3)] hover:shadow-[0_0_40px_rgba(0,237,100,0.6)] transition-all active:scale-95 disabled:opacity-50 uppercase tracking-widest"
-                  style={{ backgroundColor: formData.color }}
+                  className="flex-[2] flex items-center justify-center gap-3 rounded-xl bg-primary px-10 py-4 text-xs font-black text-primary-foreground transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-95 disabled:opacity-50 uppercase tracking-widest"
                 >
                   {isLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin text-primary-foreground" />
+                  ) : isLocal ? (
+                    "Generate Agent Key"
                   ) : (
                     "Authorize & Establish"
                   )}
@@ -412,27 +474,13 @@ const ConnectionDialog = ({
           </div>
         </form>
 
-        <div className="mt-10 flex items-center justify-between gap-6 relative z-10 border-t border-border/50 pt-8">
-          <div className="flex items-center gap-4">
-            <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10">
-              <Shield className="h-5 w-5 text-zinc-400" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black text-white uppercase tracking-widest">
-                Security Policy
-              </span>
-              <span className="text-[10px] text-zinc-600 font-medium">
-                This connection is restricted to your session and encrypted at
-                rest.
-              </span>
-            </div>
-          </div>
+        <div className="mt-10 flex items-center justify-end gap-6 relative z-10 border-t border-border/50 pt-8">
           <button
             onClick={onClose}
             type="button"
-            className="text-[10px] font-black uppercase tracking-widest text-zinc-650 hover:text-white transition-colors"
+            className="text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-colors"
           >
-            Cancel Installation
+            Cancel
           </button>
         </div>
       </div>
