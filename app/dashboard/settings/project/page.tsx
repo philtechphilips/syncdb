@@ -41,8 +41,12 @@ const LocalAgentSection = () => {
   const [confirmRotate, setConfirmRotate] = React.useState(false);
 
   React.useEffect(() => {
-    fetchAgentKey().then((r) => setAgentKey(r.agentKey)).catch(() => null);
-    fetchAgentStatus().then((r) => setConnected(r.connected)).catch(() => null);
+    fetchAgentKey()
+      .then((r) => setAgentKey(r.agentKey))
+      .catch(() => null);
+    fetchAgentStatus()
+      .then((r) => setConnected(r.connected))
+      .catch(() => null);
   }, []);
 
   const handleCopy = async () => {
@@ -101,7 +105,11 @@ const LocalAgentSection = () => {
             <Key className="h-3 w-3 text-zinc-600 shrink-0" />
             <code className="flex-1 font-mono text-[10px] text-primary truncate select-all">
               {agentKey ? (
-                visible ? agentKey : "••••••••-••••-••••-••••-••••••••••••"
+                visible ? (
+                  agentKey
+                ) : (
+                  "••••••••-••••-••••-••••-••••••••••••"
+                )
               ) : (
                 <span className="text-zinc-600">Loading...</span>
               )}
@@ -111,14 +119,22 @@ const LocalAgentSection = () => {
               className="shrink-0 text-zinc-600 hover:text-zinc-300 transition-colors"
               title={visible ? "Hide" : "Reveal"}
             >
-              {visible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+              {visible ? (
+                <EyeOff className="h-3.5 w-3.5" />
+              ) : (
+                <Eye className="h-3.5 w-3.5" />
+              )}
             </button>
             <button
               onClick={handleCopy}
               className="shrink-0 text-zinc-600 hover:text-zinc-300 transition-colors"
               title="Copy key"
             >
-              {copied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? (
+                <Check className="h-3.5 w-3.5 text-primary" />
+              ) : (
+                <Copy className="h-3.5 w-3.5" />
+              )}
             </button>
           </div>
 
@@ -135,7 +151,11 @@ const LocalAgentSection = () => {
                   : "text-zinc-600 hover:text-red-400 border border-transparent hover:border-red-500/20"
               }`}
             >
-              {rotating ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+              {rotating ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <RefreshCw className="h-3 w-3" />
+              )}
               {confirmRotate ? "Click again to confirm" : "Rotate Key"}
             </button>
           </div>
@@ -144,7 +164,9 @@ const LocalAgentSection = () => {
         <div className="flex items-start gap-3 p-3 rounded-xl border border-white/5 bg-white/2">
           <AlertTriangle className="h-3.5 w-3.5 text-zinc-500 shrink-0 mt-0.5" />
           <p className="text-[9px] text-zinc-600 leading-relaxed">
-            This key works for all your local clusters. Rotating it disconnects the running agent — restart with the new key. Old keys are permanently invalidated.
+            This key works for all your local clusters. Rotating it disconnects
+            the running agent — restart with the new key. Old keys are
+            permanently invalidated.
           </p>
         </div>
       </div>

@@ -60,7 +60,12 @@ const AgentSetupModal = ({ agentKey, onDone }: AgentSetupModalProps) => {
               </button>
             </div>
             <p className="text-[9px] text-zinc-600 px-1">
-              This key works for all your local clusters. You can always retrieve it from <span className="text-zinc-400">Project Settings → Local Agent</span>.
+              This key works for all your local clusters. You can always
+              retrieve it from{" "}
+              <span className="text-zinc-400">
+                Project Settings → Local Agent
+              </span>
+              .
             </p>
           </div>
 

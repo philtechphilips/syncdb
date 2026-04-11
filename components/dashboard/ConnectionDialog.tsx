@@ -417,12 +417,16 @@ const ConnectionDialog = ({
               <div className="flex items-start gap-3 p-4 rounded-xl border border-primary/20 bg-primary/5 text-primary">
                 <Laptop className="h-4 w-4 mt-0.5 shrink-0" />
                 <span className="text-[10px] font-bold leading-relaxed">
-                  Queries will route through your local agent. Find your agent key in{" "}
-                  <span className="underline">Project Settings → Local Agent</span>{" "}
+                  Queries will route through your local agent. Find your agent
+                  key in{" "}
+                  <span className="underline">
+                    Project Settings → Local Agent
+                  </span>{" "}
                   and run{" "}
                   <code className="font-mono bg-white/10 px-1 rounded">
                     npx synqdb-agent &lt;key&gt;
-                  </code>.
+                  </code>
+                  .
                 </span>
               </div>
             )}

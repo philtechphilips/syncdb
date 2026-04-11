@@ -242,17 +242,23 @@ export const useAuthStore = create<AuthState>()(
       },
 
       fetchAgentKey: async () => {
-        const response = await api.get('/v1/auth/agent-key', { _skipToast: true } as any);
+        const response = await api.get("/v1/auth/agent-key", {
+          _skipToast: true,
+        } as any);
         return response.data;
       },
 
       rotateAgentKey: async () => {
-        const response = await api.post('/v1/auth/rotate-agent-key', {}, { _skipToast: true } as any);
+        const response = await api.post("/v1/auth/rotate-agent-key", {}, {
+          _skipToast: true,
+        } as any);
         return response.data;
       },
 
       fetchAgentStatus: async () => {
-        const response = await api.get('/v1/auth/agent-status', { _skipToast: true } as any);
+        const response = await api.get("/v1/auth/agent-status", {
+          _skipToast: true,
+        } as any);
         return response.data;
       },
 

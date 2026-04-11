@@ -246,7 +246,9 @@ const Sidebar = ({
                     {cluster.isLocal && (
                       <div
                         className={`h-1.5 w-1.5 rounded-full ${agentConnected ? "bg-primary" : "bg-zinc-600"}`}
-                        title={agentConnected ? "Agent connected" : "Agent offline"}
+                        title={
+                          agentConnected ? "Agent connected" : "Agent offline"
+                        }
                       />
                     )}
                     {selectedCluster?.id === cluster.id && (
