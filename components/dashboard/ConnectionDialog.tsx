@@ -111,12 +111,12 @@ const ConnectionDialog = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const result = await createCluster({
+      const result = (await createCluster({
         ...formData,
         type: selectedDb,
         port: parseInt(formData.port),
         isLocal,
-      }) as any;
+      })) as any;
       // Reset form
       setFormData({
         name: "",
@@ -217,18 +217,33 @@ const ConnectionDialog = ({
 
             <button
               type="button"
-              onClick={() => { setIsLocal(!isLocal); setTestResult(null); }}
+              onClick={() => {
+                setIsLocal(!isLocal);
+                setTestResult(null);
+              }}
               className={`flex items-center gap-3 w-full rounded-2xl border p-3.5 transition-all ${isLocal ? "border-primary/50 bg-primary/5 shadow-[0_0_20px_rgba(0,237,100,0.07)]" : "bg-white/2 border-border/50 hover:border-white/20"}`}
             >
-              <div className={`p-2 rounded-xl bg-white/5 border border-border/50 ${isLocal ? "text-primary" : "text-muted-foreground"}`}>
+              <div
+                className={`p-2 rounded-xl bg-white/5 border border-border/50 ${isLocal ? "text-primary" : "text-muted-foreground"}`}
+              >
                 <Laptop className="h-4 w-4" />
               </div>
               <div className="text-left">
-                <div className={`text-xs font-bold ${isLocal ? "text-white" : "text-zinc-400"}`}>Local Database</div>
-                <div className="text-[9px] text-zinc-600 font-medium">Connect via local relay agent</div>
+                <div
+                  className={`text-xs font-bold ${isLocal ? "text-white" : "text-zinc-400"}`}
+                >
+                  Local Database
+                </div>
+                <div className="text-[9px] text-zinc-600 font-medium">
+                  Connect via local relay agent
+                </div>
               </div>
-              <div className={`ml-auto h-4 w-8 rounded-full transition-all ${isLocal ? "bg-primary" : "bg-white/10"} relative`}>
-                <span className={`absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all ${isLocal ? "left-4" : "left-0.5"}`} />
+              <div
+                className={`ml-auto h-4 w-8 rounded-full transition-all ${isLocal ? "bg-primary" : "bg-white/10"} relative`}
+              >
+                <span
+                  className={`absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all ${isLocal ? "left-4" : "left-0.5"}`}
+                />
               </div>
             </button>
 
@@ -296,7 +311,10 @@ const ConnectionDialog = ({
               <div className="flex items-center gap-2 px-1">
                 <div
                   className="h-5 w-5 rounded flex items-center justify-center text-[9px] font-black text-white shrink-0"
-                  style={{ borderLeft: `2px solid ${formData.color}`, backgroundColor: "rgba(255,255,255,0.05)" }}
+                  style={{
+                    borderLeft: `2px solid ${formData.color}`,
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                  }}
                 >
                   {formData.name ? formData.name[0].toUpperCase() : "A"}
                 </div>
@@ -419,8 +437,10 @@ const ConnectionDialog = ({
                 <Laptop className="h-4 w-4 mt-0.5 shrink-0" />
                 <span className="text-[10px] font-bold leading-relaxed">
                   A relay agent key will be generated. Run it locally with{" "}
-                  <code className="font-mono bg-white/10 px-1 rounded">npx synqdb-agent &lt;key&gt;</code> to connect.
-                  Enter your local DB credentials below.
+                  <code className="font-mono bg-white/10 px-1 rounded">
+                    npx synqdb-agent &lt;key&gt;
+                  </code>{" "}
+                  to connect. Enter your local DB credentials below.
                 </span>
               </div>
             )}

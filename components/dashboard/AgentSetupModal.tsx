@@ -30,8 +30,12 @@ const AgentSetupModal = ({ agentKey, onDone }: AgentSetupModalProps) => {
               <Terminal className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h2 className="text-xl font-serif text-white tracking-tight">Local Agent Setup</h2>
-              <p className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest">Your cluster has been created</p>
+              <h2 className="text-xl font-serif text-white tracking-tight">
+                Local Agent Setup
+              </h2>
+              <p className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest">
+                Your cluster has been created
+              </p>
             </div>
           </div>
 
@@ -39,13 +43,18 @@ const AgentSetupModal = ({ agentKey, onDone }: AgentSetupModalProps) => {
           <div className="flex items-start gap-3 p-4 rounded-xl border border-white/10 bg-white/5">
             <AlertTriangle className="h-4 w-4 text-white shrink-0 mt-0.5" />
             <p className="text-[10px] text-zinc-300 font-bold leading-relaxed">
-              This agent key will <span className="underline">not be shown again</span>. Copy it now and keep it safe. Anyone with this key can access your local database through the relay.
+              This agent key will{" "}
+              <span className="underline">not be shown again</span>. Copy it now
+              and keep it safe. Anyone with this key can access your local
+              database through the relay.
             </p>
           </div>
 
           {/* Agent Key */}
           <div className="space-y-2">
-            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Your Agent Key</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
+              Your Agent Key
+            </span>
             <div className="flex items-center gap-2">
               <code className="flex-1 font-mono text-xs text-primary bg-primary/5 border border-primary/20 rounded-xl px-4 py-3 break-all select-all">
                 {agentKey}
@@ -54,22 +63,35 @@ const AgentSetupModal = ({ agentKey, onDone }: AgentSetupModalProps) => {
                 onClick={handleCopy}
                 className="h-11 w-11 shrink-0 rounded-xl border border-border/50 bg-white/5 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
               >
-                {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+                {copied ? (
+                  <Check className="h-4 w-4 text-emerald-400" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
               </button>
             </div>
           </div>
 
           {/* Install instructions */}
           <div className="space-y-3">
-            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Start the agent on your machine</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
+              Start the agent on your machine
+            </span>
             <div className="rounded-xl border border-border/50 bg-black/40 p-4 font-mono text-xs text-zinc-300 space-y-1">
-              <p><span className="text-zinc-600"># one-time install</span></p>
+              <p>
+                <span className="text-zinc-600"># one-time install</span>
+              </p>
               <p>npm install -g synqdb-agent</p>
-              <p className="pt-1"><span className="text-zinc-600"># or run without installing</span></p>
+              <p className="pt-1">
+                <span className="text-zinc-600">
+                  # or run without installing
+                </span>
+              </p>
               <p>npx synqdb-agent {agentKey}</p>
             </div>
             <p className="text-[9px] text-zinc-600 font-medium px-1">
-              The agent connects outbound to SynqDB — no firewall changes or port forwarding required.
+              The agent connects outbound to SynqDB — no firewall changes or
+              port forwarding required.
             </p>
           </div>
 

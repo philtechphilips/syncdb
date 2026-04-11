@@ -34,7 +34,11 @@ const fadeUp = {
 const TERMINAL_LINES = [
   { delay: 0, text: "$ npx synqdb-agent a1b2c3d4-...", type: "cmd" },
   { delay: 700, text: "Connecting to api.synqdb.com...", type: "info" },
-  { delay: 1400, text: "✓ Authenticated — serving cluster: local-dev", type: "success" },
+  {
+    delay: 1400,
+    text: "✓ Authenticated — serving cluster: local-dev",
+    type: "success",
+  },
   { delay: 2100, text: "Listening for queries...", type: "muted" },
   { delay: 2800, text: "> SELECT * FROM users LIMIT 5", type: "query" },
   { delay: 3300, text: "  5 rows returned in 2ms", type: "result" },
@@ -66,10 +70,14 @@ const TerminalVisual = () => {
           <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/50" />
           <div className="h-2.5 w-2.5 rounded-full bg-green-500/50" />
         </div>
-        <span className="text-[10px] text-zinc-600 font-mono ml-2">terminal</span>
+        <span className="text-[10px] text-zinc-600 font-mono ml-2">
+          terminal
+        </span>
         <div className="ml-auto flex items-center gap-1.5">
           <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-          <span className="text-[9px] text-primary font-bold uppercase tracking-widest">Live</span>
+          <span className="text-[9px] text-primary font-bold uppercase tracking-widest">
+            Live
+          </span>
         </div>
       </div>
 
@@ -98,7 +106,11 @@ const ArchDiagram = () => (
     {[
       { icon: <Laptop className="h-4 w-4" />, label: "Your Browser" },
       { arrow: true },
-      { icon: <Shield className="h-4 w-4" />, label: "SynqDB API", highlight: true },
+      {
+        icon: <Shield className="h-4 w-4" />,
+        label: "SynqDB API",
+        highlight: true,
+      },
       { arrow: true },
       { icon: <Wifi className="h-4 w-4" />, label: "WebSocket", dim: true },
       { arrow: true },
@@ -118,8 +130,8 @@ const ArchDiagram = () => (
               item.highlight
                 ? "bg-primary/10 border-primary/30 text-primary"
                 : item.dim
-                ? "bg-white/[0.02] border-white/5 text-zinc-600"
-                : "bg-white/[0.03] border-white/8 text-zinc-400"
+                  ? "bg-white/[0.02] border-white/5 text-zinc-600"
+                  : "bg-white/[0.03] border-white/8 text-zinc-400"
             }`}
           >
             {item.icon}
@@ -201,7 +213,9 @@ export const LocalAgentSection = () => {
             <h2 className="text-4xl md:text-5xl font-serif text-white leading-[1.1] tracking-tighter">
               Your local DB.
               <br />
-              <span className="text-primary italic">Managed from anywhere.</span>
+              <span className="text-primary italic">
+                Managed from anywhere.
+              </span>
             </h2>
           </motion.div>
 
@@ -218,8 +232,8 @@ export const LocalAgentSection = () => {
               <code className="text-zinc-400 bg-white/5 px-1.5 py-0.5 rounded text-sm font-mono">
                 localhost
               </code>{" "}
-              on your machine. The SynqDB relay agent bridges that gap — securely, with a
-              single command.
+              on your machine. The SynqDB relay agent bridges that gap —
+              securely, with a single command.
             </p>
 
             {/* Pills */}
@@ -251,9 +265,10 @@ export const LocalAgentSection = () => {
           </p>
           <ArchDiagram />
           <p className="text-xs text-zinc-600 text-center mt-6 leading-relaxed max-w-lg mx-auto">
-            The agent opens an <span className="text-zinc-400">outbound</span> WebSocket connection to
-            SynqDB. Your browser sends queries via the API, which routes them through the
-            persistent socket — so your local database never needs to be publicly reachable.
+            The agent opens an <span className="text-zinc-400">outbound</span>{" "}
+            WebSocket connection to SynqDB. Your browser sends queries via the
+            API, which routes them through the persistent socket — so your local
+            database never needs to be publicly reachable.
           </p>
         </motion.div>
 
@@ -272,14 +287,22 @@ export const LocalAgentSection = () => {
                 className="group flex gap-5"
               >
                 <div className="shrink-0 w-10 h-10 rounded-xl border border-primary/20 bg-primary/5 flex items-center justify-center">
-                  <span className="text-[10px] font-black text-primary">{step.n}</span>
+                  <span className="text-[10px] font-black text-primary">
+                    {step.n}
+                  </span>
                 </div>
                 <div className="pt-1.5">
-                  <h3 className="text-sm font-bold text-white mb-1">{step.title}</h3>
-                  <p className="text-xs text-zinc-500 leading-relaxed mb-3">{step.body}</p>
+                  <h3 className="text-sm font-bold text-white mb-1">
+                    {step.title}
+                  </h3>
+                  <p className="text-xs text-zinc-500 leading-relaxed mb-3">
+                    {step.body}
+                  </p>
                   {step.code && (
                     <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-primary/20 bg-black/40 w-fit">
-                      <code className="text-[11px] font-mono text-primary">{step.code}</code>
+                      <code className="text-[11px] font-mono text-primary">
+                        {step.code}
+                      </code>
                       <button
                         onClick={handleCopy}
                         className="text-zinc-600 hover:text-zinc-300 transition-colors"
@@ -308,8 +331,8 @@ export const LocalAgentSection = () => {
             >
               <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
               <p className="text-xs text-zinc-400 font-medium">
-                That&apos;s it. Browse tables, run AI queries, and explore your local schema —
-                exactly like a remote cluster.
+                That&apos;s it. Browse tables, run AI queries, and explore your
+                local schema — exactly like a remote cluster.
               </p>
             </motion.div>
           </div>
@@ -333,10 +356,13 @@ export const LocalAgentSection = () => {
                   Keep it running
                 </p>
                 <p className="text-[11px] text-zinc-500 leading-relaxed">
-                  Use <code className="text-zinc-400 font-mono">pm2 start synqdb-agent -- --save</code> to
-                  persist the agent across reboots. The{" "}
-                  <code className="text-zinc-400 font-mono">--save</code> flag stores your key locally
-                  so you never have to pass it again.
+                  Use{" "}
+                  <code className="text-zinc-400 font-mono">
+                    pm2 start synqdb-agent -- --save
+                  </code>{" "}
+                  to persist the agent across reboots. The{" "}
+                  <code className="text-zinc-400 font-mono">--save</code> flag
+                  stores your key locally so you never have to pass it again.
                 </p>
               </div>
             </div>

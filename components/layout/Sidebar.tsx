@@ -57,7 +57,9 @@ const Sidebar = ({
     isTablesLoading,
     searchQuery,
   } = useClusterStore();
-  const [agentStatuses, setAgentStatuses] = React.useState<Record<string, boolean | null>>({});
+  const [agentStatuses, setAgentStatuses] = React.useState<
+    Record<string, boolean | null>
+  >({});
 
   React.useEffect(() => {
     const localClusters = clusters.filter((c) => c.isLocal);
@@ -248,7 +250,11 @@ const Sidebar = ({
                     {cluster.isLocal && (
                       <div
                         className={`h-1.5 w-1.5 rounded-full ${agentStatuses[cluster.id] === true ? "bg-primary" : "bg-zinc-600"}`}
-                        title={agentStatuses[cluster.id] === true ? "Agent connected" : "Agent offline"}
+                        title={
+                          agentStatuses[cluster.id] === true
+                            ? "Agent connected"
+                            : "Agent offline"
+                        }
                       />
                     )}
                     {selectedCluster?.id === cluster.id && (

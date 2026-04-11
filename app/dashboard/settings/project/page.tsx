@@ -32,11 +32,14 @@ import {
 // ── Local Agent Section ───────────────────────────────────────────────────────
 
 const LocalAgentSection = () => {
-  const { clusters, fetchAgentKey, rotateAgentKey, fetchAgentStatus } = useClusterStore();
+  const { clusters, fetchAgentKey, rotateAgentKey, fetchAgentStatus } =
+    useClusterStore();
   const localClusters = clusters.filter((c) => c.isLocal);
 
   const [keys, setKeys] = React.useState<Record<string, string>>({});
-  const [statuses, setStatuses] = React.useState<Record<string, boolean | null>>({});
+  const [statuses, setStatuses] = React.useState<
+    Record<string, boolean | null>
+  >({});
   const [visible, setVisible] = React.useState<Record<string, boolean>>({});
   const [copied, setCopied] = React.useState<Record<string, boolean>>({});
   const [rotating, setRotating] = React.useState<Record<string, boolean>>({});
@@ -50,9 +53,10 @@ const LocalAgentSection = () => {
         fetchAgentStatus(c.id).catch(() => null),
       ]);
       if (keyRes) setKeys((k) => ({ ...k, [c.id]: keyRes.agentKey }));
-      if (statusRes) setStatuses((s) => ({ ...s, [c.id]: statusRes.connected }));
+      if (statusRes)
+        setStatuses((s) => ({ ...s, [c.id]: statusRes.connected }));
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCopy = async (clusterId: string) => {
@@ -102,17 +106,28 @@ const LocalAgentSection = () => {
               <div className="flex items-center gap-2">
                 <div
                   className="h-5 w-5 rounded flex items-center justify-center text-[9px] font-black text-white"
-                  style={{ borderLeft: `2px solid ${cluster.color || "#444"}`, backgroundColor: "rgba(255,255,255,0.05)" }}
+                  style={{
+                    borderLeft: `2px solid ${cluster.color || "#444"}`,
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                  }}
                 >
                   {cluster.name[0].toUpperCase()}
                 </div>
-                <span className="text-xs font-bold text-white">{cluster.name}</span>
-                <span className="text-[9px] text-zinc-600 uppercase font-bold">{cluster.type}</span>
+                <span className="text-xs font-bold text-white">
+                  {cluster.name}
+                </span>
+                <span className="text-[9px] text-zinc-600 uppercase font-bold">
+                  {cluster.type}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <div
                   className={`h-1.5 w-1.5 rounded-full ${statuses[cluster.id] === true ? "bg-primary" : "bg-zinc-600"}`}
-                  title={statuses[cluster.id] === true ? "Agent connected" : "Agent offline"}
+                  title={
+                    statuses[cluster.id] === true
+                      ? "Agent connected"
+                      : "Agent offline"
+                  }
                 />
                 <span className="text-[9px] text-zinc-600 font-bold uppercase">
                   {statuses[cluster.id] === true ? "Connected" : "Offline"}
@@ -125,33 +140,48 @@ const LocalAgentSection = () => {
               <div className="flex items-center gap-2">
                 <Key className="h-3 w-3 text-zinc-600 shrink-0" />
                 <code className="flex-1 font-mono text-[10px] text-primary truncate select-all">
-                  {keys[cluster.id]
-                    ? visible[cluster.id]
-                      ? keys[cluster.id]
-                      : "••••••••-••••-••••-••••-••••••••••••"
-                    : <span className="text-zinc-600">Loading...</span>}
+                  {keys[cluster.id] ? (
+                    visible[cluster.id] ? (
+                      keys[cluster.id]
+                    ) : (
+                      "••••••••-••••-••••-••••-••••••••••••"
+                    )
+                  ) : (
+                    <span className="text-zinc-600">Loading...</span>
+                  )}
                 </code>
                 <button
-                  onClick={() => setVisible((v) => ({ ...v, [cluster.id]: !v[cluster.id] }))}
+                  onClick={() =>
+                    setVisible((v) => ({ ...v, [cluster.id]: !v[cluster.id] }))
+                  }
                   className="shrink-0 text-zinc-600 hover:text-zinc-300 transition-colors"
                   title={visible[cluster.id] ? "Hide" : "Reveal"}
                 >
-                  {visible[cluster.id] ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  {visible[cluster.id] ? (
+                    <EyeOff className="h-3.5 w-3.5" />
+                  ) : (
+                    <Eye className="h-3.5 w-3.5" />
+                  )}
                 </button>
                 <button
                   onClick={() => handleCopy(cluster.id)}
                   className="shrink-0 text-zinc-600 hover:text-zinc-300 transition-colors"
                   title="Copy key"
                 >
-                  {copied[cluster.id]
-                    ? <Check className="h-3.5 w-3.5 text-primary" />
-                    : <Copy className="h-3.5 w-3.5" />}
+                  {copied[cluster.id] ? (
+                    <Check className="h-3.5 w-3.5 text-primary" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
                 </button>
               </div>
 
               <div className="flex items-center justify-between pt-1 border-t border-white/5">
                 <p className="text-[9px] text-zinc-600 font-mono">
-                  npx synqdb-agent {visible[cluster.id] && keys[cluster.id] ? keys[cluster.id] : "<key>"}
+                  npx synqdb-agent{" "}
+                  {visible[cluster.id] && keys[cluster.id]
+                    ? keys[cluster.id]
+                    : "<key>"}
                 </p>
                 <button
                   onClick={() => handleRotate(cluster.id)}
@@ -162,10 +192,14 @@ const LocalAgentSection = () => {
                       : "text-zinc-600 hover:text-red-400 border border-transparent hover:border-red-500/20"
                   }`}
                 >
-                  {rotating[cluster.id]
-                    ? <Loader2 className="h-3 w-3 animate-spin" />
-                    : <RefreshCw className="h-3 w-3" />}
-                  {confirmRotate === cluster.id ? "Click again to confirm" : "Rotate Key"}
+                  {rotating[cluster.id] ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-3 w-3" />
+                  )}
+                  {confirmRotate === cluster.id
+                    ? "Click again to confirm"
+                    : "Rotate Key"}
                 </button>
               </div>
             </div>
@@ -175,7 +209,9 @@ const LocalAgentSection = () => {
         <div className="flex items-start gap-3 p-3 rounded-xl border border-white/5 bg-white/2">
           <AlertTriangle className="h-3.5 w-3.5 text-zinc-500 shrink-0 mt-0.5" />
           <p className="text-[9px] text-zinc-600 leading-relaxed">
-            Rotating a key immediately disconnects any running agent. You must restart the agent with the new key. Old keys are permanently invalidated.
+            Rotating a key immediately disconnects any running agent. You must
+            restart the agent with the new key. Old keys are permanently
+            invalidated.
           </p>
         </div>
       </div>

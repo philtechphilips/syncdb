@@ -498,10 +498,9 @@ export const useClusterStore = create<ClusterState>()(
       },
 
       fetchAgentKey: async (clusterId: string) => {
-        const response = await api.get(
-          `/v1/clusters/${clusterId}/agent-key`,
-          { _skipToast: true } as any,
-        );
+        const response = await api.get(`/v1/clusters/${clusterId}/agent-key`, {
+          _skipToast: true,
+        } as any);
         return response.data;
       },
 

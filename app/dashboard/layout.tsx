@@ -100,7 +100,11 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     const prev = prevClusterIdRef.current;
     prevClusterIdRef.current = selectedCluster.id;
     // Only redirect if the cluster actually changed (not the first mount)
-    if (prev && prev !== selectedCluster.id && pathname.includes("/dashboard/table/")) {
+    if (
+      prev &&
+      prev !== selectedCluster.id &&
+      pathname.includes("/dashboard/table/")
+    ) {
       router.push(`/dashboard/query?cluster=${selectedCluster.id}`);
     }
   }, [selectedCluster?.id, isInitialized, pathname, router]);
