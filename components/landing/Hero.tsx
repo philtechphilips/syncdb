@@ -356,12 +356,13 @@ export const Hero = ({ onLaunch }: { onLaunch: () => void }) => {
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          className="mt-20 pt-12 border-t border-white/5 grid grid-cols-3 gap-8 max-w-2xl mx-auto"
+          className="mt-20 pt-12 border-t border-white/5 grid grid-cols-2 sm:grid-cols-4 gap-8 max-w-3xl mx-auto text-center"
         >
           {[
-            { val: "10k+", label: "Active Engineers" },
-            { val: "50M+", label: "Queries Per Day" },
-            { val: "99.9%", label: "Uptime SLA" },
+            { val: "4", label: "DB Engines Supported" },
+            { val: "Free", label: "No Credit Card Needed" },
+            { val: "1", label: "Unified Dashboard" },
+            { val: "Open Beta", label: "Join Early" },
           ].map((stat, i) => (
             <div key={i} className="text-center group cursor-default">
               <div className="text-2xl md:text-3xl font-serif text-white group-hover:text-primary transition-colors duration-300">
@@ -373,6 +374,7 @@ export const Hero = ({ onLaunch }: { onLaunch: () => void }) => {
             </div>
           ))}
         </motion.div>
+
       </div>
 
       {/* Scroll indicator */}

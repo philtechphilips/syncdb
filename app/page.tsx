@@ -14,7 +14,6 @@ import { Testimonials } from "@/components/landing/Testimonials";
 import { Pricing } from "@/components/landing/Pricing";
 import { Footer } from "@/components/landing/Footer";
 import { CTASection } from "@/components/landing/CTASection";
-import { LogoMarquee } from "@/components/landing/LogoMarquee";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
@@ -27,8 +26,7 @@ export default function Home() {
 
       <main>
         <Hero onLaunch={handleLaunch} />
-        <LogoMarquee />
-        <EngineGrid />
+<EngineGrid />
         <Workloads />
         <Features />
         <DataExplorerSection />

@@ -31,13 +31,6 @@ export const LogoMarquee = () => {
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/[0.07] to-transparent" />
       <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/[0.07] to-transparent" />
 
-      {/* Label */}
-      <div className="text-center mb-8">
-        <p className="text-[9px] font-black uppercase tracking-[0.45em] text-zinc-700">
-          Trusted by engineers at world-class teams
-        </p>
-      </div>
-
       {/* Marquee track */}
       <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
         <div

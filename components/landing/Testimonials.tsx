@@ -1,65 +1,64 @@
 "use client";
 
-import React from "react";
 import { motion } from "framer-motion";
 import { Quote } from "lucide-react";
 
 const REVIEWS = [
   {
-    name: "Sarah Chen",
-    role: "Principal Data Engineer",
-    company: "Linear",
-    text: "SynqDB is the first tool that made me forget I was working across multiple databases. Our team's velocity doubled overnight.",
-    initials: "SC",
+    name: "Emeka Okafor",
+    role: "Senior Backend Engineer",
+    company: "Paystack",
+    text: "SynqDB is the first tool that made me forget I was working across multiple databases. Switching between PostgreSQL and MySQL has never been this seamless.",
+    initials: "EO",
     color: "#277955",
   },
   {
-    name: "Marcus Thorne",
+    name: "Tunde Adewale",
     role: "Head of Infrastructure",
-    company: "Vortex",
+    company: "Flutterwave",
     text: "The first database tool that treats multi-engine architecture with the respect it deserves. Clean, fast, and actually enjoyable to use.",
-    initials: "MT",
+    initials: "TA",
     color: "#336791",
   },
   {
-    name: "Leo Hashimoto",
+    name: "Chisom Eze",
     role: "Lead Fullstack Engineer",
-    company: "Hyperion",
-    text: "Minimalism met raw performance. I manage PostgreSQL, MySQL, and SQLite from one tab. This is the future of DB management.",
-    initials: "LH",
+    company: "Andela",
+    text: "Minimalism met raw performance. I manage PostgreSQL, MySQL, and SQLite from one tab. This is the future of database management.",
+    initials: "CE",
     color: "#4479A1",
   },
   {
-    name: "Priya Rao",
+    name: "Fatima Bello",
     role: "Staff Engineer",
-    company: "Nexus Labs",
-    text: "The AI copilot understands our schema context perfectly. What used to take 15 minutes of schema-hunting now takes 10 seconds.",
-    initials: "PR",
+    company: "Kuda Bank",
+    text: "The query editor is incredibly fast and the schema explorer saves me so much context-switching. Exactly what our engineering team needed.",
+    initials: "FB",
     color: "#7C3AED",
   },
   {
-    name: "Daniel Park",
+    name: "Seun Akinwale",
     role: "CTO",
-    company: "Stackmesh",
-    text: "We moved our entire on-call workflow into SynqDB. The visual ER diagrams alone saved us from two production incidents.",
-    initials: "DP",
+    company: "Cowrywise",
+    text: "We finally have one place to manage all our database clusters. The visual ER diagrams have already helped us catch schema issues early.",
+    initials: "SA",
     color: "#D97706",
   },
   {
-    name: "Aisha Williams",
-    role: "Senior Backend Engineer",
-    company: "Relay",
-    text: "Finally — a tool built for engineers who actually write SQL. No drag-and-drop gimmicks, just clean performance and great DX.",
-    initials: "AW",
+    name: "Ngozi Okonkwo",
+    role: "Principal Data Engineer",
+    company: "Moniepoint",
+    text: "Finally — a tool built for engineers who actually write SQL. No drag-and-drop gimmicks, just clean performance and great developer experience.",
+    initials: "NO",
     color: "#0891B2",
   },
 ];
 
 const STATS = [
-  { val: "10k+", label: "Active Engineers" },
-  { val: "50M+", label: "Queries Per Day" },
-  { val: "99.9%", label: "Uptime SLA" },
-  { val: "4", label: "DB Engines" },
+  { val: "4", label: "DB Engines Supported" },
+  { val: "Free", label: "No Credit Card Needed" },
+  { val: "1", label: "Unified Dashboard" },
+  { val: "Open Beta", label: "Join Early" },
 ];
 
 const fadeUp = {
@@ -165,7 +164,7 @@ export const Testimonials = () => {
                     {review.name}
                   </div>
                   <div className="text-[10px] text-zinc-600 font-medium mt-0.5">
-                    {review.role} @ {review.company}
+                    {review.role}
                   </div>
                 </div>
               </div>
@@ -179,7 +178,7 @@ export const Testimonials = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="pt-12 border-t border-white/5 grid grid-cols-2 md:grid-cols-4 gap-8"
+          className="pt-12 border-t border-white/5 grid grid-cols-2 md:grid-cols-4 gap-8 text-center"
         >
           {STATS.map((stat, i) => (
             <motion.div
@@ -189,7 +188,7 @@ export const Testimonials = () => {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
-              className="group cursor-default"
+              className="group cursor-default flex flex-col items-center"
             >
               <div className="text-3xl md:text-4xl font-serif text-white group-hover:text-primary transition-colors duration-300">
                 {stat.val}

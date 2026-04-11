@@ -32,34 +32,51 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://synqdb.com"),
-  title: "SynqDB | The Professional Database Management Platform",
+
+  title: {
+    default: "SynqDB — Manage PostgreSQL, MySQL, MSSQL & SQLite in One Place",
+    template: "%s | SynqDB",
+  },
   description:
-    "Industry-standard database management for modern engineering teams. Scale your data infrastructure with zero friction. Query, visualize, and manage your clusters in one place.",
+    "SynqDB is a free, unified database management platform for engineering teams. Connect PostgreSQL, MySQL, MSSQL, and SQLite — query, visualize, and manage everything from a single dashboard.",
+
   applicationName: "SynqDB",
-  authors: [{ name: "SynqDB Team" }],
+  authors: [{ name: "SynqDB Team", url: "https://synqdb.com" }],
   generator: "Next.js",
   keywords: [
-    "database management",
+    "database management tool",
     "SQL client",
-    "MySQL",
-    "PostgreSQL",
-    "MSSQL",
-    "database administration",
-    "data infrastructure",
+    "PostgreSQL client",
+    "MySQL client",
+    "MSSQL client",
+    "SQLite browser",
+    "multi-database manager",
+    "database GUI",
     "query editor",
+    "ER diagram tool",
+    "database admin tool",
+    "free database tool",
+    "database dashboard",
+    "data infrastructure",
+    "SynqDB",
   ],
   referrer: "origin-when-cross-origin",
   creator: "SynqDB",
   publisher: "SynqDB",
+  category: "technology",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
+  alternates: {
+    canonical: "https://synqdb.com",
+  },
+
   openGraph: {
-    title: "SynqDB | The Professional Database Management Platform",
+    title: "SynqDB — One Dashboard for Every Database",
     description:
-      "Industry-standard database management for modern engineering teams. Scale your data infrastructure with zero friction.",
+      "Connect PostgreSQL, MySQL, MSSQL, and SQLite in a single dashboard. Free to get started. Built for engineering teams who need speed, clarity, and control.",
     url: "https://synqdb.com",
     siteName: "SynqDB",
     images: [
@@ -67,24 +84,27 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "SynqDB Dashboard Preview",
+        alt: "SynqDB — Unified Database Management Dashboard",
       },
     ],
     locale: "en_US",
     type: "website",
   },
+
   twitter: {
     card: "summary_large_image",
-    title: "SynqDB | The Professional Database Management Platform",
+    title: "SynqDB — One Dashboard for Every Database",
     description:
-      "Scale your data infrastructure with zero friction. The most advanced SQL client for engineering teams.",
+      "Connect PostgreSQL, MySQL, MSSQL, and SQLite in a single dashboard. Free to get started. Built for engineering teams.",
     images: ["/og-image.png"],
     creator: "@synqdb",
+    site: "@synqdb",
   },
+
   robots: {
     index: true,
     follow: true,
-    nocache: true,
+    nocache: false,
     googleBot: {
       index: true,
       follow: true,
@@ -94,12 +114,14 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-32x32.png",
-    apple: "/apple-touch-icon.png",
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
   },
-  manifest: "/site.webmanifest",
 };
 
 import { Toaster } from "sonner";
