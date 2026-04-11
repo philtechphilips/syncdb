@@ -26,7 +26,7 @@ export default function Home() {
 
       <main>
         <Hero onLaunch={handleLaunch} />
-<EngineGrid />
+        <EngineGrid />
         <Workloads />
         <Features />
         <DataExplorerSection />

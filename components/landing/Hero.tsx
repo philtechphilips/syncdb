@@ -374,7 +374,6 @@ export const Hero = ({ onLaunch }: { onLaunch: () => void }) => {
             </div>
           ))}
         </motion.div>
-
       </div>
 
       {/* Scroll indicator */}
