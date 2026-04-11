@@ -55,6 +55,9 @@ interface AuthState {
     new_password: string;
   }) => Promise<void>;
   updateSettings: (settings: Record<string, any>) => Promise<void>;
+  fetchAgentKey: () => Promise<{ agentKey: string }>;
+  rotateAgentKey: () => Promise<{ agentKey: string }>;
+  fetchAgentStatus: () => Promise<{ connected: boolean }>;
   clearError: () => void;
 }
 
@@ -236,6 +239,21 @@ export const useAuthStore = create<AuthState>()(
           set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
         }
+      },
+
+      fetchAgentKey: async () => {
+        const response = await api.get('/v1/auth/agent-key', { _skipToast: true } as any);
+        return response.data;
+      },
+
+      rotateAgentKey: async () => {
+        const response = await api.post('/v1/auth/rotate-agent-key', {}, { _skipToast: true } as any);
+        return response.data;
+      },
+
+      fetchAgentStatus: async () => {
+        const response = await api.get('/v1/auth/agent-status', { _skipToast: true } as any);
+        return response.data;
       },
 
       clearError: () => set({ error: null }),

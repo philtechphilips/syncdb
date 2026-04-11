@@ -19,7 +19,6 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useClusterStore } from "@/store/useClusterStore";
 import { toast } from "sonner";
 
 import { UI_CLASSES } from "@/lib/constants";
@@ -32,186 +31,120 @@ import {
 // ── Local Agent Section ───────────────────────────────────────────────────────
 
 const LocalAgentSection = () => {
-  const { clusters, fetchAgentKey, rotateAgentKey, fetchAgentStatus } =
-    useClusterStore();
-  const localClusters = clusters.filter((c) => c.isLocal);
+  const { fetchAgentKey, rotateAgentKey, fetchAgentStatus } = useAuthStore();
 
-  const [keys, setKeys] = React.useState<Record<string, string>>({});
-  const [statuses, setStatuses] = React.useState<
-    Record<string, boolean | null>
-  >({});
-  const [visible, setVisible] = React.useState<Record<string, boolean>>({});
-  const [copied, setCopied] = React.useState<Record<string, boolean>>({});
-  const [rotating, setRotating] = React.useState<Record<string, boolean>>({});
-  const [confirmRotate, setConfirmRotate] = React.useState<string | null>(null);
+  const [agentKey, setAgentKey] = React.useState<string | null>(null);
+  const [connected, setConnected] = React.useState<boolean>(false);
+  const [visible, setVisible] = React.useState(false);
+  const [copied, setCopied] = React.useState(false);
+  const [rotating, setRotating] = React.useState(false);
+  const [confirmRotate, setConfirmRotate] = React.useState(false);
 
   React.useEffect(() => {
-    if (localClusters.length === 0) return;
-    localClusters.forEach(async (c) => {
-      const [keyRes, statusRes] = await Promise.all([
-        fetchAgentKey(c.id).catch(() => null),
-        fetchAgentStatus(c.id).catch(() => null),
-      ]);
-      if (keyRes) setKeys((k) => ({ ...k, [c.id]: keyRes.agentKey }));
-      if (statusRes)
-        setStatuses((s) => ({ ...s, [c.id]: statusRes.connected }));
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchAgentKey().then((r) => setAgentKey(r.agentKey)).catch(() => null);
+    fetchAgentStatus().then((r) => setConnected(r.connected)).catch(() => null);
   }, []);
 
-  const handleCopy = async (clusterId: string) => {
-    const key = keys[clusterId];
-    if (!key) return;
-    await navigator.clipboard.writeText(key);
-    setCopied((c) => ({ ...c, [clusterId]: true }));
-    setTimeout(() => setCopied((c) => ({ ...c, [clusterId]: false })), 2000);
+  const handleCopy = async () => {
+    if (!agentKey) return;
+    await navigator.clipboard.writeText(agentKey);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleRotate = async (clusterId: string) => {
-    if (confirmRotate !== clusterId) {
-      setConfirmRotate(clusterId);
-      setTimeout(() => setConfirmRotate(null), 4000);
+  const handleRotate = async () => {
+    if (!confirmRotate) {
+      setConfirmRotate(true);
+      setTimeout(() => setConfirmRotate(false), 4000);
       return;
     }
-    setConfirmRotate(null);
-    setRotating((r) => ({ ...r, [clusterId]: true }));
+    setConfirmRotate(false);
+    setRotating(true);
     try {
-      const res = await rotateAgentKey(clusterId);
-      setKeys((k) => ({ ...k, [clusterId]: res.agentKey }));
-      setVisible((v) => ({ ...v, [clusterId]: true }));
-      setStatuses((s) => ({ ...s, [clusterId]: false }));
+      const res = await rotateAgentKey();
+      setAgentKey(res.agentKey);
+      setVisible(true);
+      setConnected(false);
       toast.success("Agent key rotated", {
         description: "The old key is now invalid. Copy and save the new key.",
       });
     } catch {
       toast.error("Failed to rotate key");
     } finally {
-      setRotating((r) => ({ ...r, [clusterId]: false }));
+      setRotating(false);
     }
   };
-
-  if (localClusters.length === 0) return null;
 
   return (
     <SettingsSection
       title="Local Agent"
-      description="Manage relay agent keys for local database clusters."
+      description="One key for your account — connect any local database from your machine."
       icon={Laptop}
       delay={0.3}
     >
-      <div className="space-y-6">
-        {localClusters.map((cluster) => (
-          <div key={cluster.id} className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div
-                  className="h-5 w-5 rounded flex items-center justify-center text-[9px] font-black text-white"
-                  style={{
-                    borderLeft: `2px solid ${cluster.color || "#444"}`,
-                    backgroundColor: "rgba(255,255,255,0.05)",
-                  }}
-                >
-                  {cluster.name[0].toUpperCase()}
-                </div>
-                <span className="text-xs font-bold text-white">
-                  {cluster.name}
-                </span>
-                <span className="text-[9px] text-zinc-600 uppercase font-bold">
-                  {cluster.type}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div
-                  className={`h-1.5 w-1.5 rounded-full ${statuses[cluster.id] === true ? "bg-primary" : "bg-zinc-600"}`}
-                  title={
-                    statuses[cluster.id] === true
-                      ? "Agent connected"
-                      : "Agent offline"
-                  }
-                />
-                <span className="text-[9px] text-zinc-600 font-bold uppercase">
-                  {statuses[cluster.id] === true ? "Connected" : "Offline"}
-                </span>
-              </div>
-            </div>
-
-            {/* Key display */}
-            <div className="rounded-xl border border-border/50 bg-black/20 p-3 space-y-3">
-              <div className="flex items-center gap-2">
-                <Key className="h-3 w-3 text-zinc-600 shrink-0" />
-                <code className="flex-1 font-mono text-[10px] text-primary truncate select-all">
-                  {keys[cluster.id] ? (
-                    visible[cluster.id] ? (
-                      keys[cluster.id]
-                    ) : (
-                      "••••••••-••••-••••-••••-••••••••••••"
-                    )
-                  ) : (
-                    <span className="text-zinc-600">Loading...</span>
-                  )}
-                </code>
-                <button
-                  onClick={() =>
-                    setVisible((v) => ({ ...v, [cluster.id]: !v[cluster.id] }))
-                  }
-                  className="shrink-0 text-zinc-600 hover:text-zinc-300 transition-colors"
-                  title={visible[cluster.id] ? "Hide" : "Reveal"}
-                >
-                  {visible[cluster.id] ? (
-                    <EyeOff className="h-3.5 w-3.5" />
-                  ) : (
-                    <Eye className="h-3.5 w-3.5" />
-                  )}
-                </button>
-                <button
-                  onClick={() => handleCopy(cluster.id)}
-                  className="shrink-0 text-zinc-600 hover:text-zinc-300 transition-colors"
-                  title="Copy key"
-                >
-                  {copied[cluster.id] ? (
-                    <Check className="h-3.5 w-3.5 text-primary" />
-                  ) : (
-                    <Copy className="h-3.5 w-3.5" />
-                  )}
-                </button>
-              </div>
-
-              <div className="flex items-center justify-between pt-1 border-t border-white/5">
-                <p className="text-[9px] text-zinc-600 font-mono">
-                  npx synqdb-agent{" "}
-                  {visible[cluster.id] && keys[cluster.id]
-                    ? keys[cluster.id]
-                    : "<key>"}
-                </p>
-                <button
-                  onClick={() => handleRotate(cluster.id)}
-                  disabled={rotating[cluster.id]}
-                  className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider transition-all px-2.5 py-1 rounded-lg ${
-                    confirmRotate === cluster.id
-                      ? "text-red-400 border border-red-500/30 bg-red-500/10"
-                      : "text-zinc-600 hover:text-red-400 border border-transparent hover:border-red-500/20"
-                  }`}
-                >
-                  {rotating[cluster.id] ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  ) : (
-                    <RefreshCw className="h-3 w-3" />
-                  )}
-                  {confirmRotate === cluster.id
-                    ? "Click again to confirm"
-                    : "Rotate Key"}
-                </button>
-              </div>
-            </div>
+      <div className="space-y-4">
+        {/* Status */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div
+              className={`h-1.5 w-1.5 rounded-full ${connected ? "bg-primary" : "bg-zinc-600"}`}
+            />
+            <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
+              {connected ? "Agent Connected" : "Agent Offline"}
+            </span>
           </div>
-        ))}
+        </div>
+
+        {/* Key display */}
+        <div className="rounded-xl border border-border/50 bg-black/20 p-3 space-y-3">
+          <div className="flex items-center gap-2">
+            <Key className="h-3 w-3 text-zinc-600 shrink-0" />
+            <code className="flex-1 font-mono text-[10px] text-primary truncate select-all">
+              {agentKey ? (
+                visible ? agentKey : "••••••••-••••-••••-••••-••••••••••••"
+              ) : (
+                <span className="text-zinc-600">Loading...</span>
+              )}
+            </code>
+            <button
+              onClick={() => setVisible((v) => !v)}
+              className="shrink-0 text-zinc-600 hover:text-zinc-300 transition-colors"
+              title={visible ? "Hide" : "Reveal"}
+            >
+              {visible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+            </button>
+            <button
+              onClick={handleCopy}
+              className="shrink-0 text-zinc-600 hover:text-zinc-300 transition-colors"
+              title="Copy key"
+            >
+              {copied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />}
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between pt-1 border-t border-white/5">
+            <p className="text-[9px] text-zinc-600 font-mono">
+              npx synqdb-agent {visible && agentKey ? agentKey : "<key>"}
+            </p>
+            <button
+              onClick={handleRotate}
+              disabled={rotating}
+              className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider transition-all px-2.5 py-1 rounded-lg ${
+                confirmRotate
+                  ? "text-red-400 border border-red-500/30 bg-red-500/10"
+                  : "text-zinc-600 hover:text-red-400 border border-transparent hover:border-red-500/20"
+              }`}
+            >
+              {rotating ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+              {confirmRotate ? "Click again to confirm" : "Rotate Key"}
+            </button>
+          </div>
+        </div>
 
         <div className="flex items-start gap-3 p-3 rounded-xl border border-white/5 bg-white/2">
           <AlertTriangle className="h-3.5 w-3.5 text-zinc-500 shrink-0 mt-0.5" />
           <p className="text-[9px] text-zinc-600 leading-relaxed">
-            Rotating a key immediately disconnects any running agent. You must
-            restart the agent with the new key. Old keys are permanently
-            invalidated.
+            This key works for all your local clusters. Rotating it disconnects the running agent — restart with the new key. Old keys are permanently invalidated.
           </p>
         </div>
       </div>

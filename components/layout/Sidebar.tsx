@@ -44,7 +44,7 @@ const Sidebar = ({
   isMobileOpen,
   onCloseMobile,
 }: SidebarProps) => {
-  const { user, logout } = useAuthStore();
+  const { user, logout, fetchAgentStatus } = useAuthStore();
   const {
     clusters,
     selectedCluster,
@@ -53,26 +53,22 @@ const Sidebar = ({
     fetchTables,
     dropTable,
     deleteCluster,
-    fetchAgentStatus,
     isTablesLoading,
     searchQuery,
   } = useClusterStore();
-  const [agentStatuses, setAgentStatuses] = React.useState<
-    Record<string, boolean | null>
-  >({});
+  const [agentConnected, setAgentConnected] = React.useState<boolean>(false);
 
   React.useEffect(() => {
-    const localClusters = clusters.filter((c) => c.isLocal);
-    if (localClusters.length === 0) return;
+    const hasLocalClusters = clusters.some((c) => c.isLocal);
+    if (!hasLocalClusters) return;
 
     const poll = async () => {
-      const results = await Promise.all(
-        localClusters.map(async (c) => {
-          const status = await fetchAgentStatus(c.id);
-          return [c.id, status.connected] as [string, boolean | null];
-        }),
-      );
-      setAgentStatuses(Object.fromEntries(results));
+      try {
+        const status = await fetchAgentStatus();
+        setAgentConnected(status.connected);
+      } catch {
+        setAgentConnected(false);
+      }
     };
 
     poll();
@@ -249,12 +245,8 @@ const Sidebar = ({
                   <div className="flex items-center gap-2">
                     {cluster.isLocal && (
                       <div
-                        className={`h-1.5 w-1.5 rounded-full ${agentStatuses[cluster.id] === true ? "bg-primary" : "bg-zinc-600"}`}
-                        title={
-                          agentStatuses[cluster.id] === true
-                            ? "Agent connected"
-                            : "Agent offline"
-                        }
+                        className={`h-1.5 w-1.5 rounded-full ${agentConnected ? "bg-primary" : "bg-zinc-600"}`}
+                        title={agentConnected ? "Agent connected" : "Agent offline"}
                       />
                     )}
                     {selectedCluster?.id === cluster.id && (

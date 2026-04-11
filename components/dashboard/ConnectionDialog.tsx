@@ -12,7 +12,6 @@ import {
   Laptop,
 } from "lucide-react";
 import { useClusterStore } from "@/store/useClusterStore";
-import AgentSetupModal from "./AgentSetupModal";
 
 const ConnectionDialog = ({
   isOpen,
@@ -38,7 +37,6 @@ const ConnectionDialog = ({
     color: "#00ED64",
   });
   const [isLocal, setIsLocal] = useState(false);
-  const [agentKey, setAgentKey] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<{
     success: boolean;
     message: string;
@@ -128,28 +126,11 @@ const ConnectionDialog = ({
         environment: "development",
         color: "#00ED64",
       });
-      if (isLocal && result?.agentKey) {
-        setAgentKey(result.agentKey);
-        setIsLocal(false);
-      } else {
-        onClose();
-      }
+      onClose();
     } catch {
       // Error is handled by store
     }
   };
-
-  if (agentKey) {
-    return (
-      <AgentSetupModal
-        agentKey={agentKey}
-        onDone={() => {
-          setAgentKey(null);
-          onClose();
-        }}
-      />
-    );
-  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
@@ -436,11 +417,12 @@ const ConnectionDialog = ({
               <div className="flex items-start gap-3 p-4 rounded-xl border border-primary/20 bg-primary/5 text-primary">
                 <Laptop className="h-4 w-4 mt-0.5 shrink-0" />
                 <span className="text-[10px] font-bold leading-relaxed">
-                  A relay agent key will be generated. Run it locally with{" "}
+                  Queries will route through your local agent. Find your agent key in{" "}
+                  <span className="underline">Project Settings → Local Agent</span>{" "}
+                  and run{" "}
                   <code className="font-mono bg-white/10 px-1 rounded">
                     npx synqdb-agent &lt;key&gt;
-                  </code>{" "}
-                  to connect. Enter your local DB credentials below.
+                  </code>.
                 </span>
               </div>
             )}
@@ -468,8 +450,6 @@ const ConnectionDialog = ({
                 >
                   {isLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin text-primary-foreground" />
-                  ) : isLocal ? (
-                    "Generate Agent Key"
                   ) : (
                     "Authorize & Establish"
                   )}

@@ -39,17 +39,6 @@ const AgentSetupModal = ({ agentKey, onDone }: AgentSetupModalProps) => {
             </div>
           </div>
 
-          {/* Warning */}
-          <div className="flex items-start gap-3 p-4 rounded-xl border border-white/10 bg-white/5">
-            <AlertTriangle className="h-4 w-4 text-white shrink-0 mt-0.5" />
-            <p className="text-[10px] text-zinc-300 font-bold leading-relaxed">
-              This agent key will{" "}
-              <span className="underline">not be shown again</span>. Copy it now
-              and keep it safe. Anyone with this key can access your local
-              database through the relay.
-            </p>
-          </div>
-
           {/* Agent Key */}
           <div className="space-y-2">
             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">
@@ -64,12 +53,15 @@ const AgentSetupModal = ({ agentKey, onDone }: AgentSetupModalProps) => {
                 className="h-11 w-11 shrink-0 rounded-xl border border-border/50 bg-white/5 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
               >
                 {copied ? (
-                  <Check className="h-4 w-4 text-emerald-400" />
+                  <Check className="h-4 w-4 text-primary" />
                 ) : (
                   <Copy className="h-4 w-4" />
                 )}
               </button>
             </div>
+            <p className="text-[9px] text-zinc-600 px-1">
+              This key works for all your local clusters. You can always retrieve it from <span className="text-zinc-400">Project Settings → Local Agent</span>.
+            </p>
           </div>
 
           {/* Install instructions */}
