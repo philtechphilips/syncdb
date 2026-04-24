@@ -22,7 +22,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     isLoading: isAuthLoading,
     checkAuth,
   } = useAuthStore();
-  const { clusters, selectedCluster, fetchClusters, selectCluster } =
+  const { selectedCluster, fetchClusters, selectCluster } =
     useClusterStore();
   const [isConnectOpen, setIsConnectOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -32,7 +32,6 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const restorerRef = React.useRef(false);
   const handshakeRan = React.useRef(false);
 
   // Master Handshake — runs once on mount only
@@ -44,34 +43,29 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       // Always verify session on mount — access_token is never persisted so we
       // must refresh it even when isAuthenticated:true is read from localStorage.
       await checkAuth();
-      // Mark initialized regardless of auth result so the protection effect
-      // can fire and redirect to /auth/login when not authenticated.
-      setIsInitialized(true);
       const { isAuthenticated: authed } = useAuthStore.getState();
-      if (!authed) return;
+      if (!authed) {
+        // Mark initialized so the protection effect can redirect to /auth/login.
+        setIsInitialized(true);
+        return;
+      }
       const fetched = await fetchClusters();
+
+      // Restore cluster from URL param before marking initialized so ClusterGate
+      // never flashes the selection screen on a valid page reload.
+      const clusterId = searchParams.get("cluster");
+      if (clusterId) {
+        const cluster = fetched.find((c) => c.id === clusterId);
+        if (cluster) selectCluster(cluster);
+      }
+
       if (fetched.length === 0 && shouldShowOnboarding()) {
         setShowOnboarding(true);
       }
+      setIsInitialized(true);
     };
     handshake();
   }, []);
-
-  // Session Restoration (Cluster from URL)
-  React.useEffect(() => {
-    if (isInitialized && clusters.length > 0 && !restorerRef.current) {
-      const clusterId = searchParams.get("cluster");
-      if (clusterId) {
-        const cluster = clusters.find((c) => c.id === clusterId);
-        if (cluster) {
-          selectCluster(cluster);
-          restorerRef.current = true;
-        }
-      } else {
-        restorerRef.current = true; // No cluster in URL, mark as handled
-      }
-    }
-  }, [isInitialized, clusters, searchParams, selectCluster]);
 
   // Protection logic
   React.useEffect(() => {

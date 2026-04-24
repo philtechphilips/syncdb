@@ -119,19 +119,12 @@ export const useClusterStore = create<ClusterState>()(
             (a: Cluster, b: Cluster) => a.name.localeCompare(b.name),
           );
 
-          const { selectedCluster: latestSelected } = get();
-          // Re-hydrate from fresh fetch — latestSelected may be { id } only (persisted shape)
-          const stillExists = latestSelected
-            ? (clusters.find((c: Cluster) => c.id === latestSelected.id) ??
-              null)
-            : null;
-          let nextSelected: Cluster | null = stillExists;
-
-          if (!nextSelected && clusters.length === 1) {
-            nextSelected = clusters[0];
-          }
-
-          set({ clusters, selectedCluster: nextSelected, isLoading: false });
+          // Always reset selection — the cluster is chosen explicitly via
+          // ClusterGate or restored from the ?cluster= URL param in the
+          // dashboard layout handshake. This ensures every fresh login shows
+          // the cluster selection screen rather than silently re-selecting a
+          // stale persisted cluster.
+          set({ clusters, selectedCluster: null, isLoading: false });
           return clusters;
         } catch (error: unknown) {
           set({ isLoading: false, error: getErrorMessage(error) });

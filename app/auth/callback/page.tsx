@@ -4,26 +4,32 @@ import React, { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useClusterStore } from "@/store/useClusterStore";
 
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { checkAuth } = useAuthStore();
+  const { checkAuth, setTokens } = useAuthStore();
 
   useEffect(() => {
     const accessToken = searchParams.get("access_token");
     const refreshToken = searchParams.get("refresh_token");
 
     if (accessToken) {
-      // Save tokens to localStorage
-      localStorage.setItem("access_token", accessToken);
-      if (refreshToken) {
-        localStorage.setItem("refresh_token", refreshToken);
-      }
+      // Load tokens into the auth store (access_token in-memory,
+      // refresh_token in sessionStorage) so checkAuth() can verify them.
+      setTokens(accessToken, refreshToken ?? null);
 
-      // Sync auth state and redirect
       checkAuth()
         .then(() => {
+          const { isAuthenticated } = useAuthStore.getState();
+          if (!isAuthenticated) {
+            router.push("/auth/login?error=Authentication failed");
+            return;
+          }
+          // Clear any stale cluster selection so the user always lands on
+          // the cluster picker after a fresh OAuth login.
+          useClusterStore.getState().selectCluster(null);
           router.push("/dashboard");
         })
         .catch(() => {
@@ -32,7 +38,7 @@ function AuthCallbackContent() {
     } else {
       router.push("/auth/login?error=No token received");
     }
-  }, [searchParams, router, checkAuth]);
+  }, [searchParams, router, checkAuth, setTokens]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-6 p-6">
