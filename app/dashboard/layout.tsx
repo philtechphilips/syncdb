@@ -22,8 +22,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     isLoading: isAuthLoading,
     checkAuth,
   } = useAuthStore();
-  const { selectedCluster, fetchClusters, selectCluster } =
-    useClusterStore();
+  const { selectedCluster, fetchClusters, selectCluster } = useClusterStore();
   const [isConnectOpen, setIsConnectOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isSidebarMobileOpen, setIsSidebarMobileOpen] = useState(false);
