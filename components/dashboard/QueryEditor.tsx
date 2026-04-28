@@ -470,7 +470,7 @@ const QueryEditor = () => {
         setAiPrompt("");
         toast.success("SQL generated");
       } else if (aiMode === "explain") {
-        const response = await api.post(`/v1/ai/explain`, {
+        const response = await api.post(`/v1/ai/${selectedCluster.id}/explain`, {
           sql: activeQuery.code,
           mode: explainLevel,
         });

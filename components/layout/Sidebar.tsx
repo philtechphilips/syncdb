@@ -257,11 +257,10 @@ const Sidebar = ({
                     <button
                       type="button"
                       onClick={(e) => handleDisconnectCluster(e, cluster.id)}
-                      className={`p-1.5 rounded-lg transition-all border ${
-                        confirmDisconnect === cluster.id
+                      className={`p-1.5 rounded-lg transition-all border ${confirmDisconnect === cluster.id
                           ? "bg-red-500/20 text-red-500 border-red-500/30"
                           : "bg-white/5 text-zinc-600 hover:text-red-500 hover:bg-red-500/10 border-transparent"
-                      }`}
+                        }`}
                       title={
                         confirmDisconnect === cluster.id
                           ? "Click again to confirm"
@@ -368,50 +367,50 @@ const Sidebar = ({
               <div className="mt-1 flex flex-col animate-in fade-in slide-in-from-top-1 duration-200">
                 {isTablesLoading && tables.length === 0
                   ? Array.from({ length: 8 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center gap-3 ml-6 mr-1 px-3 py-2"
-                      >
-                        <Skeleton className="h-1 w-1 rounded-full shrink-0" />
-                        <Skeleton
-                          className="h-2 rounded-sm"
-                          style={{
-                            width: `${Math.floor(Math.random() * (70 - 40 + 1) + 40)}%`,
-                          }}
-                        />
-                      </div>
-                    ))
+                    <div
+                      key={i}
+                      className="flex items-center gap-3 ml-6 mr-1 px-3 py-2"
+                    >
+                      <Skeleton className="h-1 w-1 rounded-full shrink-0" />
+                      <Skeleton
+                        className="h-2 rounded-sm"
+                        style={{
+                          width: `${Math.floor(Math.random() * (70 - 40 + 1) + 40)}%`,
+                        }}
+                      />
+                    </div>
+                  ))
                   : tables
-                      .filter((t) =>
-                        t.name
-                          .toLowerCase()
-                          .includes(searchQuery.toLowerCase()),
-                      )
-                      .map((table: { name: string }) => (
+                    .filter((t) =>
+                      t.name
+                        .toLowerCase()
+                        .includes(searchQuery.toLowerCase()),
+                    )
+                    .map((table: { name: string }) => (
+                      <div
+                        key={table.name}
+                        onClick={() => onTableSelect(table.name)}
+                        onContextMenu={(e) =>
+                          handleContextMenu(e, table.name)
+                        }
+                        className={`flex items-center gap-3 ml-6 mr-1 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer group/item hover:bg-white/5 ${selectedTable === table.name ? "text-white bg-primary/10" : "text-muted-foreground/80 hover:text-white"}`}
+                      >
                         <div
-                          key={table.name}
-                          onClick={() => onTableSelect(table.name)}
-                          onContextMenu={(e) =>
-                            handleContextMenu(e, table.name)
-                          }
-                          className={`flex items-center gap-3 ml-6 mr-1 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer group/item hover:bg-white/5 ${selectedTable === table.name ? "text-white bg-primary/10" : "text-muted-foreground/80 hover:text-white"}`}
+                          className={`h-1 w-1 rounded-full ${selectedTable === table.name ? "bg-primary" : "bg-zinc-700"}`}
+                        ></div>
+                        <span className="truncate flex-1">{table.name}</span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDropTable(table.name);
+                          }}
+                          className="opacity-0 group-hover/item:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-500 rounded transition-all"
+                          title="Drop Table"
                         >
-                          <div
-                            className={`h-1 w-1 rounded-full ${selectedTable === table.name ? "bg-primary" : "bg-zinc-700"}`}
-                          ></div>
-                          <span className="truncate flex-1">{table.name}</span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDropTable(table.name);
-                            }}
-                            className="opacity-0 group-hover/item:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-500 rounded transition-all"
-                            title="Drop Table"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ))}
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
               </div>
             )}
           </div>
@@ -451,8 +450,8 @@ const Sidebar = ({
         >
           <div className="h-8 w-8 rounded-full bg-zinc-800 border border-border flex items-center justify-center overflow-hidden shrink-0">
             {user?.profile_picture &&
-            (user.profile_picture.startsWith("http") ||
-              user.profile_picture.startsWith("/")) ? (
+              (user.profile_picture.startsWith("http") ||
+                user.profile_picture.startsWith("/")) ? (
               <img
                 src={user.profile_picture}
                 alt={user.full_name || "Profile"}
