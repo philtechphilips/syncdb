@@ -1,4 +1,6 @@
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
+import { toast } from "sonner";
+import { getErrorMessage } from "./errorUtils";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -6,94 +8,79 @@ if (!API_URL) {
   console.warn("NEXT_PUBLIC_API_URL is not defined in environment variables.");
 }
 
-const api = axios.create({
+const api: AxiosInstance = axios.create({
   baseURL: API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  headers: { "Content-Type": "application/json" },
 });
 
-// Add a request interceptor to add the auth token to every request
-api.interceptors.request.use(
-  (config) => {
-    // Import lazily to avoid circular dependency; read from in-memory store only
-    const { useAuthStore } = require("@/store/useAuthStore");
-    const token = useAuthStore.getState().access_token;
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+// Single in-flight refresh promise — prevents concurrent 401s from each
+// triggering their own refresh and racing each other to invalidate the token.
+let refreshPromise: Promise<string | null> | null = null;
+
+async function attemptRefresh(): Promise<string | null> {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    try {
+      const { useAuthStore } = require("@/store/useAuthStore");
+      const refreshToken = useAuthStore.getState().getRefreshToken();
+      if (!refreshToken) return null;
+
+      const res = await axios.post(`${API_URL}/v1/auth/refresh`, {
+        refresh_token: refreshToken,
+      });
+
+      const { access_token, refresh_token: newRefresh } = res.data;
+      useAuthStore
+        .getState()
+        .setTokens(access_token, newRefresh ?? refreshToken);
+      return access_token as string;
+    } catch {
+      const { useAuthStore } = require("@/store/useAuthStore");
+      useAuthStore.getState().logout();
+      return null;
+    } finally {
+      // Clear so the next expiry triggers a fresh refresh
+      refreshPromise = null;
     }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  },
-);
+  })();
 
-import { toast } from "sonner";
-import { getErrorMessage } from "./errorUtils";
+  return refreshPromise;
+}
 
-// Add a response interceptor to handle errors and token refresh
+// ── Request interceptor — attach access token ─────────────────────────────────
+api.interceptors.request.use((config) => {
+  const { useAuthStore } = require("@/store/useAuthStore");
+  const token = useAuthStore.getState().access_token;
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+// ── Response interceptor — handle 401, show toasts ───────────────────────────
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Handle 401 errors
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      const { useAuthStore } = require("@/store/useAuthStore");
-      const refreshToken =
-        useAuthStore.getState().refresh_token ??
-        (typeof window !== "undefined" ? sessionStorage.getItem("rt") : null);
-
-      if (!refreshToken) {
-        console.error("No refresh token available, forcing logout");
-        handleLogout();
-        return Promise.reject(error);
+      const newToken = await attemptRefresh();
+      if (newToken) {
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        return api(originalRequest);
       }
 
-      try {
-        const response = await axios.post(`${API_URL}/v1/auth/refresh`, {
-          refresh_token: refreshToken,
-        });
-
-        const { access_token, refresh_token: newRefreshToken } = response.data;
-
-        if (access_token) {
-          const nextRefresh = newRefreshToken ?? refreshToken;
-          if (nextRefresh && typeof window !== "undefined") {
-            sessionStorage.setItem("rt", nextRefresh);
-          }
-          useAuthStore.getState().setTokens(access_token, nextRefresh);
-
-          // Retry the original request with the new token
-          originalRequest.headers.Authorization = `Bearer ${access_token}`;
-          return api(originalRequest);
-        }
-      } catch (refreshError) {
-        console.error("Token refresh failed:", refreshError);
-        handleLogout("Session expired. Please login again.");
-        return Promise.reject(refreshError);
-      }
+      // attemptRefresh already called logout — just reject quietly
+      return Promise.reject(error);
     }
 
-    // Show toast for other critical errors
-    if (error.response?.status !== 401 && !error.config?._skipToast) {
+    if (error.response?.status !== 401 && !originalRequest._skipToast) {
       toast.error(getErrorMessage(error));
     }
 
     return Promise.reject(error);
   },
 );
-
-// Helper to handle forced logout
-function handleLogout(message?: string) {
-  if (typeof window !== "undefined") {
-    if (message) toast.error(message);
-    const { useAuthStore } = require("@/store/useAuthStore");
-    useAuthStore.getState().logout();
-  }
-}
 
 export default api;

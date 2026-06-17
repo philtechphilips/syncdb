@@ -3,18 +3,19 @@ import { persist } from "zustand/middleware";
 import api from "@/lib/api";
 import { getErrorMessage } from "@/lib/errorUtils";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const SESSION_KEY = "rt"; // refresh token — sessionStorage only
+// Refresh token lives in localStorage so it survives new tabs and browser
+// restarts. Access token stays in-memory only — never written to storage.
+const RT_KEY = "synqdb_rt";
 
 const saveRefreshToken = (token: string | null) => {
   if (typeof window === "undefined") return;
-  if (token) sessionStorage.setItem(SESSION_KEY, token);
-  else sessionStorage.removeItem(SESSION_KEY);
+  if (token) localStorage.setItem(RT_KEY, token);
+  else localStorage.removeItem(RT_KEY);
 };
 
-const loadRefreshToken = (): string | null => {
+export const loadRefreshToken = (): string | null => {
   if (typeof window === "undefined") return null;
-  return sessionStorage.getItem(SESSION_KEY);
+  return localStorage.getItem(RT_KEY);
 };
 
 export interface User {
@@ -29,23 +30,24 @@ export interface User {
 interface AuthState {
   user: User | null;
   access_token: string | null;
-  refresh_token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
 
+  // Called by api.ts refresher — must not import api to avoid circular dep
+  getRefreshToken: () => string | null;
+  setTokens: (access: string, refresh: string) => void;
   setUser: (user: User | null) => void;
-  setTokens: (access: string | null, refresh: string | null) => void;
-  login: (
-    credentials: Record<string, unknown>,
-  ) => Promise<Record<string, unknown>>;
+
+  login: (credentials: Record<string, unknown>) => Promise<void>;
   register: (data: Record<string, unknown>) => Promise<Record<string, unknown>>;
+  logout: () => void;
+  checkAuth: () => Promise<boolean>;
+
   forgotPassword: (email: string) => Promise<Record<string, unknown>>;
   resetPassword: (
     data: Record<string, unknown>,
   ) => Promise<Record<string, unknown>>;
-  logout: () => void;
-  checkAuth: () => Promise<void>;
   updateProfile: (data: {
     full_name?: string;
     profile_picture?: string;
@@ -55,6 +57,7 @@ interface AuthState {
     new_password: string;
   }) => Promise<void>;
   updateSettings: (settings: Record<string, any>) => Promise<void>;
+
   fetchAgentKey: () => Promise<{ agentKey: string }>;
   rotateAgentKey: () => Promise<{ agentKey: string }>;
   fetchAgentStatus: () => Promise<{ connected: boolean }>;
@@ -66,32 +69,28 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
       access_token: null,
-      refresh_token: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
 
-      setUser: (user) => set({ user, isAuthenticated: !!user }),
+      getRefreshToken: () => loadRefreshToken(),
+
       setTokens: (access, refresh) => {
-        if (refresh) saveRefreshToken(refresh);
-        set({ access_token: access, refresh_token: refresh });
+        saveRefreshToken(refresh);
+        set({ access_token: access });
       },
+
+      setUser: (user) => set({ user, isAuthenticated: !!user }),
+
+      // ── Auth flows ──────────────────────────────────────────────────────────
 
       login: async (credentials) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await api.post("/v1/auth/login", credentials);
-          const { user, access_token, refresh_token } = response.data;
+          const res = await api.post("/v1/auth/login", credentials);
+          const { user, access_token, refresh_token } = res.data;
           saveRefreshToken(refresh_token);
-
-          set({
-            user,
-            access_token,
-            refresh_token,
-            isAuthenticated: true,
-            isLoading: false,
-          });
-          return response.data;
+          set({ user, access_token, isAuthenticated: true, isLoading: false });
         } catch (error: unknown) {
           set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
@@ -101,35 +100,9 @@ export const useAuthStore = create<AuthState>()(
       register: async (data) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await api.post("/v1/auth/register", data);
+          const res = await api.post("/v1/auth/register", data);
           set({ isLoading: false });
-          return response.data;
-        } catch (error: unknown) {
-          set({ isLoading: false, error: getErrorMessage(error) });
-          throw error;
-        }
-      },
-
-      forgotPassword: async (email) => {
-        set({ isLoading: true, error: null });
-        try {
-          const response = await api.post("/v1/auth/forgot-password", {
-            email,
-          });
-          set({ isLoading: false });
-          return response.data;
-        } catch (error: unknown) {
-          set({ isLoading: false, error: getErrorMessage(error) });
-          throw error;
-        }
-      },
-
-      resetPassword: async (data) => {
-        set({ isLoading: true, error: null });
-        try {
-          const response = await api.post("/v1/auth/reset-password", data);
-          set({ isLoading: false });
-          return response.data;
+          return res.data;
         } catch (error: unknown) {
           set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
@@ -141,75 +114,103 @@ export const useAuthStore = create<AuthState>()(
         set({
           user: null,
           access_token: null,
-          refresh_token: null,
           isAuthenticated: false,
+          error: null,
         });
         if (
           typeof window !== "undefined" &&
-          window.location.pathname !== "/auth/login"
+          !window.location.pathname.startsWith("/auth")
         ) {
           window.location.href = "/auth/login";
         }
       },
 
+      // checkAuth — called once on dashboard mount.
+      // 1. If we already have an access_token in-memory, verify it via /status.
+      // 2. If not (page reload / new tab), try a silent refresh from localStorage RT.
+      // 3. If refresh also fails, log out.
+      // Returns true if authenticated, false otherwise.
       checkAuth: async () => {
+        set({ isLoading: true });
+
         let { access_token } = get();
 
-        // On page reload the in-memory access token is gone — try a silent refresh
         if (!access_token) {
-          const storedRefresh = loadRefreshToken();
-          if (!storedRefresh) {
+          const rt = loadRefreshToken();
+          if (!rt) {
             set({ isAuthenticated: false, isLoading: false });
-            return;
+            return false;
           }
           try {
-            const res = await api.post(
-              `/v1/auth/refresh`,
-              {
-                refresh_token: storedRefresh,
-              },
-              { _retry: true } as any,
-            );
-            const { access_token: newAccess, refresh_token: newRefresh } =
-              res.data;
-            saveRefreshToken(newRefresh ?? storedRefresh);
-            set({
-              access_token: newAccess,
-              refresh_token: newRefresh ?? storedRefresh,
+            const API_URL = process.env.NEXT_PUBLIC_API_URL;
+            const res = await fetch(`${API_URL}/v1/auth/refresh`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ refresh_token: rt }),
             });
-            access_token = newAccess;
+            if (!res.ok) throw new Error("refresh failed");
+            const data = await res.json();
+            saveRefreshToken(data.refresh_token ?? rt);
+            set({ access_token: data.access_token });
+            access_token = data.access_token;
           } catch {
             saveRefreshToken(null);
-            set({ isAuthenticated: false, isLoading: false });
-            return;
+            set({
+              isAuthenticated: false,
+              isLoading: false,
+              access_token: null,
+            });
+            return false;
           }
         }
 
-        set({ isLoading: true });
         try {
-          const response = await api.get("/v1/auth/status");
-          set({
-            user: response.data,
-            isAuthenticated: true,
-            isLoading: false,
-          });
+          const res = await api.get("/v1/auth/status");
+          set({ user: res.data, isAuthenticated: true, isLoading: false });
+          return true;
         } catch {
           saveRefreshToken(null);
           set({
             user: null,
+            access_token: null,
             isAuthenticated: false,
             isLoading: false,
-            access_token: null,
-            refresh_token: null,
           });
+          return false;
+        }
+      },
+
+      // ── Profile ─────────────────────────────────────────────────────────────
+
+      forgotPassword: async (email) => {
+        set({ isLoading: true, error: null });
+        try {
+          const res = await api.post("/v1/auth/forgot-password", { email });
+          set({ isLoading: false });
+          return res.data;
+        } catch (error: unknown) {
+          set({ isLoading: false, error: getErrorMessage(error) });
+          throw error;
+        }
+      },
+
+      resetPassword: async (data) => {
+        set({ isLoading: true, error: null });
+        try {
+          const res = await api.post("/v1/auth/reset-password", data);
+          set({ isLoading: false });
+          return res.data;
+        } catch (error: unknown) {
+          set({ isLoading: false, error: getErrorMessage(error) });
+          throw error;
         }
       },
 
       updateProfile: async (data) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await api.patch("/v1/auth/profile", data);
-          set({ user: { ...get().user!, ...response.data }, isLoading: false });
+          const res = await api.patch("/v1/auth/profile", data);
+          set({ user: { ...get().user!, ...res.data }, isLoading: false });
         } catch (error: unknown) {
           set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
@@ -230,9 +231,9 @@ export const useAuthStore = create<AuthState>()(
       updateSettings: async (settings) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await api.patch("/v1/auth/profile", { settings });
+          const res = await api.patch("/v1/auth/profile", { settings });
           set({
-            user: { ...get().user!, settings: response.data.settings },
+            user: { ...get().user!, settings: res.data.settings },
             isLoading: false,
           });
         } catch (error: unknown) {
@@ -241,31 +242,35 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      // ── Agent ───────────────────────────────────────────────────────────────
+
       fetchAgentKey: async () => {
-        const response = await api.get("/v1/auth/agent-key", {
+        const res = await api.get("/v1/auth/agent-key", {
           _skipToast: true,
         } as any);
-        return response.data;
+        return res.data;
       },
 
       rotateAgentKey: async () => {
-        const response = await api.post("/v1/auth/rotate-agent-key", {}, {
+        const res = await api.post("/v1/auth/rotate-agent-key", {}, {
           _skipToast: true,
         } as any);
-        return response.data;
+        return res.data;
       },
 
       fetchAgentStatus: async () => {
-        const response = await api.get("/v1/auth/agent-status", {
+        const res = await api.get("/v1/auth/agent-status", {
           _skipToast: true,
         } as any);
-        return response.data;
+        return res.data;
       },
 
       clearError: () => set({ error: null }),
     }),
     {
       name: "auth-storage",
+      // Only persist the user profile — tokens are handled separately
+      // (access_token in-memory, refresh_token in localStorage via saveRefreshToken)
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,

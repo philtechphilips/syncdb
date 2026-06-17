@@ -119,12 +119,21 @@ export const useClusterStore = create<ClusterState>()(
             (a: Cluster, b: Cluster) => a.name.localeCompare(b.name),
           );
 
-          // Always reset selection — the cluster is chosen explicitly via
-          // ClusterGate or restored from the ?cluster= URL param in the
-          // dashboard layout handshake. This ensures every fresh login shows
-          // the cluster selection screen rather than silently re-selecting a
-          // stale persisted cluster.
-          set({ clusters, selectedCluster: null, isLoading: false });
+          const { selectedCluster } = get();
+
+          // Refresh the persisted selected cluster object from the latest server
+          // data so name/config changes are reflected. If the cluster was deleted
+          // server-side, clear the selection so ClusterGate shows the picker.
+          const refreshedSelected = selectedCluster
+            ? (clusters.find((c: Cluster) => c.id === selectedCluster.id) ??
+              null)
+            : null;
+
+          set({
+            clusters,
+            selectedCluster: refreshedSelected,
+            isLoading: false,
+          });
           return clusters;
         } catch (error: unknown) {
           set({ isLoading: false, error: getErrorMessage(error) });
@@ -326,9 +335,11 @@ export const useClusterStore = create<ClusterState>()(
           const response = await api.post("/v1/clusters", data);
           const newCluster = response.data;
           set((state) => ({
-            clusters: [...state.clusters, newCluster],
+            clusters: [...state.clusters, newCluster].sort((a, b) =>
+              a.name.localeCompare(b.name),
+            ),
             isLoading: false,
-            selectedCluster: state.selectedCluster || newCluster, // Select automatically if it's the first one
+            selectedCluster: state.selectedCluster || newCluster,
           }));
           return newCluster;
         } catch (error: unknown) {
@@ -476,10 +487,10 @@ export const useClusterStore = create<ClusterState>()(
     {
       name: "cluster-storage",
       partialize: (state: ClusterState) => ({
-        // Only persist the cluster ID — credentials stay server-side only
-        selectedCluster: state.selectedCluster
-          ? { id: state.selectedCluster.id }
-          : null,
+        // Persist the full cluster object so new tabs and page reloads restore
+        // the connection without a URL param. fetchClusters will re-validate
+        // it against the server list on every mount.
+        selectedCluster: state.selectedCluster,
         activeTab: state.activeTab,
         selectedTable: state.selectedTable,
       }),

@@ -10,8 +10,68 @@ import {
   CheckCircle2,
   AlertCircle,
   Laptop,
+  Server,
+  FlaskConical,
+  Rocket,
+  Eye,
+  EyeOff,
+  Plug,
 } from "lucide-react";
 import { useClusterStore } from "@/store/useClusterStore";
+import { UI_CLASSES } from "@/lib/constants";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type DbType = "mysql" | "postgres" | "mssql";
+type EnvType = "development" | "staging" | "production";
+
+// ── Config ────────────────────────────────────────────────────────────────────
+
+const DB_OPTIONS: { id: DbType; name: string; port: string }[] = [
+  { id: "postgres", name: "PostgreSQL", port: "5432" },
+  { id: "mysql", name: "MySQL / MariaDB", port: "3306" },
+  { id: "mssql", name: "SQL Server", port: "1433" },
+];
+
+const ENV_OPTIONS: {
+  id: EnvType;
+  label: string;
+  color: string;
+  Icon: React.FC<{ className?: string }>;
+}[] = [
+  { id: "development", label: "Development", color: "#3B82F6", Icon: Server },
+  { id: "staging", label: "Staging", color: "#F59E0B", Icon: FlaskConical },
+  { id: "production", label: "Production", color: "#EF4444", Icon: Rocket },
+];
+
+const PRESET_COLORS = [
+  "#00ED64",
+  "#3B82F6",
+  "#A855F7",
+  "#EC4899",
+  "#F59E0B",
+  "#EF4444",
+  "#06B6D4",
+];
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+const SectionLabel = ({ children }: { children: React.ReactNode }) => (
+  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 mb-3">
+    {children}
+  </p>
+);
+
+const FieldLabel = ({ children }: { children: React.ReactNode }) => (
+  <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-1.5 px-0.5">
+    {children}
+  </label>
+);
+
+const inputCls =
+  "h-11 w-full rounded-xl border border-white/6 bg-white/3 px-3.5 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-all font-medium";
+
+// ── Main component ────────────────────────────────────────────────────────────
 
 const ConnectionDialog = ({
   isOpen,
@@ -20,12 +80,9 @@ const ConnectionDialog = ({
   isOpen: boolean;
   onClose: () => void;
 }) => {
-  const { createCluster, testConnection, isLoading, error, clearError } =
-    useClusterStore();
+  const { createCluster, testConnection, isLoading } = useClusterStore();
 
-  const [selectedDb, setSelectedDb] = useState<"mysql" | "postgres" | "mssql">(
-    "postgres",
-  );
+  const [selectedDb, setSelectedDb] = useState<DbType>("postgres");
   const [formData, setFormData] = useState({
     name: "",
     host: "",
@@ -33,10 +90,11 @@ const ConnectionDialog = ({
     database: "",
     username: "",
     password: "",
-    environment: "development" as "development" | "staging" | "production",
+    environment: "development" as EnvType,
     color: "#00ED64",
   });
   const [isLocal, setIsLocal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [testResult, setTestResult] = useState<{
     success: boolean;
     message: string;
@@ -44,48 +102,20 @@ const ConnectionDialog = ({
 
   if (!isOpen) return null;
 
-  const databases: {
-    id: "mysql" | "postgres" | "mssql";
-    name: string;
-    icon: string;
-    defaultPort: string;
-  }[] = [
-    { id: "postgres", name: "PostgreSQL", icon: "🐘", defaultPort: "5432" },
-    { id: "mysql", name: "MySQL / MariaDB", icon: "🐬", defaultPort: "3306" },
-    {
-      id: "mssql",
-      name: "SQL Server (MSSQL)",
-      icon: "🖥️",
-      defaultPort: "1433",
-    },
-  ];
-
-  const environments = [
-    { id: "development", name: "Development", color: "#3B82F6", icon: "🛠️" },
-    { id: "staging", name: "Staging", color: "#F59E0B", icon: "🧪" },
-    { id: "production", name: "Production", color: "#EF4444", icon: "🚀" },
-  ];
-
-  const presetColors = [
-    "#00ED64", // Synq Green
-    "#3B82F6", // Blue
-    "#A855F7", // Purple
-    "#EC4899", // Pink
-    "#F59E0B", // Amber
-    "#EF4444", // Red
-    "#06B6D4", // Cyan
-  ];
-
-  const handleDbSelect = (id: "mysql" | "postgres" | "mssql") => {
-    const db = databases.find((d) => d.id === id);
-    setSelectedDb(id);
-    setFormData({ ...formData, port: db?.defaultPort || "5432" });
+  const field = (key: string, value: string) => {
+    setFormData((f) => ({ ...f, [key]: value }));
     setTestResult(null);
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData({ ...formData, [field]: value });
+  const handleDbSelect = (id: DbType) => {
+    const db = DB_OPTIONS.find((d) => d.id === id)!;
+    setSelectedDb(id);
+    setFormData((f) => ({ ...f, port: db.port }));
     setTestResult(null);
+  };
+
+  const handleEnvSelect = (env: (typeof ENV_OPTIONS)[number]) => {
+    setFormData((f) => ({ ...f, environment: env.id, color: env.color }));
   };
 
   const handleTest = async () => {
@@ -96,12 +126,10 @@ const ConnectionDialog = ({
         port: parseInt(formData.port),
       })) as { message: string };
       setTestResult({ success: true, message: result.message });
-    } catch (err: unknown) {
+    } catch (err: any) {
       setTestResult({
         success: false,
-        message:
-          (err as { response?: { data?: { message?: string } } })?.response
-            ?.data?.message || "Connection failed",
+        message: err?.response?.data?.message ?? "Connection failed",
       });
     }
   };
@@ -109,384 +137,394 @@ const ConnectionDialog = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const result = (await createCluster({
+      await createCluster({
         ...formData,
         type: selectedDb,
         port: parseInt(formData.port),
         isLocal,
-      })) as any;
-      // Reset form
+      });
       setFormData({
         name: "",
         host: "",
-        port: selectedDb === "postgres" ? "5432" : "3306",
+        port: "5432",
         database: "",
         username: "",
         password: "",
         environment: "development",
         color: "#00ED64",
       });
+      setIsLocal(false);
       onClose();
     } catch {
-      // Error is handled by store
+      // error handled by store toast
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
-      <div className="relative w-full max-w-5xl rounded-[2.5rem] bg-background p-10 shadow-3xl border border-border/50 overflow-hidden max-h-[95vh] overflow-y-auto scrollbar-hide">
-        {/* Background Tech Elements */}
-        <div className="absolute inset-0 tech-grid opacity-[0.05] pointer-events-none"></div>
-        <div
-          className="absolute -top-24 -right-24 h-64 w-64 rounded-full blur-[100px] pointer-events-none opacity-20"
-          style={{ backgroundColor: formData.color }}
-        ></div>
+  const selectedEnv = ENV_OPTIONS.find((e) => e.id === formData.environment)!;
 
-        <div className="flex items-start justify-between mb-8 relative z-10">
-          <div>
-            <h2 className="text-3xl font-serif text-white tracking-tight">
-              Establish Terminal Connection
-            </h2>
-            <p className="text-muted-foreground font-medium">
-              Configure your remote cluster and set visibility rules.
-            </p>
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div className="relative w-full max-w-4xl rounded-3xl bg-zinc-950 border border-white/8 shadow-2xl overflow-hidden max-h-[95vh] flex flex-col">
+        {/* Ambient glow tied to cluster colour */}
+        <div
+          className="absolute -top-32 -right-32 h-72 w-72 rounded-full blur-[120px] pointer-events-none opacity-10 transition-colors duration-500"
+          style={{ backgroundColor: formData.color }}
+        />
+
+        {/* ── Header ──────────────────────────────────────────────────────── */}
+        <div className="flex items-center justify-between px-8 pt-7 pb-5 border-b border-white/5 relative z-10">
+          <div className="flex items-center gap-3.5">
+            <div className="h-9 w-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+              <Plug className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-white tracking-tight leading-none mb-0.5">
+                New Connection
+              </h2>
+              <p className="text-[11px] text-zinc-500 font-medium">
+                Configure your database cluster
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-full p-2.5 bg-white/5 border border-border text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/8 transition-all"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
+        {/* ── Body ────────────────────────────────────────────────────────── */}
         <form
           onSubmit={handleSubmit}
-          className="grid grid-cols-1 lg:grid-cols-12 gap-10 relative z-10"
+          className="flex-1 overflow-y-auto scrollbar-hide"
         >
-          {/* Left Column: DB Type & Meta */}
-          <div className="lg:col-span-4 space-y-8">
-            <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">
-                1. Data Source
-              </span>
-              <div className="grid grid-cols-1 gap-2">
-                {databases.map((db) => (
-                  <button
-                    key={db.id}
-                    type="button"
-                    onClick={() => handleDbSelect(db.id)}
-                    className={`flex items-center gap-4 rounded-2xl border p-3.5 transition-all group relative overflow-hidden ${
-                      selectedDb === db.id
-                        ? "border-primary/50 bg-primary/5 shadow-[0_0_20px_rgba(0,237,100,0.1)]"
-                        : "bg-white/[0.02] border-border/50 hover:border-white/20"
-                    }`}
-                  >
-                    <div
-                      className={`p-2 rounded-xl bg-white/5 border border-border/50 group-hover:scale-110 transition-transform ${selectedDb === db.id ? "text-primary" : "text-muted-foreground"}`}
-                    >
-                      <Database className="h-4 w-4" />
-                    </div>
-                    <span
-                      className={`text-xs font-bold ${selectedDb === db.id ? "text-white" : "text-zinc-400"}`}
-                    >
-                      {db.name}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                setIsLocal(!isLocal);
-                setTestResult(null);
-              }}
-              className={`flex items-center gap-3 w-full rounded-2xl border p-3.5 transition-all ${isLocal ? "border-primary/50 bg-primary/5 shadow-[0_0_20px_rgba(0,237,100,0.07)]" : "bg-white/2 border-border/50 hover:border-white/20"}`}
-            >
-              <div
-                className={`p-2 rounded-xl bg-white/5 border border-border/50 ${isLocal ? "text-primary" : "text-muted-foreground"}`}
-              >
-                <Laptop className="h-4 w-4" />
-              </div>
-              <div className="text-left">
-                <div
-                  className={`text-xs font-bold ${isLocal ? "text-white" : "text-zinc-400"}`}
-                >
-                  Local Database
-                </div>
-                <div className="text-[9px] text-zinc-600 font-medium">
-                  Connect via local relay agent
+          <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] divide-y lg:divide-y-0 lg:divide-x divide-white/5">
+            {/* ── Left panel ─────────────────────────────────────────────── */}
+            <div className="p-6 space-y-7">
+              {/* Database engine */}
+              <div>
+                <SectionLabel>Database Engine</SectionLabel>
+                <div className="space-y-1.5">
+                  {DB_OPTIONS.map((db) => {
+                    const active = selectedDb === db.id;
+                    return (
+                      <button
+                        key={db.id}
+                        type="button"
+                        onClick={() => handleDbSelect(db.id)}
+                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl border transition-all text-left ${
+                          active
+                            ? "border-primary/40 bg-primary/6 text-white"
+                            : "border-transparent bg-white/3 text-zinc-400 hover:bg-white/5 hover:text-zinc-300"
+                        }`}
+                      >
+                        <Database
+                          className={`h-3.5 w-3.5 shrink-0 ${active ? "text-primary" : "text-zinc-600"}`}
+                        />
+                        <span className="text-xs font-semibold">{db.name}</span>
+                        <span
+                          className={`ml-auto font-mono text-[10px] ${active ? "text-primary/70" : "text-zinc-700"}`}
+                        >
+                          :{db.port}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-              <div
-                className={`ml-auto h-4 w-8 rounded-full transition-all ${isLocal ? "bg-primary" : "bg-white/10"} relative`}
-              >
-                <span
-                  className={`absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all ${isLocal ? "left-4" : "left-0.5"}`}
-                />
-              </div>
-            </button>
 
-            <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">
-                2. Environment Label
-              </span>
-              <div className="grid grid-cols-3 gap-2">
-                {environments.map((env) => (
-                  <button
-                    key={env.id}
-                    type="button"
-                    onClick={() => {
-                      setFormData({
-                        ...formData,
-                        environment: env.id as any,
-                        color: env.color,
-                      });
-                    }}
-                    className={`flex flex-col items-center gap-2 rounded-xl border p-3 transition-all ${
-                      formData.environment === env.id
-                        ? "bg-white/5 border-white/20 ring-1 ring-white/10"
-                        : "bg-white/[0.01] border-border/30 grayscale opacity-60 hover:grayscale-0 hover:opacity-100"
-                    }`}
-                  >
-                    <span className="text-lg">{env.icon}</span>
-                    <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
-                      {env.name}
-                    </span>
-                  </button>
-                ))}
-              </div>
-              <p className="text-[9px] text-zinc-600 font-medium px-1">
-                * Production clusters will trigger confirmation dialogs for all
-                destructive actions.
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">
-                3. Cluster Name Tag
-              </span>
-              <div className="flex flex-wrap gap-2 px-1">
-                {presetColors.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, color: c })}
-                    className={`h-6 w-6 rounded-full border-2 transition-transform hover:scale-125 ${formData.color === c ? "border-white scale-110" : "border-transparent"}`}
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
-                <div className="relative h-6 w-6 rounded-full overflow-hidden border border-white/10 ml-auto">
-                  <input
-                    type="color"
-                    value={formData.color}
-                    onChange={(e) =>
-                      setFormData({ ...formData, color: e.target.value })
-                    }
-                    className="absolute inset-0 h-10 w-10 -translate-x-1/4 -translate-y-1/4 cursor-pointer"
-                  />
-                </div>
-              </div>
-              {/* Preview of the cluster name tag */}
-              <div className="flex items-center gap-2 px-1">
-                <div
-                  className="h-5 w-5 rounded flex items-center justify-center text-[9px] font-black text-white shrink-0"
-                  style={{
-                    borderLeft: `2px solid ${formData.color}`,
-                    backgroundColor: "rgba(255,255,255,0.05)",
+              {/* Local toggle */}
+              <div>
+                <SectionLabel>Connection Mode</SectionLabel>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsLocal((v) => !v);
+                    setTestResult(null);
                   }}
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl border transition-all ${
+                    isLocal
+                      ? "border-primary/40 bg-primary/6"
+                      : "border-white/6 bg-white/3 hover:bg-white/5"
+                  }`}
                 >
-                  {formData.name ? formData.name[0].toUpperCase() : "A"}
+                  <Laptop
+                    className={`h-3.5 w-3.5 shrink-0 ${isLocal ? "text-primary" : "text-zinc-600"}`}
+                  />
+                  <div className="text-left flex-1 min-w-0">
+                    <p
+                      className={`text-xs font-semibold ${isLocal ? "text-white" : "text-zinc-400"}`}
+                    >
+                      Local Database
+                    </p>
+                    <p className="text-[10px] text-zinc-600 mt-0.5 font-medium">
+                      Route via local agent CLI
+                    </p>
+                  </div>
+                  {/* Toggle pill */}
+                  <div
+                    className={`h-4 w-7 rounded-full relative shrink-0 transition-colors ${isLocal ? "bg-primary" : "bg-white/10"}`}
+                  >
+                    <span
+                      className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-all ${isLocal ? "left-3.5" : "left-0.5"}`}
+                    />
+                  </div>
+                </button>
+              </div>
+
+              {/* Environment */}
+              <div>
+                <SectionLabel>Environment</SectionLabel>
+                <div className="space-y-1.5">
+                  {ENV_OPTIONS.map((env) => {
+                    const active = formData.environment === env.id;
+                    return (
+                      <button
+                        key={env.id}
+                        type="button"
+                        onClick={() => handleEnvSelect(env)}
+                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl border transition-all text-left ${
+                          active
+                            ? "border-white/15 bg-white/5 text-white"
+                            : "border-transparent bg-white/2 text-zinc-500 hover:bg-white/4 hover:text-zinc-400"
+                        }`}
+                      >
+                        <span
+                          className="shrink-0"
+                          style={{ color: active ? env.color : "#52525b" }}
+                        >
+                          <env.Icon className="h-3.5 w-3.5" />
+                        </span>
+                        <span className="text-xs font-semibold">
+                          {env.label}
+                        </span>
+                        {env.id === "production" && (
+                          <span className="ml-auto text-[9px] font-bold uppercase tracking-wider text-red-500/70">
+                            Guarded
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
-                <span className="text-[10px] text-zinc-500 font-medium">
-                  {formData.name || "Cluster name"} preview
-                </span>
+              </div>
+
+              {/* Colour tag */}
+              <div>
+                <SectionLabel>Cluster Colour</SectionLabel>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {PRESET_COLORS.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setFormData((f) => ({ ...f, color: c }))}
+                      className={`h-5 w-5 rounded-full border-2 transition-transform hover:scale-110 ${formData.color === c ? "border-white scale-110" : "border-transparent"}`}
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                  <div className="relative h-5 w-5 rounded-full overflow-hidden border border-white/10 ml-1">
+                    <input
+                      type="color"
+                      value={formData.color}
+                      onChange={(e) =>
+                        setFormData((f) => ({ ...f, color: e.target.value }))
+                      }
+                      className="absolute inset-0 h-10 w-10 -translate-x-1/4 -translate-y-1/4 cursor-pointer"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Right Column: Connection Details */}
-          <div className="lg:col-span-8 space-y-6">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">
-              4. Authentication & Network
-            </span>
-            <div className="glass rounded-[2rem] p-8 border border-border/50 space-y-6">
-              <div className="grid grid-cols-1 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
-                    Connection Display Name
-                  </label>
+            {/* ── Right panel ────────────────────────────────────────────── */}
+            <div className="p-6 space-y-5">
+              {/* Display name + preview */}
+              <div>
+                <FieldLabel>Connection Name</FieldLabel>
+                <div className="relative">
+                  {/* Colour accent preview inside field */}
+                  <div
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-0.5 rounded-full"
+                    style={{ backgroundColor: formData.color }}
+                  />
                   <input
                     type="text"
                     required
                     value={formData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
-                    placeholder="e.g. Master Analytics Production"
-                    className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
+                    onChange={(e) => field("name", e.target.value)}
+                    placeholder="e.g. Analytics Production"
+                    className={`${inputCls} pl-7`}
                   />
                 </div>
+              </div>
 
-                <div className="grid grid-cols-12 gap-4">
-                  <div className="col-span-8 space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
-                      Cluster Host
-                    </label>
-                    <div className="relative">
-                      <Globe className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-600" />
-                      <input
-                        type="text"
-                        required
-                        value={formData.host}
-                        onChange={(e) =>
-                          handleInputChange("host", e.target.value)
-                        }
-                        placeholder="db.example.com or 10.0.0.1"
-                        className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] pl-11 pr-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-span-4 space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1 text-center block">
-                      Port
-                    </label>
+              {/* Host + Port */}
+              <div className="grid grid-cols-[1fr_88px] gap-3">
+                <div>
+                  <FieldLabel>Host</FieldLabel>
+                  <div className="relative">
+                    <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600" />
                     <input
                       type="text"
                       required
-                      value={formData.port}
-                      onChange={(e) =>
-                        handleInputChange("port", e.target.value)
-                      }
-                      className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium text-center"
+                      value={formData.host}
+                      onChange={(e) => field("host", e.target.value)}
+                      placeholder={isLocal ? "localhost" : "db.example.com"}
+                      className={`${inputCls} pl-9`}
                     />
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
-                    Default Database
-                  </label>
+                <div>
+                  <FieldLabel>Port</FieldLabel>
                   <input
                     type="text"
                     required
-                    value={formData.database}
-                    onChange={(e) =>
-                      handleInputChange("database", e.target.value)
-                    }
-                    placeholder="main_production"
-                    className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
+                    value={formData.port}
+                    onChange={(e) => field("port", e.target.value)}
+                    className={`${inputCls} text-center tracking-widest`}
                   />
                 </div>
+              </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
-                      Username
-                    </label>
+              {/* Database name */}
+              <div>
+                <FieldLabel>Database</FieldLabel>
+                <input
+                  type="text"
+                  required
+                  value={formData.database}
+                  onChange={(e) => field("database", e.target.value)}
+                  placeholder="my_database"
+                  className={inputCls}
+                />
+              </div>
+
+              {/* Credentials */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <FieldLabel>Username</FieldLabel>
+                  <input
+                    type="text"
+                    required
+                    value={formData.username}
+                    onChange={(e) => field("username", e.target.value)}
+                    placeholder="admin"
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <FieldLabel>Password</FieldLabel>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600" />
                     <input
-                      type="text"
-                      required
-                      value={formData.username}
-                      onChange={(e) =>
-                        handleInputChange("username", e.target.value)
-                      }
-                      className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] px-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={(e) => field("password", e.target.value)}
+                      placeholder="••••••••"
+                      className={`${inputCls} pl-9 pr-9`}
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
-                      Password
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-600" />
-                      <input
-                        type="password"
-                        value={formData.password}
-                        onChange={(e) =>
-                          handleInputChange("password", e.target.value)
-                        }
-                        className="h-12 w-full rounded-xl border border-border/50 bg-white/[0.03] pl-11 pr-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all font-medium"
-                      />
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 transition-colors"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-3.5 w-3.5" />
+                      ) : (
+                        <Eye className="h-3.5 w-3.5" />
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {isLocal && (
-              <div className="flex items-start gap-3 p-4 rounded-xl border border-primary/20 bg-primary/5 text-primary">
-                <Laptop className="h-4 w-4 mt-0.5 shrink-0" />
-                <span className="text-[10px] font-bold leading-relaxed">
-                  Queries will route through your local agent. Find your agent
-                  key in{" "}
-                  <span className="underline">
-                    Project Settings → Local Agent
-                  </span>{" "}
-                  and run{" "}
-                  <code className="font-mono bg-white/10 px-1 rounded">
-                    npx synqdb-agent &lt;key&gt;
-                  </code>
-                  .
-                </span>
-              </div>
-            )}
+              {/* Local agent info banner */}
+              {isLocal && (
+                <div className="flex items-start gap-3 px-4 py-3 rounded-xl border border-primary/20 bg-primary/5 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <Laptop className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-zinc-400 leading-relaxed">
+                    Queries route through the local agent. Run{" "}
+                    <code className="text-primary font-mono bg-white/5 px-1 rounded">
+                      synqdb-agent login
+                    </code>{" "}
+                    then{" "}
+                    <code className="text-primary font-mono bg-white/5 px-1 rounded">
+                      synqdb-agent
+                    </code>{" "}
+                    on your machine. No keys to copy.
+                  </p>
+                </div>
+              )}
 
-            <div className="flex flex-col gap-4">
-              <div className="flex gap-4">
-                {!isLocal && (
-                  <button
-                    type="button"
-                    disabled={isLoading}
-                    onClick={handleTest}
-                    className="flex-1 rounded-xl px-8 py-4 text-xs font-black text-white bg-white/5 border border-border hover:bg-white/10 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 uppercase tracking-widest"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      "Verify Network"
-                    )}
-                  </button>
-                )}
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex-[2] flex items-center justify-center gap-3 rounded-xl bg-primary px-10 py-4 text-xs font-black text-primary-foreground transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-95 disabled:opacity-50 uppercase tracking-widest"
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-primary-foreground" />
-                  ) : (
-                    "Authorize & Establish"
-                  )}
-                </button>
-              </div>
-
+              {/* Test result */}
               {testResult && (
                 <div
-                  className={`p-4 rounded-xl border flex items-center gap-3 animate-in fade-in slide-in-from-top-2 ${testResult.success ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-red-500/10 border-red-500/20 text-red-400"}`}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-[11px] font-semibold animate-in fade-in duration-200 ${
+                    testResult.success
+                      ? "bg-emerald-500/8 border-emerald-500/20 text-emerald-400"
+                      : "bg-red-500/8 border-red-500/20 text-red-400"
+                  }`}
                 >
                   {testResult.success ? (
-                    <CheckCircle2 className="h-4 w-4" />
+                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
                   ) : (
-                    <AlertCircle className="h-4 w-4" />
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
                   )}
-                  <span className="text-[10px] font-black uppercase tracking-widest">
-                    {testResult.message}
-                  </span>
+                  {testResult.message}
                 </div>
               )}
             </div>
           </div>
-        </form>
 
-        <div className="mt-10 flex items-center justify-end gap-6 relative z-10 border-t border-border/50 pt-8">
-          <button
-            onClick={onClose}
-            type="button"
-            className="text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-colors"
-          >
-            Cancel
-          </button>
-        </div>
+          {/* ── Footer ────────────────────────────────────────────────────── */}
+          <div className="flex items-center justify-between gap-3 px-8 py-5 border-t border-white/5 bg-white/[0.01]">
+            <div className="flex items-center gap-2">
+              {/* Live colour + env indicator */}
+              <div
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: selectedEnv.color }}
+              />
+              <span className="text-[10px] text-zinc-600 font-semibold">
+                {selectedEnv.label}
+                {isLocal && " · Local"}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 rounded-lg text-xs font-semibold text-zinc-500 hover:text-white hover:bg-white/5 transition-all"
+              >
+                Cancel
+              </button>
+              {!isLocal && (
+                <button
+                  type="button"
+                  disabled={isLoading}
+                  onClick={handleTest}
+                  className="px-4 py-2 rounded-lg border border-white/8 bg-white/4 text-xs font-semibold text-zinc-300 hover:bg-white/8 hover:text-white transition-all disabled:opacity-40 flex items-center gap-2"
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : null}
+                  Test Connection
+                </button>
+              )}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="px-5 py-2 rounded-lg bg-primary text-black text-xs font-bold hover:bg-primary/90 transition-all disabled:opacity-40 flex items-center gap-2"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : null}
+                Add Connection
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
   );

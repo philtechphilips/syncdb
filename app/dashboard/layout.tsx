@@ -12,7 +12,7 @@ import {
 } from "@/components/dashboard/OnboardingWizard";
 import { useClusterStore } from "@/store/useClusterStore";
 import { useAuthStore } from "@/store/useAuthStore";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Suspense } from "react";
 
@@ -22,7 +22,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     isLoading: isAuthLoading,
     checkAuth,
   } = useAuthStore();
-  const { selectedCluster, fetchClusters, selectCluster } = useClusterStore();
+  const { selectedCluster, fetchClusters } = useClusterStore();
   const [isConnectOpen, setIsConnectOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isSidebarMobileOpen, setIsSidebarMobileOpen] = useState(false);
@@ -30,34 +30,24 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const handshakeRan = React.useRef(false);
 
-  // Master Handshake — runs once on mount only
+  // Master Handshake — runs once on mount only.
+  // checkAuth silently refreshes the access token from the localStorage refresh
+  // token, so this works correctly on page reload and in new tabs.
   React.useEffect(() => {
     if (handshakeRan.current) return;
     handshakeRan.current = true;
 
     const handshake = async () => {
-      // Always verify session on mount — access_token is never persisted so we
-      // must refresh it even when isAuthenticated:true is read from localStorage.
-      await checkAuth();
-      const { isAuthenticated: authed } = useAuthStore.getState();
+      const authed = await checkAuth();
       if (!authed) {
-        // Mark initialized so the protection effect can redirect to /auth/login.
         setIsInitialized(true);
         return;
       }
       const fetched = await fetchClusters();
-
-      // Restore cluster from URL param before marking initialized so ClusterGate
-      // never flashes the selection screen on a valid page reload.
-      const clusterId = searchParams.get("cluster");
-      if (clusterId) {
-        const cluster = fetched.find((c) => c.id === clusterId);
-        if (cluster) selectCluster(cluster);
-      }
-
+      // fetchClusters re-validates the persisted selectedCluster — if it was
+      // deleted it comes back null and ClusterGate will show the picker.
       if (fetched.length === 0 && shouldShowOnboarding()) {
         setShowOnboarding(true);
       }
@@ -73,32 +63,19 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     }
   }, [isInitialized, isAuthenticated, router]);
 
-  // Sync cluster back to URL if changed via UI
-  React.useEffect(() => {
-    if (selectedCluster?.id && isInitialized) {
-      const currentUrlCluster = searchParams.get("cluster");
-      if (currentUrlCluster !== selectedCluster.id) {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("cluster", selectedCluster.id);
-        const url = `${pathname}?${params.toString()}`;
-        router.replace(url as any, { scroll: false });
-      }
-    }
-  }, [selectedCluster?.id, pathname, searchParams, router, isInitialized]);
   const prevClusterIdRef = React.useRef<string | undefined>(undefined);
-  // Reset to query only when the user actively SWITCHES to a different cluster
-  // while already on a table route — not on initial load.
+  // Redirect to query when the user actively switches to a different cluster
+  // while on a table-specific route so the stale table path doesn't 404.
   React.useEffect(() => {
     if (!isInitialized || !selectedCluster?.id) return;
     const prev = prevClusterIdRef.current;
     prevClusterIdRef.current = selectedCluster.id;
-    // Only redirect if the cluster actually changed (not the first mount)
     if (
       prev &&
       prev !== selectedCluster.id &&
       pathname.includes("/dashboard/table/")
     ) {
-      router.push(`/dashboard/query?cluster=${selectedCluster.id}`);
+      router.push("/dashboard/query");
     }
   }, [selectedCluster?.id, isInitialized, pathname, router]);
 

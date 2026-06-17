@@ -8,7 +8,6 @@ import {
   Wifi,
   WifiOff,
   Terminal,
-  Key,
   CheckCircle2,
   Copy,
   Check,
@@ -32,16 +31,20 @@ const fadeUp = {
 // ── Animated terminal visual ────────────────────────────────────────────────
 
 const TERMINAL_LINES = [
-  { delay: 0, text: "$ npx synqdb-agent a1b2c3d4-...", type: "cmd" },
-  { delay: 700, text: "Connecting to api.synqdb.com...", type: "info" },
+  { delay: 0, text: "$ synqdb-agent login", type: "cmd" },
+  { delay: 700, text: "Opening browser for authentication...", type: "info" },
+  { delay: 1400, text: "Waiting for approval...", type: "muted" },
   {
-    delay: 1400,
-    text: "✓ Authenticated — serving cluster: local-dev",
+    delay: 2100,
+    text: "✓ Authenticated — key saved to ~/.synqdb-agent",
     type: "success",
   },
-  { delay: 2100, text: "Listening for queries...", type: "muted" },
-  { delay: 2800, text: "> SELECT * FROM users LIMIT 5", type: "query" },
-  { delay: 3300, text: "  5 rows returned in 2ms", type: "result" },
+  { delay: 2800, text: "$ synqdb-agent", type: "cmd" },
+  {
+    delay: 3300,
+    text: "✓ Connected — serving cluster: local-dev",
+    type: "success",
+  },
 ];
 
 const TerminalVisual = () => {
@@ -150,19 +153,21 @@ const ArchDiagram = () => (
 const STEPS = [
   {
     n: "01",
-    title: "Create a Local Cluster",
-    body: 'Toggle "Local Database" when adding a new connection. No host or port needed.',
+    title: "Install the agent",
+    body: "Install once globally, or run directly with npx — no configuration files needed.",
+    code: "npm install -g synqdb-agent",
   },
   {
     n: "02",
-    title: "Get your Agent Key",
-    body: "A unique key is generated for your cluster. Copy it from Project Settings anytime.",
+    title: "Log in via browser",
+    body: "One command opens your browser. Log in and click Authorize — no key to copy or paste.",
+    code: "synqdb-agent login",
   },
   {
     n: "03",
-    title: "Run the agent",
-    body: "One command on your machine — the agent connects outbound, no firewall changes required.",
-    code: "npx synqdb-agent <key>",
+    title: "Start the agent",
+    body: "The agent connects outbound to SynqDB — no firewall changes or port forwarding required.",
+    code: "synqdb-agent",
   },
 ];
 
@@ -172,18 +177,18 @@ const PILLS = [
   { icon: <WifiOff className="h-3 w-3" />, label: "No port forwarding" },
   { icon: <Shield className="h-3 w-3" />, label: "No VPN required" },
   { icon: <Zap className="h-3 w-3" />, label: "Sub-5ms relay overhead" },
-  { icon: <Key className="h-3 w-3" />, label: "Rotatable keys" },
+  { icon: <Terminal className="h-3 w-3" />, label: "Browser-based login" },
 ];
 
 // ── Main export ──────────────────────────────────────────────────────────────
 
 export const LocalAgentSection = () => {
-  const [copied, setCopied] = useState(false);
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText("npx synqdb-agent <your-key>");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = (text: string, idx: number) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIdx(idx);
+    setTimeout(() => setCopiedIdx(null), 2000);
   };
 
   return (
@@ -304,11 +309,11 @@ export const LocalAgentSection = () => {
                         {step.code}
                       </code>
                       <button
-                        onClick={handleCopy}
+                        onClick={() => handleCopy(step.code!, i)}
                         className="text-zinc-600 hover:text-zinc-300 transition-colors"
                         title="Copy"
                       >
-                        {copied ? (
+                        {copiedIdx === i ? (
                           <Check className="h-3.5 w-3.5 text-primary" />
                         ) : (
                           <Copy className="h-3.5 w-3.5" />
@@ -358,11 +363,17 @@ export const LocalAgentSection = () => {
                 <p className="text-[11px] text-zinc-500 leading-relaxed">
                   Use{" "}
                   <code className="text-zinc-400 font-mono">
-                    pm2 start synqdb-agent -- --save
+                    pm2 start synqdb-agent
                   </code>{" "}
-                  to persist the agent across reboots. The{" "}
-                  <code className="text-zinc-400 font-mono">--save</code> flag
-                  stores your key locally so you never have to pass it again.
+                  to persist the agent across reboots. Run{" "}
+                  <code className="text-zinc-400 font-mono">
+                    synqdb-agent login
+                  </code>{" "}
+                  once first — credentials are saved automatically to{" "}
+                  <code className="text-zinc-400 font-mono">
+                    ~/.synqdb-agent
+                  </code>
+                  .
                 </p>
               </div>
             </div>

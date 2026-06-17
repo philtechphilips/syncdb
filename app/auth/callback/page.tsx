@@ -15,10 +15,10 @@ function AuthCallbackContent() {
     const accessToken = searchParams.get("access_token");
     const refreshToken = searchParams.get("refresh_token");
 
-    if (accessToken) {
+    if (accessToken && refreshToken) {
       // Load tokens into the auth store (access_token in-memory,
-      // refresh_token in sessionStorage) so checkAuth() can verify them.
-      setTokens(accessToken, refreshToken ?? null);
+      // refresh_token in localStorage) so checkAuth() can verify them.
+      setTokens(accessToken, refreshToken);
 
       checkAuth()
         .then(() => {

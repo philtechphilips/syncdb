@@ -11,11 +11,7 @@ import {
   Loader2,
   AlertTriangle,
   Laptop,
-  Key,
-  Copy,
-  Check,
-  Eye,
-  EyeOff,
+  Terminal,
   RefreshCw,
 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -31,30 +27,17 @@ import {
 // ── Local Agent Section ───────────────────────────────────────────────────────
 
 const LocalAgentSection = () => {
-  const { fetchAgentKey, rotateAgentKey, fetchAgentStatus } = useAuthStore();
+  const { rotateAgentKey, fetchAgentStatus } = useAuthStore();
 
-  const [agentKey, setAgentKey] = React.useState<string | null>(null);
   const [connected, setConnected] = React.useState<boolean>(false);
-  const [visible, setVisible] = React.useState(false);
-  const [copied, setCopied] = React.useState(false);
   const [rotating, setRotating] = React.useState(false);
   const [confirmRotate, setConfirmRotate] = React.useState(false);
 
   React.useEffect(() => {
-    fetchAgentKey()
-      .then((r) => setAgentKey(r.agentKey))
-      .catch(() => null);
     fetchAgentStatus()
       .then((r) => setConnected(r.connected))
       .catch(() => null);
   }, []);
-
-  const handleCopy = async () => {
-    if (!agentKey) return;
-    await navigator.clipboard.writeText(agentKey);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   const handleRotate = async () => {
     if (!confirmRotate) {
@@ -65,12 +48,11 @@ const LocalAgentSection = () => {
     setConfirmRotate(false);
     setRotating(true);
     try {
-      const res = await rotateAgentKey();
-      setAgentKey(res.agentKey);
-      setVisible(true);
+      await rotateAgentKey();
       setConnected(false);
       toast.success("Agent key rotated", {
-        description: "The old key is now invalid. Copy and save the new key.",
+        description:
+          "The old key is now invalid. Run `npx synqdb-agent login` to re-authenticate.",
       });
     } catch {
       toast.error("Failed to rotate key");
@@ -82,92 +64,84 @@ const LocalAgentSection = () => {
   return (
     <SettingsSection
       title="Local Agent"
-      description="One key for your account — connect any local database from your machine."
+      description="Connect your local databases to SynqDB via the agent CLI."
       icon={Laptop}
       delay={0.3}
     >
       <div className="space-y-4">
         {/* Status */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div
-              className={`h-1.5 w-1.5 rounded-full ${connected ? "bg-primary" : "bg-zinc-600"}`}
-            />
-            <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
-              {connected ? "Agent Connected" : "Agent Offline"}
-            </span>
-          </div>
+        <div className="flex items-center gap-2">
+          <div
+            className={`h-1.5 w-1.5 rounded-full ${connected ? "bg-primary" : "bg-zinc-600"}`}
+          />
+          <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
+            {connected ? "Agent Connected" : "Agent Offline"}
+          </span>
         </div>
 
-        {/* Key display */}
+        {/* Install & login steps */}
         <div className="rounded-xl border border-border/50 bg-black/20 p-3 space-y-3">
-          <div className="flex items-center gap-2">
-            <Key className="h-3 w-3 text-zinc-600 shrink-0" />
-            <code className="flex-1 font-mono text-[10px] text-primary truncate select-all">
-              {agentKey ? (
-                visible ? (
-                  agentKey
-                ) : (
-                  "••••••••-••••-••••-••••-••••••••••••"
-                )
-              ) : (
-                <span className="text-zinc-600">Loading...</span>
-              )}
-            </code>
-            <button
-              onClick={() => setVisible((v) => !v)}
-              className="shrink-0 text-zinc-600 hover:text-zinc-300 transition-colors"
-              title={visible ? "Hide" : "Reveal"}
-            >
-              {visible ? (
-                <EyeOff className="h-3.5 w-3.5" />
-              ) : (
-                <Eye className="h-3.5 w-3.5" />
-              )}
-            </button>
-            <button
-              onClick={handleCopy}
-              className="shrink-0 text-zinc-600 hover:text-zinc-300 transition-colors"
-              title="Copy key"
-            >
-              {copied ? (
-                <Check className="h-3.5 w-3.5 text-primary" />
-              ) : (
-                <Copy className="h-3.5 w-3.5" />
-              )}
-            </button>
+          <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
+            Quick Start
+          </p>
+
+          <div className="space-y-2">
+            {[
+              {
+                step: "1",
+                label: "Install",
+                cmd: "npm install -g synqdb-agent",
+              },
+              { step: "2", label: "Login", cmd: "synqdb-agent login" },
+              { step: "3", label: "Run", cmd: "synqdb-agent" },
+            ].map(({ step, label, cmd }) => (
+              <div key={step} className="flex items-center gap-3">
+                <span className="h-5 w-5 rounded-full bg-primary/10 border border-primary/20 text-[9px] font-black text-primary flex items-center justify-center shrink-0">
+                  {step}
+                </span>
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <span className="text-[9px] text-zinc-600 uppercase font-bold tracking-wider w-8 shrink-0">
+                    {label}
+                  </span>
+                  <code className="font-mono text-[10px] text-primary truncate">
+                    {cmd}
+                  </code>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <div className="flex items-center justify-between pt-1 border-t border-white/5">
-            <p className="text-[9px] text-zinc-600 font-mono">
-              npx synqdb-agent {visible && agentKey ? agentKey : "<key>"}
-            </p>
-            <button
-              onClick={handleRotate}
-              disabled={rotating}
-              className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider transition-all px-2.5 py-1 rounded-lg ${
-                confirmRotate
-                  ? "text-red-400 border border-red-500/30 bg-red-500/10"
-                  : "text-zinc-600 hover:text-red-400 border border-transparent hover:border-red-500/20"
-              }`}
-            >
-              {rotating ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <RefreshCw className="h-3 w-3" />
-              )}
-              {confirmRotate ? "Click again to confirm" : "Rotate Key"}
-            </button>
-          </div>
+          <p className="text-[9px] text-zinc-600 leading-relaxed pt-1 border-t border-white/5">
+            <Terminal className="h-2.5 w-2.5 inline mr-1 -mt-px" />
+            <code>synqdb-agent login</code> opens your browser — log in and
+            click Authorize. No keys to copy.
+          </p>
         </div>
 
-        <div className="flex items-start gap-3 p-3 rounded-xl border border-white/5 bg-white/2">
-          <AlertTriangle className="h-3.5 w-3.5 text-zinc-500 shrink-0 mt-0.5" />
-          <p className="text-[9px] text-zinc-600 leading-relaxed">
-            This key works for all your local clusters. Rotating it disconnects
-            the running agent — restart with the new key. Old keys are
-            permanently invalidated.
-          </p>
+        {/* Rotate key */}
+        <div className="flex items-center justify-between pt-1">
+          <div>
+            <p className="text-[10px] font-bold text-zinc-400">Revoke Access</p>
+            <p className="text-[9px] text-zinc-600 mt-0.5">
+              Rotates the underlying key and disconnects any running agents.
+            </p>
+          </div>
+          <button
+            onClick={handleRotate}
+            disabled={rotating}
+            className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider transition-all px-2.5 py-1 rounded-lg ${
+              confirmRotate
+                ? "text-red-400 border border-red-500/30 bg-red-500/10"
+                : "text-zinc-600 hover:text-red-400 border border-transparent hover:border-red-500/20"
+            }`}
+          >
+            {rotating ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <RefreshCw className="h-3 w-3" />
+            )}
+            {confirmRotate ? "Click again to confirm" : "Rotate Key"}
+          </button>
         </div>
       </div>
     </SettingsSection>
