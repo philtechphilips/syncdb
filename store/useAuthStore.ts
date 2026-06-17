@@ -126,16 +126,18 @@ export const useAuthStore = create<AuthState>()(
       },
 
       // checkAuth — called once on dashboard mount.
-      // 1. If we already have an access_token in-memory, verify it via /status.
-      // 2. If not (page reload / new tab), try a silent refresh from localStorage RT.
-      // 3. If refresh also fails, log out.
-      // Returns true if authenticated, false otherwise.
+      // 1. No in-memory token → try silent refresh from localStorage RT.
+      //    If refresh succeeds, the new token is valid by definition — skip /status.
+      // 2. Already have in-memory token (e.g. SPA nav without reload) → verify via /status
+      //    in case it expired mid-session and the interceptor hasn't caught it yet.
+      // 3. Either path failing → logout and return false.
       checkAuth: async () => {
         set({ isLoading: true });
 
-        let { access_token } = get();
+        const { access_token } = get();
 
         if (!access_token) {
+          // Page reload or new tab — try silent refresh
           const rt = loadRefreshToken();
           if (!rt) {
             set({ isAuthenticated: false, isLoading: false });
@@ -151,8 +153,13 @@ export const useAuthStore = create<AuthState>()(
             if (!res.ok) throw new Error("refresh failed");
             const data = await res.json();
             saveRefreshToken(data.refresh_token ?? rt);
-            set({ access_token: data.access_token });
-            access_token = data.access_token;
+            // Refresh succeeded — token is fresh, user profile already persisted
+            set({
+              access_token: data.access_token,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+            return true;
           } catch {
             saveRefreshToken(null);
             set({
@@ -164,6 +171,7 @@ export const useAuthStore = create<AuthState>()(
           }
         }
 
+        // Already have a token — do a lightweight verify
         try {
           const res = await api.get("/v1/auth/status");
           set({ user: res.data, isAuthenticated: true, isLoading: false });

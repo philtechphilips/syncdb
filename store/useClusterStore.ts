@@ -6,7 +6,7 @@ import { getErrorMessage } from "@/lib/errorUtils";
 export interface Cluster {
   id: string;
   name: string;
-  type: "mysql" | "postgres" | "mssql";
+  type: "mysql" | "postgres" | "mssql" | "sqlite";
   environment: "development" | "staging" | "production";
   color?: string;
   isLocal?: boolean;

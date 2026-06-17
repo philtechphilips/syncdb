@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation";
 const ONBOARDING_KEY = "synqdb_onboarding_done";
 
 const DB_OPTIONS: {
-  id: "postgres" | "mysql" | "mssql";
+  id: "postgres" | "mysql" | "mssql" | "sqlite";
   label: string;
   icon: string;
   defaultPort: string;
@@ -28,6 +28,7 @@ const DB_OPTIONS: {
   { id: "postgres", label: "PostgreSQL", icon: "🐘", defaultPort: "5432" },
   { id: "mysql", label: "MySQL", icon: "🐬", defaultPort: "3306" },
   { id: "mssql", label: "SQL Server", icon: "🪟", defaultPort: "1433" },
+  { id: "sqlite", label: "SQLite", icon: "🗄️", defaultPort: "" },
 ];
 
 const SAMPLE_QUERY = [
@@ -97,7 +98,7 @@ const ConnectStep = ({ onSuccess }: { onSuccess: () => void }) => {
   const { createCluster, testConnection, isLoading, error, clearError } =
     useClusterStore();
 
-  const [selectedDb, setSelectedDb] = useState<"postgres" | "mysql" | "mssql">(
+  const [selectedDb, setSelectedDb] = useState<"postgres" | "mysql" | "mssql" | "sqlite">(
     "postgres",
   );
   const [form, setForm] = useState({
@@ -113,7 +114,7 @@ const ConnectStep = ({ onSuccess }: { onSuccess: () => void }) => {
     message: string;
   } | null>(null);
 
-  const handleDbChange = (id: "postgres" | "mysql" | "mssql") => {
+  const handleDbChange = (id: "postgres" | "mysql" | "mssql" | "sqlite") => {
     const opt = DB_OPTIONS.find((d) => d.id === id)!;
     setSelectedDb(id);
     setForm((f) => ({ ...f, port: opt.defaultPort }));

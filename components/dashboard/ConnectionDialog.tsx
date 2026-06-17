@@ -22,7 +22,7 @@ import { UI_CLASSES } from "@/lib/constants";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type DbType = "mysql" | "postgres" | "mssql";
+type DbType = "mysql" | "postgres" | "mssql" | "sqlite";
 type EnvType = "development" | "staging" | "production";
 
 // ── Config ────────────────────────────────────────────────────────────────────
@@ -31,6 +31,7 @@ const DB_OPTIONS: { id: DbType; name: string; port: string }[] = [
   { id: "postgres", name: "PostgreSQL", port: "5432" },
   { id: "mysql", name: "MySQL / MariaDB", port: "3306" },
   { id: "mssql", name: "SQL Server", port: "1433" },
+  { id: "sqlite", name: "SQLite", port: "" },
 ];
 
 const ENV_OPTIONS: {
@@ -85,6 +86,7 @@ const ConnectionDialog = ({
   const [selectedDb, setSelectedDb] = useState<DbType>("postgres");
   const [formData, setFormData] = useState({
     name: "",
+    type: "postgres" as DbType,
     host: "",
     port: "5432",
     database: "",
@@ -110,7 +112,7 @@ const ConnectionDialog = ({
   const handleDbSelect = (id: DbType) => {
     const db = DB_OPTIONS.find((d) => d.id === id)!;
     setSelectedDb(id);
-    setFormData((f) => ({ ...f, port: db.port }));
+    setFormData((f) => ({ ...f, type: id, port: db.port }));
     setTestResult(null);
   };
 
@@ -145,6 +147,7 @@ const ConnectionDialog = ({
       });
       setFormData({
         name: "",
+        type: "postgres",
         host: "",
         port: "5432",
         database: "",
@@ -359,85 +362,110 @@ const ConnectionDialog = ({
                 </div>
               </div>
 
-              {/* Host + Port */}
-              <div className="grid grid-cols-[1fr_88px] gap-3">
+              {/* Host + Port (or File Path for SQLite) */}
+              {formData.type === "sqlite" ? (
                 <div>
-                  <FieldLabel>Host</FieldLabel>
+                  <FieldLabel>File Path</FieldLabel>
                   <div className="relative">
-                    <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600" />
+                    <Database className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600" />
                     <input
                       type="text"
                       required
                       value={formData.host}
                       onChange={(e) => field("host", e.target.value)}
-                      placeholder={isLocal ? "localhost" : "db.example.com"}
+                      placeholder="/path/to/database.db"
                       className={`${inputCls} pl-9`}
                     />
                   </div>
+                  <p className="text-[10px] text-zinc-600 mt-1.5 px-0.5">
+                    Absolute path to the .db file on the server (or agent
+                    machine).
+                  </p>
                 </div>
+              ) : (
+                <div className="grid grid-cols-[1fr_88px] gap-3">
+                  <div>
+                    <FieldLabel>Host</FieldLabel>
+                    <div className="relative">
+                      <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600" />
+                      <input
+                        type="text"
+                        required
+                        value={formData.host}
+                        onChange={(e) => field("host", e.target.value)}
+                        placeholder={isLocal ? "localhost" : "db.example.com"}
+                        className={`${inputCls} pl-9`}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <FieldLabel>Port</FieldLabel>
+                    <input
+                      type="text"
+                      required
+                      value={formData.port}
+                      onChange={(e) => field("port", e.target.value)}
+                      className={`${inputCls} text-center tracking-widest`}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Database name (hidden for SQLite — file path is the database) */}
+              {formData.type !== "sqlite" && (
                 <div>
-                  <FieldLabel>Port</FieldLabel>
+                  <FieldLabel>Database</FieldLabel>
                   <input
                     type="text"
                     required
-                    value={formData.port}
-                    onChange={(e) => field("port", e.target.value)}
-                    className={`${inputCls} text-center tracking-widest`}
-                  />
-                </div>
-              </div>
-
-              {/* Database name */}
-              <div>
-                <FieldLabel>Database</FieldLabel>
-                <input
-                  type="text"
-                  required
-                  value={formData.database}
-                  onChange={(e) => field("database", e.target.value)}
-                  placeholder="my_database"
-                  className={inputCls}
-                />
-              </div>
-
-              {/* Credentials */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <FieldLabel>Username</FieldLabel>
-                  <input
-                    type="text"
-                    required
-                    value={formData.username}
-                    onChange={(e) => field("username", e.target.value)}
-                    placeholder="admin"
+                    value={formData.database}
+                    onChange={(e) => field("database", e.target.value)}
+                    placeholder="my_database"
                     className={inputCls}
                   />
                 </div>
-                <div>
-                  <FieldLabel>Password</FieldLabel>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600" />
+              )}
+
+              {/* Credentials (hidden for SQLite) */}
+              {formData.type !== "sqlite" && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <FieldLabel>Username</FieldLabel>
                     <input
-                      type={showPassword ? "text" : "password"}
-                      value={formData.password}
-                      onChange={(e) => field("password", e.target.value)}
-                      placeholder="••••••••"
-                      className={`${inputCls} pl-9 pr-9`}
+                      type="text"
+                      required
+                      value={formData.username}
+                      onChange={(e) => field("username", e.target.value)}
+                      placeholder="admin"
+                      className={inputCls}
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 transition-colors"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-3.5 w-3.5" />
-                      ) : (
-                        <Eye className="h-3.5 w-3.5" />
-                      )}
-                    </button>
+                  </div>
+                  <div>
+                    <FieldLabel>Password</FieldLabel>
+                    <div className="relative">
+                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600" />
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={formData.password}
+                        onChange={(e) => field("password", e.target.value)}
+                        placeholder="••••••••"
+                        className={`${inputCls} pl-9 pr-9`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 transition-colors"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-3.5 w-3.5" />
+                        ) : (
+                          <Eye className="h-3.5 w-3.5" />
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Local agent info banner */}
               {isLocal && (
