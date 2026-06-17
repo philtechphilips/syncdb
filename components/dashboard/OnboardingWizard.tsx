@@ -98,9 +98,9 @@ const ConnectStep = ({ onSuccess }: { onSuccess: () => void }) => {
   const { createCluster, testConnection, isLoading, error, clearError } =
     useClusterStore();
 
-  const [selectedDb, setSelectedDb] = useState<"postgres" | "mysql" | "mssql" | "sqlite">(
-    "postgres",
-  );
+  const [selectedDb, setSelectedDb] = useState<
+    "postgres" | "mysql" | "mssql" | "sqlite"
+  >("postgres");
   const [form, setForm] = useState({
     name: "",
     host: "",
