@@ -49,4 +49,4 @@ jobs:
             echo "--- Restarting app ---"
             pm2 restart syncdb
 
-            echo "--- Deployment successful ---"
+            echo "--- Deployment successful ---"      
