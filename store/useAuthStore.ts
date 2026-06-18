@@ -203,7 +203,11 @@ export const useAuthStore = create<AuthState>()(
             return true;
           } catch {
             saveRefreshToken(null);
-            set({ isAuthenticated: false, isLoading: false, access_token: null });
+            set({
+              isAuthenticated: false,
+              isLoading: false,
+              access_token: null,
+            });
             return false;
           }
         }

@@ -79,8 +79,13 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     }
   }, [selectedCluster?.id, isInitialized, pathname, router]);
 
-  const { activeTab, setActiveTab, selectedTable, setSelectedTable, openTableTab } =
-    useClusterStore();
+  const {
+    activeTab,
+    setActiveTab,
+    selectedTable,
+    setSelectedTable,
+    openTableTab,
+  } = useClusterStore();
 
   if (!isInitialized || isAuthLoading) {
     return (

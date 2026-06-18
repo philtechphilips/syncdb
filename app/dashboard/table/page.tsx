@@ -48,7 +48,9 @@ export default function TablePage() {
               {isActive && (
                 <span className="absolute top-0 left-0 right-0 h-[2px] bg-primary" />
               )}
-              <Table className={`h-3 w-3 shrink-0 ${isActive ? "text-primary" : "text-zinc-600"}`} />
+              <Table
+                className={`h-3 w-3 shrink-0 ${isActive ? "text-primary" : "text-zinc-600"}`}
+              />
               <span className="max-w-[120px] truncate">{tab}</span>
               <span
                 onClick={(e) => {
@@ -70,7 +72,10 @@ export default function TablePage() {
           <div
             key={tab}
             className="absolute inset-0"
-            style={{ display: tab === activeTableTab ? "flex" : "none", flexDirection: "column" }}
+            style={{
+              display: tab === activeTableTab ? "flex" : "none",
+              flexDirection: "column",
+            }}
           >
             <DataTable selectedTable={tab} />
           </div>

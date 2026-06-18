@@ -134,10 +134,15 @@ export const useClusterStore = create<ClusterState>()(
       closeTableTab: (tableName) => {
         const { openTableTabs, activeTableTab } = get();
         const next = openTableTabs.filter((t) => t !== tableName);
-        const nextActive = activeTableTab === tableName
-          ? (next[next.length - 1] ?? "")
-          : activeTableTab;
-        set({ openTableTabs: next, activeTableTab: nextActive, selectedTable: nextActive });
+        const nextActive =
+          activeTableTab === tableName
+            ? (next[next.length - 1] ?? "")
+            : activeTableTab;
+        set({
+          openTableTabs: next,
+          activeTableTab: nextActive,
+          selectedTable: nextActive,
+        });
       },
 
       setActiveTableTab: (tableName) => {

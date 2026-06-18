@@ -33,15 +33,31 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
   // ── Selection / editing ────────────────────────────────────────────────────
-  const [selectedRows, setSelectedRows] = useState<Set<string | number>>(new Set());
-  const [activeCell, setActiveCell] = useState<{ rowId: string | number; colName: string } | null>(null);
-  const [editingCell, setEditingCell] = useState<{ rowId: string | number; colName: string; value: string } | null>(null);
+  const [selectedRows, setSelectedRows] = useState<Set<string | number>>(
+    new Set(),
+  );
+  const [activeCell, setActiveCell] = useState<{
+    rowId: string | number;
+    colName: string;
+  } | null>(null);
+  const [editingCell, setEditingCell] = useState<{
+    rowId: string | number;
+    colName: string;
+    value: string;
+  } | null>(null);
 
   // ── UI ─────────────────────────────────────────────────────────────────────
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; rowId: string | number; colName: string; type: "cell" | "row" } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    rowId: string | number;
+    colName: string;
+    type: "cell" | "row";
+  } | null>(null);
   const [showCopyDropdown, setShowCopyDropdown] = useState(false);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
-  const [showGlobalExportDropdown, setShowGlobalExportDropdown] = useState(false);
+  const [showGlobalExportDropdown, setShowGlobalExportDropdown] =
+    useState(false);
   const [lastCopiedFormat, setLastCopiedFormat] = useState<string | null>(null);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showSelectedOnly, setShowSelectedOnly] = useState(false);
@@ -50,45 +66,56 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
   // ── Row modal ──────────────────────────────────────────────────────────────
   const [showRowModal, setShowRowModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editingRow, setEditingRow] = useState<Record<string, unknown> | null>(null);
+  const [editingRow, setEditingRow] = useState<Record<string, unknown> | null>(
+    null,
+  );
   const [tableColumns, setTableColumns] = useState<TableColumn[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [nullFields, setNullFields] = useState<Set<string>>(new Set());
 
   // ── Filters ────────────────────────────────────────────────────────────────
-  const [activeFilters, setActiveFilters] = useState<{ column: string; operator: string; value: string }[]>([]);
-  const [stagedFilters, setStagedFilters] = useState<{ column: string; operator: string; value: string }[]>([]);
+  const [activeFilters, setActiveFilters] = useState<
+    { column: string; operator: string; value: string }[]
+  >([]);
+  const [stagedFilters, setStagedFilters] = useState<
+    { column: string; operator: string; value: string }[]
+  >([]);
   const [showFilterPopover, setShowFilterPopover] = useState(false);
 
   // ── Data fetching (self-contained, not via store) ─────────────────────────
 
-  const fetchPage = useCallback(async (page: number, filters: typeof activeFilters) => {
-    if (!selectedTable || !selectedCluster) return;
-    setIsLoading(true);
-    try {
-      const filterParam = filters.length > 0
-        ? `&filters=${encodeURIComponent(JSON.stringify(filters))}`
-        : "";
-      const res = await api.get(
-        `/v1/clusters/${selectedCluster.id}/tables/${selectedTable}?page=${page}&limit=${rowsPerPage}${filterParam}`,
-      );
-      const { data, total, page: resPage } = res.data;
-      setRows(data);
-      setTotalRows(total);
-      setCurrentPage(resPage);
-      setSelectedRows(new Set());
-    } catch {
-      // toast shown by api interceptor
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedTable, selectedCluster, rowsPerPage]);
+  const fetchPage = useCallback(
+    async (page: number, filters: typeof activeFilters) => {
+      if (!selectedTable || !selectedCluster) return;
+      setIsLoading(true);
+      try {
+        const filterParam =
+          filters.length > 0
+            ? `&filters=${encodeURIComponent(JSON.stringify(filters))}`
+            : "";
+        const res = await api.get(
+          `/v1/clusters/${selectedCluster.id}/tables/${selectedTable}?page=${page}&limit=${rowsPerPage}${filterParam}`,
+        );
+        const { data, total, page: resPage } = res.data;
+        setRows(data);
+        setTotalRows(total);
+        setCurrentPage(resPage);
+        setSelectedRows(new Set());
+      } catch {
+        // toast shown by api interceptor
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [selectedTable, selectedCluster, rowsPerPage],
+  );
 
   // Fetch columns once on mount / table change
   useEffect(() => {
     if (!selectedTable || !selectedCluster) return;
-    api.get(`/v1/clusters/${selectedCluster.id}/tables/${selectedTable}/columns`)
+    api
+      .get(`/v1/clusters/${selectedCluster.id}/tables/${selectedTable}/columns`)
       .then((res) => setTableColumns(res.data as TableColumn[]))
       .catch(() => {});
   }, [selectedTable, selectedCluster]);
@@ -111,10 +138,18 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
-  const handleContextMenu = (e: React.MouseEvent, rowId: string | number, colName: string) => {
+  const handleContextMenu = (
+    e: React.MouseEvent,
+    rowId: string | number,
+    colName: string,
+  ) => {
     e.preventDefault();
     const isRowSelected = selectedRows.has(rowId);
-    const { x, y } = calculateContextMenuPosition(e.clientX, e.clientY, isRowSelected);
+    const { x, y } = calculateContextMenuPosition(
+      e.clientX,
+      e.clientY,
+      isRowSelected,
+    );
     if (isRowSelected) {
       setContextMenu({ x, y, rowId, colName, type: "row" });
       setActiveCell(null);
@@ -126,7 +161,8 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
 
   const toggleRow = (id: string | number) => {
     const next = new Set(selectedRows);
-    if (next.has(id)) next.delete(id); else next.add(id);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
     setSelectedRows(next);
   };
 
@@ -137,13 +173,20 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
 
   const setAsNull = (rowId: string | number, colName: string) => {
     if (colName === "id") return;
-    setRows(rows.map((r) => (r.id as string | number) === rowId ? { ...r, [colName]: "NULL" } : r));
+    setRows(
+      rows.map((r) =>
+        (r.id as string | number) === rowId ? { ...r, [colName]: "NULL" } : r,
+      ),
+    );
   };
 
   const deleteRow = async (id: string | number) => {
     if (!selectedCluster || !selectedTable) return;
     try {
-      await api.delete(`/v1/clusters/${selectedCluster.id}/tables/${selectedTable}/rows`, { data: { where: { id } } });
+      await api.delete(
+        `/v1/clusters/${selectedCluster.id}/tables/${selectedTable}/rows`,
+        { data: { where: { id } } },
+      );
       setRows((prev) => deleteTableRow(prev, id));
       const next = new Set(selectedRows);
       next.delete(id);
@@ -158,14 +201,21 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
   const handleDeleteSelected = async () => {
     if (!selectedCluster || !selectedTable || selectedRows.size === 0) return;
     const count = selectedRows.size;
-    const rowsToDelete = rows.filter((r) => selectedRows.has(r.id as string | number));
+    const rowsToDelete = rows.filter((r) =>
+      selectedRows.has(r.id as string | number),
+    );
     try {
       await Promise.all(
         rowsToDelete.map((row) =>
-          api.delete(`/v1/clusters/${selectedCluster.id}/tables/${selectedTable}/rows`, { data: { where: { id: row.id } } }),
+          api.delete(
+            `/v1/clusters/${selectedCluster.id}/tables/${selectedTable}/rows`,
+            { data: { where: { id: row.id } } },
+          ),
         ),
       );
-      setRows((prev) => prev.filter((r) => !selectedRows.has(r.id as string | number)));
+      setRows((prev) =>
+        prev.filter((r) => !selectedRows.has(r.id as string | number)),
+      );
       setTotalRows((t) => Math.max(0, t - count));
       setSelectedRows(new Set());
       toast.success(`${count} row${count > 1 ? "s" : ""} deleted successfully`);
@@ -178,7 +228,12 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
     setRows(cloneTableRow(rows, rowId) as Record<string, unknown>[]);
   };
 
-  const handleCopy = (format: string, dataToProcess: Record<string, unknown>[] = rows.filter((r) => selectedRows.has(r.id as string | number))) => {
+  const handleCopy = (
+    format: string,
+    dataToProcess: Record<string, unknown>[] = rows.filter((r) =>
+      selectedRows.has(r.id as string | number),
+    ),
+  ) => {
     const content = formatData(format, dataToProcess, selectedTable || "table");
     if (typeof content === "string") {
       copyToClipboard(content);
@@ -190,32 +245,53 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
     setShowCopyDropdown(false);
   };
 
-  const handleExport = async (format: string, dataToProcess?: Record<string, unknown>[]) => {
-    if (format === "modal") { setShowExportModal(true); return; }
+  const handleExport = async (
+    format: string,
+    dataToProcess?: Record<string, unknown>[],
+  ) => {
+    if (format === "modal") {
+      setShowExportModal(true);
+      return;
+    }
 
     let data = dataToProcess;
     if (!data) {
       if (showSelectedOnly && selectedRows.size > 0) {
         data = rows.filter((r) => selectedRows.has(r.id as string | number));
       } else {
-        const toastId = toast.loading(`Preparing ${totalRows.toLocaleString()} rows for export...`);
+        const toastId = toast.loading(
+          `Preparing ${totalRows.toLocaleString()} rows for export...`,
+        );
         try {
-          const filterParam = activeFilters.length > 0 ? `&filters=${encodeURIComponent(JSON.stringify(activeFilters))}` : "";
-          const res = await api.get(`/v1/clusters/${selectedCluster!.id}/tables/${selectedTable}?page=1&limit=${totalRows}${filterParam}`);
+          const filterParam =
+            activeFilters.length > 0
+              ? `&filters=${encodeURIComponent(JSON.stringify(activeFilters))}`
+              : "";
+          const res = await api.get(
+            `/v1/clusters/${selectedCluster!.id}/tables/${selectedTable}?page=1&limit=${totalRows}${filterParam}`,
+          );
           data = res.data.data;
           toast.dismiss(toastId);
         } catch {
-          toast.error("Failed to fetch full dataset for export", { id: toastId });
+          toast.error("Failed to fetch full dataset for export", {
+            id: toastId,
+          });
           return;
         }
       }
     }
 
-    if (!data || data.length === 0) return toast.error("No data available to export");
+    if (!data || data.length === 0)
+      return toast.error("No data available to export");
     const content = formatData(format, data, selectedTable || "table");
-    if (!content || (typeof content === "string" && content === "")) return toast.error("Failed to format data for export");
-    const subName = selectedRows.size > 0 && showSelectedOnly ? "selection" : "full";
-    downloadFile(content, `${selectedTable || "export"}_${subName}.${format.toLowerCase()}`);
+    if (!content || (typeof content === "string" && content === ""))
+      return toast.error("Failed to format data for export");
+    const subName =
+      selectedRows.size > 0 && showSelectedOnly ? "selection" : "full";
+    downloadFile(
+      content,
+      `${selectedTable || "export"}_${subName}.${format.toLowerCase()}`,
+    );
     setExportSuccess(format);
     setTimeout(() => setExportSuccess(null), 2000);
     setShowExportDropdown(false);
@@ -247,14 +323,23 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
   const handleSaveCell = async () => {
     if (!editingCell || !selectedCluster || !selectedTable) return;
     const { rowId, colName, value } = editingCell;
-    const original = rows.find((r) => (r.id as string | number) === rowId)?.[colName];
+    const original = rows.find((r) => (r.id as string | number) === rowId)?.[
+      colName
+    ];
     if (String(original ?? "") === value) {
       setEditingCell(null);
       return;
     }
     try {
-      await api.patch(`/v1/clusters/${selectedCluster.id}/tables/${selectedTable}/rows`, { data: { [colName]: value }, where: { id: rowId } });
-      setRows((prev) => prev.map((r) => (r.id as string | number) === rowId ? { ...r, [colName]: value } : r));
+      await api.patch(
+        `/v1/clusters/${selectedCluster.id}/tables/${selectedTable}/rows`,
+        { data: { [colName]: value }, where: { id: rowId } },
+      );
+      setRows((prev) =>
+        prev.map((r) =>
+          (r.id as string | number) === rowId ? { ...r, [colName]: value } : r,
+        ),
+      );
       setEditingCell(null);
       toast.success("Cell updated");
     } catch {
@@ -285,7 +370,9 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
     setEditingRow(row);
     setFormData({ ...row });
     const nextNulls = new Set<string>();
-    Object.keys(row).forEach((key) => { if (row[key] === null || row[key] === "NULL") nextNulls.add(key); });
+    Object.keys(row).forEach((key) => {
+      if (row[key] === null || row[key] === "NULL") nextNulls.add(key);
+    });
     setNullFields(nextNulls);
     setShowRowModal(true);
   };
@@ -294,18 +381,30 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
     if (!selectedCluster || !selectedTable) return;
     setIsSaving(true);
     const finalData: Record<string, unknown> = { ...formData };
-    nullFields.forEach((col) => { finalData[col] = null; });
+    nullFields.forEach((col) => {
+      finalData[col] = null;
+    });
     try {
       if (isEditMode && editingRow) {
         const where = editingRow.id ? { id: editingRow.id } : { ...editingRow };
-        await api.patch(`/v1/clusters/${selectedCluster.id}/tables/${selectedTable}/rows`, { data: finalData, where });
-        setRows((prev) => prev.map((r) => {
-          const matches = Object.keys(where).every((k) => r[k] === (where as Record<string, unknown>)[k]);
-          return matches ? { ...r, ...finalData } : r;
-        }));
+        await api.patch(
+          `/v1/clusters/${selectedCluster.id}/tables/${selectedTable}/rows`,
+          { data: finalData, where },
+        );
+        setRows((prev) =>
+          prev.map((r) => {
+            const matches = Object.keys(where).every(
+              (k) => r[k] === (where as Record<string, unknown>)[k],
+            );
+            return matches ? { ...r, ...finalData } : r;
+          }),
+        );
         toast.success("Row updated");
       } else {
-        const res = await api.post(`/v1/clusters/${selectedCluster.id}/tables/${selectedTable}`, finalData);
+        const res = await api.post(
+          `/v1/clusters/${selectedCluster.id}/tables/${selectedTable}`,
+          finalData,
+        );
         setRows((prev) => [res.data, ...prev]);
         setTotalRows((t) => t + 1);
         toast.success("Row inserted");
@@ -328,15 +427,23 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
           <div className="absolute inset-0 bg-primary/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
         <div className="text-center space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Explorer Node Ready</p>
-          <p className="text-[11px] font-medium text-zinc-400 max-w-[200px] leading-relaxed mx-auto">Select a system entry to begin orchestration.</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">
+            Explorer Node Ready
+          </p>
+          <p className="text-[11px] font-medium text-zinc-400 max-w-[200px] leading-relaxed mx-auto">
+            Select a system entry to begin orchestration.
+          </p>
         </div>
       </div>
     );
   }
 
   if (isLoading && rows.length === 0) {
-    return <TableSkeleton columnCount={tableColumns.length > 0 ? tableColumns.length : 6} />;
+    return (
+      <TableSkeleton
+        columnCount={tableColumns.length > 0 ? tableColumns.length : 6}
+      />
+    );
   }
 
   return (
@@ -345,17 +452,34 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
         contextMenu={contextMenu}
         onClose={closeMenu}
         onSetNull={setAsNull}
-        onCopyValue={(rid, col) => copyToClipboard(rows.find((r) => (r.id as string | number) === rid)?.[col]?.toString() || "")}
+        onCopyValue={(rid, col) =>
+          copyToClipboard(
+            rows
+              .find((r) => (r.id as string | number) === rid)
+              ?.[col]?.toString() || "",
+          )
+        }
         onFilterByValue={(rid, col) => {
-          const val = rows.find((r) => (r.id as string | number) === rid)?.[col]?.toString() || "";
-          setActiveFilters([...activeFilters, { column: col, operator: "is", value: val }]);
+          const val =
+            rows
+              .find((r) => (r.id as string | number) === rid)
+              ?.[col]?.toString() || "";
+          setActiveFilters([
+            ...activeFilters,
+            { column: col, operator: "is", value: val },
+          ]);
           setShowFilterPopover(true);
         }}
         onCopyColumn={copyToClipboard}
         onCopyRow={(format, rid) =>
-          handleCopy(format, rid === -1
-            ? rows.filter((r) => selectedRows.has(r.id as string | number))
-            : rows.filter((r) => (r.id as string | number) === rid) as Record<string, unknown>[])
+          handleCopy(
+            format,
+            rid === -1
+              ? rows.filter((r) => selectedRows.has(r.id as string | number))
+              : (rows.filter(
+                  (r) => (r.id as string | number) === rid,
+                ) as Record<string, unknown>[]),
+          )
         }
         onCloneRow={cloneRow}
         onDeleteRow={deleteRow}
@@ -386,7 +510,12 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
         onCopy={handleCopy}
         showExportDropdown={showExportDropdown}
         setShowExportDropdown={setShowExportDropdown}
-        onExportSelection={(fmt) => handleExport(fmt, rows.filter((r) => selectedRows.has(r.id as string | number)))}
+        onExportSelection={(fmt) =>
+          handleExport(
+            fmt,
+            rows.filter((r) => selectedRows.has(r.id as string | number)),
+          )
+        }
         onExportAll={(fmt) => handleExport(fmt, rows)}
         showFilterPopover={showFilterPopover}
         setShowFilterPopover={setShowFilterPopover}
@@ -395,11 +524,24 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
         onClearAllFilters={() => setActiveFilters([])}
         onAddFilter={() => {
           const columns = tableColumns.map((c) => c.name);
-          if (columns.length > 0) setStagedFilters([...stagedFilters, { column: columns[0], operator: "is", value: "" }]);
+          if (columns.length > 0)
+            setStagedFilters([
+              ...stagedFilters,
+              { column: columns[0], operator: "is", value: "" },
+            ]);
         }}
-        onRemoveFilter={(idx) => setStagedFilters(stagedFilters.filter((_, i) => i !== idx))}
-        onUpdateFilter={(idx, up) => setStagedFilters(stagedFilters.map((f, i) => (i === idx ? { ...f, ...up } : f)))}
-        onApplyFilters={() => { setActiveFilters(stagedFilters); setShowFilterPopover(false); }}
+        onRemoveFilter={(idx) =>
+          setStagedFilters(stagedFilters.filter((_, i) => i !== idx))
+        }
+        onUpdateFilter={(idx, up) =>
+          setStagedFilters(
+            stagedFilters.map((f, i) => (i === idx ? { ...f, ...up } : f)),
+          )
+        }
+        onApplyFilters={() => {
+          setActiveFilters(stagedFilters);
+          setShowFilterPopover(false);
+        }}
         tableColumns={tableColumns}
         rows={rows}
         showGlobalExportDropdown={showGlobalExportDropdown}
@@ -417,8 +559,12 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
         onOpenUpdateModal={handleOpenUpdateModal}
         onContextMenu={handleContextMenu}
         editingCell={editingCell}
-        onStartEdit={(rid, col, val) => setEditingCell({ rowId: rid, colName: col, value: val })}
-        onEditValueChange={(val) => setEditingCell((prev) => (prev ? { ...prev, value: val } : null))}
+        onStartEdit={(rid, col, val) =>
+          setEditingCell({ rowId: rid, colName: col, value: val })
+        }
+        onEditValueChange={(val) =>
+          setEditingCell((prev) => (prev ? { ...prev, value: val } : null))
+        }
         onSaveEdit={handleSaveCell}
         onCancelEdit={() => setEditingCell(null)}
         activeCell={activeCell}
@@ -444,8 +590,13 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
         rowsPerPage={rowsPerPage}
         totalRows={totalRows}
         isLoading={isLoading}
-        onPrevPage={() => { if (currentPage > 1) fetchPage(currentPage - 1, activeFilters); }}
-        onNextPage={() => { if (currentPage * rowsPerPage < totalRows) fetchPage(currentPage + 1, activeFilters); }}
+        onPrevPage={() => {
+          if (currentPage > 1) fetchPage(currentPage - 1, activeFilters);
+        }}
+        onNextPage={() => {
+          if (currentPage * rowsPerPage < totalRows)
+            fetchPage(currentPage + 1, activeFilters);
+        }}
       />
     </div>
   );
