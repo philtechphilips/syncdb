@@ -83,7 +83,8 @@ const ConnectionDialog = ({
   onClose: () => void;
   editCluster?: Cluster;
 }) => {
-  const { createCluster, updateCluster, testConnection, isLoading } = useClusterStore();
+  const { createCluster, updateCluster, testConnection, isLoading } =
+    useClusterStore();
 
   const isEdit = !!editCluster;
 
@@ -98,7 +99,8 @@ const ConnectionDialog = ({
     database: "",
     username: "",
     password: "",
-    environment: (editCluster?.environment as EnvType) ?? ("development" as EnvType),
+    environment:
+      (editCluster?.environment as EnvType) ?? ("development" as EnvType),
     color: editCluster?.color ?? "#00ED64",
   });
   const [isLocal, setIsLocal] = useState(editCluster?.isLocal ?? false);
@@ -196,7 +198,9 @@ const ConnectionDialog = ({
                 {isEdit ? "Edit Connection" : "New Connection"}
               </h2>
               <p className="text-[11px] text-zinc-500 font-medium">
-                {isEdit ? `Editing ${editCluster?.name}` : "Configure your database cluster"}
+                {isEdit
+                  ? `Editing ${editCluster?.name}`
+                  : "Configure your database cluster"}
               </p>
             </div>
           </div>

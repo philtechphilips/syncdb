@@ -64,7 +64,10 @@ interface ClusterState {
   ) => Promise<void>;
   selectCluster: (cluster: Cluster | null) => void;
   createCluster: (data: Record<string, unknown>) => Promise<Cluster>;
-  updateCluster: (id: string, data: Record<string, unknown>) => Promise<Cluster>;
+  updateCluster: (
+    id: string,
+    data: Record<string, unknown>,
+  ) => Promise<Cluster>;
   testConnection: (data: Record<string, unknown>) => Promise<unknown>;
   deleteCluster: (id: string) => Promise<void>;
   setActiveTab: (
@@ -359,7 +362,9 @@ export const useClusterStore = create<ClusterState>()(
               .map((c) => (c.id === id ? updated : c))
               .sort((a, b) => a.name.localeCompare(b.name)),
             selectedCluster:
-              state.selectedCluster?.id === id ? updated : state.selectedCluster,
+              state.selectedCluster?.id === id
+                ? updated
+                : state.selectedCluster,
             isLoading: false,
           }));
           return updated;
