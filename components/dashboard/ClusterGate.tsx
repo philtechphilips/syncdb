@@ -9,8 +9,9 @@ import {
   Activity,
   ArrowRight,
   LogOut,
+  Pencil,
 } from "lucide-react";
-import { useClusterStore } from "@/store/useClusterStore";
+import { useClusterStore, Cluster } from "@/store/useClusterStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { SynqLogo } from "@/components/ui/SynqLogo";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -25,6 +26,7 @@ export default function ClusterGate({
     useClusterStore();
   const { logout } = useAuthStore();
   const [isConnectOpen, setIsConnectOpen] = useState(false);
+  const [editingCluster, setEditingCluster] = useState<Cluster | null>(null);
 
   // Loading state for initial fetch
   if (isLoading && clusters.length === 0) {
@@ -92,30 +94,46 @@ export default function ClusterGate({
           {clusters.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-10">
               {clusters.map((cluster) => (
-                <button
-                  key={cluster.id}
-                  onClick={() => selectCluster(cluster)}
-                  className="group relative flex items-center gap-5 p-6 rounded-3xl bg-white/[0.02] border border-border/50 hover:border-primary/30 hover:bg-primary/[0.02] transition-all text-left"
-                >
-                  <div className="h-12 w-12 rounded-2xl bg-white/5 border border-border/50 flex items-center justify-center group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
-                    <Database className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-black text-white uppercase tracking-wider truncate">
-                      {cluster.name}
-                    </h3>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="text-[10px] font-black uppercase text-zinc-600 tracking-widest">
-                        {cluster.type}
-                      </span>
-                      <span className="h-1 w-1 bg-zinc-800 rounded-full"></span>
-                      <span className="text-[10px] font-medium text-muted-foreground truncate">
-                        {cluster.name}
-                      </span>
+                <div key={cluster.id} className="relative group/card">
+                  <button
+                    onClick={() => selectCluster(cluster)}
+                    className="group w-full relative flex items-center gap-5 p-6 rounded-3xl bg-white/[0.02] border border-border/50 hover:border-primary/30 hover:bg-primary/[0.02] transition-all text-left"
+                  >
+                    <div className="h-12 w-12 rounded-2xl bg-white/5 border border-border/50 flex items-center justify-center group-hover:bg-primary/10 group-hover:border-primary/20 transition-all shrink-0">
+                      <Database className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-zinc-700 group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                </button>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-black text-white uppercase tracking-wider truncate">
+                        {cluster.name}
+                      </h3>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className="text-[10px] font-black uppercase text-zinc-600 tracking-widest">
+                          {cluster.type}
+                        </span>
+                        {cluster.isLocal && (
+                          <>
+                            <span className="h-1 w-1 bg-zinc-800 rounded-full"></span>
+                            <span className="text-[10px] font-black uppercase text-primary/60 tracking-widest">
+                              Local
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-zinc-700 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                  </button>
+                  {/* Edit button — appears on hover */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingCluster(cluster);
+                    }}
+                    className="absolute top-3 right-10 h-7 w-7 rounded-lg flex items-center justify-center text-zinc-700 hover:text-white hover:bg-white/8 transition-all opacity-0 group-hover/card:opacity-100"
+                    title="Edit connection"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               ))}
 
               <button
@@ -173,6 +191,12 @@ export default function ClusterGate({
         <ConnectionDialog
           isOpen={isConnectOpen}
           onClose={() => setIsConnectOpen(false)}
+        />
+        <ConnectionDialog
+          key={editingCluster?.id}
+          isOpen={!!editingCluster}
+          onClose={() => setEditingCluster(null)}
+          editCluster={editingCluster ?? undefined}
         />
       </div>
     );

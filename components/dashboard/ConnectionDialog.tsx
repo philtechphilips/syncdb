@@ -17,7 +17,7 @@ import {
   EyeOff,
   Plug,
 } from "lucide-react";
-import { useClusterStore } from "@/store/useClusterStore";
+import { useClusterStore, Cluster } from "@/store/useClusterStore";
 import { UI_CLASSES } from "@/lib/constants";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -77,25 +77,31 @@ const inputCls =
 const ConnectionDialog = ({
   isOpen,
   onClose,
+  editCluster,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  editCluster?: Cluster;
 }) => {
-  const { createCluster, testConnection, isLoading } = useClusterStore();
+  const { createCluster, updateCluster, testConnection, isLoading } = useClusterStore();
 
-  const [selectedDb, setSelectedDb] = useState<DbType>("postgres");
+  const isEdit = !!editCluster;
+
+  const [selectedDb, setSelectedDb] = useState<DbType>(
+    (editCluster?.type as DbType) ?? "postgres",
+  );
   const [formData, setFormData] = useState({
-    name: "",
-    type: "postgres" as DbType,
+    name: editCluster?.name ?? "",
+    type: (editCluster?.type as DbType) ?? ("postgres" as DbType),
     host: "",
     port: "5432",
     database: "",
     username: "",
     password: "",
-    environment: "development" as EnvType,
-    color: "#00ED64",
+    environment: (editCluster?.environment as EnvType) ?? ("development" as EnvType),
+    color: editCluster?.color ?? "#00ED64",
   });
-  const [isLocal, setIsLocal] = useState(false);
+  const [isLocal, setIsLocal] = useState(editCluster?.isLocal ?? false);
   const [showPassword, setShowPassword] = useState(false);
   const [testResult, setTestResult] = useState<{
     success: boolean;
@@ -139,24 +145,29 @@ const ConnectionDialog = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createCluster({
-        ...formData,
-        type: selectedDb,
-        port: parseInt(formData.port),
-        isLocal,
-      });
-      setFormData({
-        name: "",
-        type: "postgres",
-        host: "",
-        port: "5432",
-        database: "",
-        username: "",
-        password: "",
-        environment: "development",
-        color: "#00ED64",
-      });
-      setIsLocal(false);
+      if (isEdit && editCluster) {
+        const patch: Record<string, unknown> = {
+          name: formData.name,
+          type: selectedDb,
+          environment: formData.environment,
+          color: formData.color,
+          isLocal,
+        };
+        // Only send connection fields if the user filled them in
+        if (formData.host) patch.host = formData.host;
+        if (formData.port) patch.port = parseInt(formData.port);
+        if (formData.database) patch.database = formData.database;
+        if (formData.username) patch.username = formData.username;
+        if (formData.password) patch.password = formData.password;
+        await updateCluster(editCluster.id, patch);
+      } else {
+        await createCluster({
+          ...formData,
+          type: selectedDb,
+          port: parseInt(formData.port),
+          isLocal,
+        });
+      }
       onClose();
     } catch {
       // error handled by store toast
@@ -182,10 +193,10 @@ const ConnectionDialog = ({
             </div>
             <div>
               <h2 className="text-base font-bold text-white tracking-tight leading-none mb-0.5">
-                New Connection
+                {isEdit ? "Edit Connection" : "New Connection"}
               </h2>
               <p className="text-[11px] text-zinc-500 font-medium">
-                Configure your database cluster
+                {isEdit ? `Editing ${editCluster?.name}` : "Configure your database cluster"}
               </p>
             </div>
           </div>
@@ -548,7 +559,7 @@ const ConnectionDialog = ({
                 {isLoading ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : null}
-                Add Connection
+                {isEdit ? "Save Changes" : "Add Connection"}
               </button>
             </div>
           </div>
