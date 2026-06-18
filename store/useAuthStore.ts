@@ -64,6 +64,44 @@ interface AuthState {
   clearError: () => void;
 }
 
+// ── Proactive token refresh ────────────────────────────────────────────────────
+// Schedules a silent refresh ~60s before the access token expires so the user
+// is never mid-session when the token dies. Clears itself on logout.
+
+let proactiveRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+
+function scheduleProactiveRefresh(accessToken: string) {
+  if (proactiveRefreshTimer) clearTimeout(proactiveRefreshTimer);
+
+  try {
+    const payload = JSON.parse(atob(accessToken.split(".")[1]));
+    const expiresInMs = payload.exp * 1000 - Date.now();
+    const refreshInMs = Math.max(expiresInMs - 60_000, 0); // 60s before expiry
+
+    proactiveRefreshTimer = setTimeout(async () => {
+      const rt = loadRefreshToken();
+      if (!rt) return;
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL;
+        const res = await fetch(`${API_URL}/v1/auth/refresh`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refresh_token: rt }),
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        saveRefreshToken(data.refresh_token ?? rt);
+        useAuthStore.setState({ access_token: data.access_token });
+        scheduleProactiveRefresh(data.access_token); // chain next refresh
+      } catch {
+        // Interceptor will handle it on next request
+      }
+    }, refreshInMs);
+  } catch {
+    // Malformed token — interceptor handles it on next request
+  }
+}
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -77,7 +115,8 @@ export const useAuthStore = create<AuthState>()(
 
       setTokens: (access, refresh) => {
         saveRefreshToken(refresh);
-        set({ access_token: access });
+        set({ access_token: access, isAuthenticated: true });
+        scheduleProactiveRefresh(access);
       },
 
       setUser: (user) => set({ user, isAuthenticated: !!user }),
@@ -91,6 +130,7 @@ export const useAuthStore = create<AuthState>()(
           const { user, access_token, refresh_token } = res.data;
           saveRefreshToken(refresh_token);
           set({ user, access_token, isAuthenticated: true, isLoading: false });
+          scheduleProactiveRefresh(access_token);
         } catch (error: unknown) {
           set({ isLoading: false, error: getErrorMessage(error) });
           throw error;
@@ -110,6 +150,10 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
+        if (proactiveRefreshTimer) {
+          clearTimeout(proactiveRefreshTimer);
+          proactiveRefreshTimer = null;
+        }
         saveRefreshToken(null);
         set({
           user: null,
@@ -126,18 +170,15 @@ export const useAuthStore = create<AuthState>()(
       },
 
       // checkAuth — called once on dashboard mount.
-      // 1. No in-memory token → try silent refresh from localStorage RT.
-      //    If refresh succeeds, the new token is valid by definition — skip /status.
-      // 2. Already have in-memory token (e.g. SPA nav without reload) → verify via /status
-      //    in case it expired mid-session and the interceptor hasn't caught it yet.
-      // 3. Either path failing → logout and return false.
+      // 1. No in-memory token → silent refresh from localStorage RT.
+      // 2. Have in-memory token → trust it (interceptor handles expiry on-demand).
+      // 3. RT missing or refresh fails → return false (logout handled by caller).
       checkAuth: async () => {
         set({ isLoading: true });
 
         const { access_token } = get();
 
         if (!access_token) {
-          // Page reload or new tab — try silent refresh
           const rt = loadRefreshToken();
           if (!rt) {
             set({ isAuthenticated: false, isLoading: false });
@@ -153,39 +194,25 @@ export const useAuthStore = create<AuthState>()(
             if (!res.ok) throw new Error("refresh failed");
             const data = await res.json();
             saveRefreshToken(data.refresh_token ?? rt);
-            // Refresh succeeded — token is fresh, user profile already persisted
             set({
               access_token: data.access_token,
               isAuthenticated: true,
               isLoading: false,
             });
+            scheduleProactiveRefresh(data.access_token);
             return true;
           } catch {
             saveRefreshToken(null);
-            set({
-              isAuthenticated: false,
-              isLoading: false,
-              access_token: null,
-            });
+            set({ isAuthenticated: false, isLoading: false, access_token: null });
             return false;
           }
         }
 
-        // Already have a token — do a lightweight verify
-        try {
-          const res = await api.get("/v1/auth/status");
-          set({ user: res.data, isAuthenticated: true, isLoading: false });
-          return true;
-        } catch {
-          saveRefreshToken(null);
-          set({
-            user: null,
-            access_token: null,
-            isAuthenticated: false,
-            isLoading: false,
-          });
-          return false;
-        }
+        // Token already in memory — still valid (interceptor will refresh on 401).
+        // Schedule a proactive refresh so it doesn't expire while the user is active.
+        set({ isAuthenticated: true, isLoading: false });
+        scheduleProactiveRefresh(access_token);
+        return true;
       },
 
       // ── Profile ─────────────────────────────────────────────────────────────

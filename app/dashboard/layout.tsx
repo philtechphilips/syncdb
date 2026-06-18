@@ -73,13 +73,13 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     if (
       prev &&
       prev !== selectedCluster.id &&
-      pathname.includes("/dashboard/table/")
+      pathname.startsWith("/dashboard/table")
     ) {
       router.push("/dashboard/query");
     }
   }, [selectedCluster?.id, isInitialized, pathname, router]);
 
-  const { activeTab, setActiveTab, selectedTable, setSelectedTable } =
+  const { activeTab, setActiveTab, selectedTable, setSelectedTable, openTableTab } =
     useClusterStore();
 
   if (!isInitialized || isAuthLoading) {
@@ -127,10 +127,10 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
             router.push(`/dashboard/${tab}`);
           }}
           onTableSelect={(name) => {
-            setSelectedTable(name);
-            //    setActiveTab("table");
+            openTableTab(name);
+            setActiveTab("table");
             setIsSidebarMobileOpen(false);
-            router.push(`/dashboard/table/${name}`);
+            router.push("/dashboard/table");
           }}
           selectedTable={selectedTable}
           isMobileOpen={isSidebarMobileOpen}

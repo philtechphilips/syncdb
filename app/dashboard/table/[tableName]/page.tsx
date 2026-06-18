@@ -1,25 +1,22 @@
 "use client";
 
-import React, { useEffect } from "react";
-import DataTable from "@/components/dashboard/DataTable";
+import { useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { useClusterStore } from "@/store/useClusterStore";
-import { useParams } from "next/navigation";
 
-export default function TableNamePage() {
+export default function TableNameRedirect() {
   const params = useParams();
-  const tableName = params.tableName as string;
-  const { setSelectedTable, setActiveTab } = useClusterStore();
+  const router = useRouter();
+  const { openTableTab, setActiveTab } = useClusterStore();
 
   useEffect(() => {
+    const tableName = params.tableName as string;
     if (tableName) {
-      setSelectedTable(tableName);
+      openTableTab(tableName);
       setActiveTab("table");
+      router.replace("/dashboard/table");
     }
-  }, [tableName, setSelectedTable, setActiveTab]);
+  }, []);
 
-  return (
-    <div className="flex-1 overflow-hidden bg-background min-w-0 h-full">
-      <DataTable selectedTable={tableName} />
-    </div>
-  );
+  return null;
 }

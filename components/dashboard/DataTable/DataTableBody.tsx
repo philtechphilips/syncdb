@@ -139,7 +139,7 @@ const DataTableBody = ({
                         onStartEdit(rowId, col, String(row[col]))
                       }
                       style={{ width: columnWidths[col] || 150 }}
-                      className={`px-6 py-3 font-mono text-[11px] border-r border-border/10 last:border-0 relative transition-all break-words whitespace-pre-wrap ${
+                      className={`px-6 py-3 font-mono text-[11px] border-r border-border/10 last:border-0 relative transition-all break-words whitespace-pre-wrap cursor-pointer select-none ${
                         col === "id" ? "text-muted-foreground" : "text-zinc-300"
                       } ${row[col] === "NULL" ? "italic text-zinc-600" : ""} ${
                         activeCell?.rowId === rowId &&
@@ -152,7 +152,7 @@ const DataTableBody = ({
                         <div className="absolute inset-0 z-50 bg-card border border-primary shadow-xl rounded flex items-center p-0.5 animate-in zoom-in-95 duration-150">
                           <textarea
                             autoFocus
-                            className="w-full h-full bg-transparent border-none outline-none text-[11px] text-white px-2 py-1 resize-none font-mono"
+                            className="w-full h-full bg-transparent border-none outline-none text-[11px] text-white px-2 py-1 resize-none font-mono cursor-text"
                             value={editingCell?.value}
                             onChange={(e) => onEditValueChange(e.target.value)}
                             onBlur={onSaveEdit}

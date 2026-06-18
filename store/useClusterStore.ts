@@ -28,6 +28,12 @@ interface ClusterState {
   rowsPerPage: number;
   activeTab: "query" | "er" | "table" | "logs" | "sync" | "backup";
   selectedTable: string;
+  // Multi-table tabs — open tables persist across navigation
+  openTableTabs: string[];
+  activeTableTab: string;
+  openTableTab: (tableName: string) => void;
+  closeTableTab: (tableName: string) => void;
+  setActiveTableTab: (tableName: string) => void;
   fetchClusters: () => Promise<Cluster[]>;
   fetchTables: (clusterId: string) => Promise<{ name: string }[]>;
   fetchTableColumns: (
@@ -114,6 +120,29 @@ export const useClusterStore = create<ClusterState>()(
       activeTab: "query",
       selectedTable: "",
       searchQuery: "",
+      openTableTabs: [],
+      activeTableTab: "",
+
+      openTableTab: (tableName) => {
+        const { openTableTabs } = get();
+        if (!openTableTabs.includes(tableName)) {
+          set({ openTableTabs: [...openTableTabs, tableName] });
+        }
+        set({ activeTableTab: tableName, selectedTable: tableName });
+      },
+
+      closeTableTab: (tableName) => {
+        const { openTableTabs, activeTableTab } = get();
+        const next = openTableTabs.filter((t) => t !== tableName);
+        const nextActive = activeTableTab === tableName
+          ? (next[next.length - 1] ?? "")
+          : activeTableTab;
+        set({ openTableTabs: next, activeTableTab: nextActive, selectedTable: nextActive });
+      },
+
+      setActiveTableTab: (tableName) => {
+        set({ activeTableTab: tableName, selectedTable: tableName });
+      },
 
       fetchClusters: async () => {
         set({ isLoading: true, error: null });
@@ -327,6 +356,8 @@ export const useClusterStore = create<ClusterState>()(
           tableData: [],
           totalRows: 0,
           currentPage: 1,
+          openTableTabs: [],
+          activeTableTab: "",
         });
         if (cluster) {
           get().fetchTables(cluster.id);
@@ -513,12 +544,11 @@ export const useClusterStore = create<ClusterState>()(
     {
       name: "cluster-storage",
       partialize: (state: ClusterState) => ({
-        // Persist the full cluster object so new tabs and page reloads restore
-        // the connection without a URL param. fetchClusters will re-validate
-        // it against the server list on every mount.
         selectedCluster: state.selectedCluster,
         activeTab: state.activeTab,
         selectedTable: state.selectedTable,
+        openTableTabs: state.openTableTabs,
+        activeTableTab: state.activeTableTab,
       }),
     },
   ),
