@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { Copy, Loader2, History } from "lucide-react";
 import { useClusterStore } from "@/store/useClusterStore";
 import { toast } from "sonner";
@@ -23,26 +23,23 @@ export default function LogsPage() {
   const [logs, setLogs] = useState<QueryLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadLogs = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const data = await fetchQueryLogs(selectedCluster!.id);
-      setLogs(data as QueryLog[]);
-    } catch {
-      toast.error("Failed to load audit logs");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [fetchQueryLogs, selectedCluster]);
-
+  // Loading starts true; there is nothing to load without a cluster.
   useEffect(() => {
     setActiveTab("logs");
-    if (selectedCluster) {
-      loadLogs();
-    } else {
-      setIsLoading(false);
-    }
-  }, [selectedCluster, setActiveTab, loadLogs]);
+    if (!selectedCluster) return;
+    let cancelled = false;
+    fetchQueryLogs(selectedCluster.id)
+      .then((data) => {
+        if (!cancelled) setLogs(data as QueryLog[]);
+      })
+      .catch(() => toast.error("Failed to load audit logs"))
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCluster, setActiveTab, fetchQueryLogs]);
 
   const formatDateGroup = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -86,7 +83,7 @@ export default function LogsPage() {
   return (
     <div className="flex flex-1 flex-col overflow-y-auto scrollbar-hide bg-[#021016]/20 h-full">
       <div className="p-4 lg:p-8 space-y-6 lg:space-y-10 max-w-5xl mx-auto w-full min-h-full">
-        {isLoading ? (
+        {isLoading && selectedCluster ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <Loader2 className="h-8 w-8 text-primary animate-spin" />
             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">

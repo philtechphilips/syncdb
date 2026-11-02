@@ -376,7 +376,7 @@ const Sidebar = ({
                         <Skeleton
                           className="h-2 rounded-sm"
                           style={{
-                            width: `${Math.floor(Math.random() * (70 - 40 + 1) + 40)}%`,
+                            width: `${40 + ((i * 37) % 31)}%`,
                           }}
                         />
                       </div>

@@ -1,9 +1,14 @@
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import { displayValue } from "./cellValue";
+
+/** Plain text for a value; JSON values stay JSON instead of "[object Object]". */
+const asText = (val: unknown) =>
+  typeof val === "object" && val !== null ? JSON.stringify(val) : String(val);
 
 declare module "jspdf" {
   interface jsPDF {
-    autoTable: (options: any) => jsPDF;
+    autoTable: (options: Record<string, unknown>) => jsPDF;
   }
 }
 
@@ -19,11 +24,11 @@ export const formatToCSV = <T extends Record<string, unknown>>(data: T[]) => {
   const body = data.map((row) =>
     keys
       .map((k) => {
-        let val = row[k];
+        const val = row[k];
         if (val === null || val === undefined) return "";
-        let str = String(val);
-        // Escape quotes and wrap in quotes if contains comma or quote
-        if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+        let str = asText(val);
+        // Quote fields with commas, quotes, line breaks or edge spaces
+        if (/[",\r\n]/.test(str) || str === "" || str !== str.trim()) {
           str = `"${str.replace(/"/g, '""')}"`;
         }
         return str;
@@ -51,9 +56,10 @@ export const formatToSQL = <T extends Record<string, unknown>>(
         .map((k) => {
           const val = row[k];
           if (val === null || val === undefined) return "NULL";
-          if (typeof val === "string") return `'${val.replace(/'/g, "''")}'`;
           if (typeof val === "boolean") return val ? "TRUE" : "FALSE";
-          return val;
+          if (typeof val === "number" && Number.isFinite(val))
+            return String(val);
+          return `'${asText(val).replace(/'/g, "''")}'`;
         })
         .join(", ");
       return `INSERT INTO ${escapedTableName} (${escapedKeys}) VALUES (${vals});`;
@@ -74,9 +80,9 @@ export const formatToMarkdown = <T extends Record<string, unknown>>(
         `| ${keys
           .map((k) => {
             const val = row[k];
-            return val === null || val === undefined
-              ? "NULL"
-              : String(val).replace(/\|/g, "\\|");
+            return displayValue(val)
+              .replace(/\|/g, "\\|")
+              .replace(/\r?\n/g, " ");
           })
           .join(" | ")} |`,
     )
@@ -91,7 +97,7 @@ export const formatToPDF = <T extends Record<string, unknown>>(
   if (data.length === 0) return;
   const doc = new jsPDF();
   const keys = Object.keys(data[0]);
-  const body = data.map((row) => keys.map((k) => String(row[k] ?? "NULL")));
+  const body = data.map((row) => keys.map((k) => displayValue(row[k])));
 
   doc.text(`Table Export: ${tableName}`, 14, 15);
   doc.autoTable({

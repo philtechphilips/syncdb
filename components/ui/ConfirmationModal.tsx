@@ -21,9 +21,12 @@ const ConfirmationModal = () => {
   } = useModalStore();
   const [inputValue, setInputValue] = React.useState("");
 
-  React.useEffect(() => {
+  // Clear the typed confirmation when the modal closes.
+  const [wasOpen, setWasOpen] = React.useState(isOpen);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
     if (!isOpen) setInputValue("");
-  }, [isOpen]);
+  }
 
   if (!isOpen) return null;
 

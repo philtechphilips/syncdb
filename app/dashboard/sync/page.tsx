@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useClusterStore } from "@/store/useClusterStore";
 import { toast } from "sonner";
 import api from "@/lib/api";
@@ -37,7 +37,9 @@ interface DiffResult {
 export default function SyncPage() {
   const { clusters, selectedCluster } = useClusterStore();
   const { open: openModal } = useModalStore();
-  const [sourceId, setSourceId] = useState<string>(selectedCluster?.id || "");
+  // Defaults to the selected cluster until the user picks another source.
+  const [chosenSourceId, setSourceId] = useState<string>("");
+  const sourceId = chosenSourceId || selectedCluster?.id || "";
   const [targetId, setTargetId] = useState<string>("");
   const [isComparing, setIsComparing] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -47,10 +49,6 @@ export default function SyncPage() {
   const [activeCategory, setActiveCategory] = useState<
     "all" | "missing" | "extra" | "mismatch"
   >("mismatch");
-
-  useEffect(() => {
-    if (selectedCluster && !sourceId) setSourceId(selectedCluster.id);
-  }, [selectedCluster, sourceId]);
 
   const handleDropTable = async (tableName: string) => {
     if (!targetId) return;
@@ -113,6 +111,52 @@ export default function SyncPage() {
     }
   };
 
+  const runSync = async (confirmProduction: boolean) => {
+    setIsSyncing(true);
+    try {
+      const res = await api.post(`/v1/clusters/${sourceId}/sync/${targetId}`, {
+        tableNames: selectedTables,
+        withData,
+        confirmProduction,
+      });
+
+      const results = res.data as {
+        tableName: string;
+        success: boolean;
+        error: string | null;
+        rowsCopied: number;
+        notes: string[];
+      }[];
+      const failures = results.filter((r) => !r.success);
+      const copied = results.reduce((n, r) => n + (r.rowsCopied || 0), 0);
+      const notes = results.flatMap((r) =>
+        r.notes.map((note) => `${r.tableName}: ${note}`),
+      );
+      if (failures.length > 0) {
+        toast.error(
+          `Sync partially failed: ${failures.length} tables failed.`,
+          {
+            description: failures
+              .map((f) => `${f.tableName}: ${f.error}`)
+              .join("\n"),
+          },
+        );
+      } else {
+        toast.success("Sync Complete", {
+          description: [
+            `${results.length} tables synchronized${withData ? `, ${copied} rows copied` : ""}.`,
+            ...notes,
+          ].join("\n"),
+        });
+      }
+      handleCompare(); // Refresh
+    } catch {
+      toast.error("Sync failed");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const handleSync = async () => {
     if (selectedTables.length === 0) {
       toast.error("Simple Error", {
@@ -120,28 +164,20 @@ export default function SyncPage() {
       });
       return;
     }
-
-    setIsSyncing(true);
-    try {
-      const res = await api.post(`/v1/clusters/${sourceId}/sync/${targetId}`, {
-        tableNames: selectedTables,
-        withData,
+    const target = clusters.find((c) => c.id === targetId);
+    if (target?.environment === "production") {
+      // Changing production needs an explicit, typed confirmation.
+      openModal({
+        title: "Sync into Production",
+        message: `"${target.name}" is a production cluster. Missing tables and columns will be created, mismatched column types altered${withData ? ", and source rows copied (existing rows are kept)" : ""}. Nothing is dropped. Type the cluster name to continue.`,
+        type: "danger",
+        confirmLabel: "Sync Production",
+        confirmValue: target.name,
+        onConfirm: () => runSync(true),
       });
-
-      const failures = res.data.filter((r: { success: boolean }) => !r.success);
-      if (failures.length > 0) {
-        toast.error(`Sync partially failed: ${failures.length} tables failed.`);
-      } else {
-        toast.success("Sync Complete", {
-          description: `${selectedTables.length} tables synchronized.`,
-        });
-        handleCompare(); // Refresh
-      }
-    } catch {
-      toast.error("Sync failed");
-    } finally {
-      setIsSyncing(false);
+      return;
     }
+    await runSync(false);
   };
 
   const toggleTableSelection = (tableName: string) => {
@@ -396,6 +432,7 @@ export default function SyncPage() {
                   />
                   <label
                     htmlFor="withDataMain"
+                    title="Copy source rows too. Rows whose primary key already exists in the target are left unchanged."
                     className="text-[10px] font-black text-zinc-400 uppercase tracking-widest cursor-pointer hover:text-white transition-colors"
                   >
                     Data

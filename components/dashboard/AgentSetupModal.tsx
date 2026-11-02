@@ -10,6 +10,11 @@ interface AgentSetupModalProps {
 const STEPS = [
   { cmd: "npm install -g synqdb-agent", label: "Install" },
   { cmd: "synqdb-agent login", label: "Authenticate" },
+  {
+    cmd: "synqdb-agent add my-db postgres://user@localhost:5432/mydb",
+    label:
+      "Save a connection (asks for the password, which stays on your machine)",
+  },
   { cmd: "synqdb-agent", label: "Start" },
 ];
 

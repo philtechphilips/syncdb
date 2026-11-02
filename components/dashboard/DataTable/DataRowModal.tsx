@@ -3,18 +3,9 @@ import { X, ArrowUpDown, Plus, FileMinus, Loader2 } from "lucide-react";
 import CustomSelect from "@/components/ui/CustomSelect";
 import CustomDatePicker from "@/components/ui/CustomDatePicker";
 import CustomFKSelect from "@/components/ui/CustomFKSelect";
+import { kindOf, TableColumn, toBoolean } from "@/lib/cellValue";
 
-export interface TableColumn {
-  name: string;
-  type: string;
-  nullable: string;
-  columnKey: string;
-  defaultValue: string | null;
-  fullType?: string;
-  enumValues?: string;
-  referencedTable?: string;
-  referencedColumn?: string;
-}
+export type { TableColumn } from "@/lib/cellValue";
 
 interface DataRowModalProps {
   isOpen: boolean;
@@ -24,9 +15,10 @@ interface DataRowModalProps {
   isSaving: boolean;
   selectedTable: string;
   tableColumns: TableColumn[];
-  formData: Record<string, unknown>;
+  /** Editor text per column (see lib/cellValue toEditText/fromEditText). */
+  formData: Record<string, string>;
   nullFields: Set<string>;
-  onInputChange: (col: string, val: unknown) => void;
+  onInputChange: (col: string, val: string) => void;
   onToggleNull: (col: string) => void;
   selectedClusterId?: string;
 }
@@ -94,20 +86,15 @@ const DataRowModal = ({
             >
               {tableColumns.map((col) => {
                 const isNull = nullFields.has(col.name);
-                const isDisabled =
-                  (col.columnKey === "PRI" &&
-                    col.defaultValue?.includes("nextval")) ||
-                  col.name === "id";
+                const kind = kindOf(col);
+                const isDisabled = !!col.isAutoIncrement || !!col.isGenerated;
+                const text = formData[col.name] ?? "";
                 const lowerType = col.type.toLowerCase();
 
-                const isBoolean =
-                  lowerType === "boolean" ||
-                  lowerType === "bool" ||
-                  (lowerType === "tinyint" && col.fullType?.includes("(1)"));
-                const isDateTime =
-                  lowerType.includes("timestamp") ||
-                  lowerType.includes("datetime");
-                const isDate = lowerType === "date" && !isDateTime;
+                const isBoolean = kind === "boolean";
+                const isDateTime = kind === "datetime" || kind === "datetimetz";
+                const isDate = kind === "date";
+                const isJson = kind === "json" || kind === "array";
 
                 let enumOptions: string[] | null = null;
                 if (lowerType === "enum" && col.fullType) {
@@ -153,16 +140,13 @@ const DataRowModal = ({
                     >
                       {col.referencedTable && col.referencedColumn ? (
                         <CustomFKSelect
-                          value={
-                            isNull
-                              ? "NULL"
-                              : ((formData[col.name] as
-                                  | string
-                                  | number
-                                  | boolean
-                                  | null) ?? "")
+                          value={isNull ? "NULL" : text}
+                          onChange={(val) =>
+                            onInputChange(
+                              col.name,
+                              val == null ? "" : String(val),
+                            )
                           }
-                          onChange={(val) => onInputChange(col.name, val)}
                           referencedTable={col.referencedTable}
                           referencedColumn={col.referencedColumn}
                           clusterId={selectedClusterId || ""}
@@ -170,39 +154,37 @@ const DataRowModal = ({
                           isNull={isNull}
                         />
                       ) : isBoolean ? (
-                        <CustomSelect
+                        <CustomSelect<string>
                           value={
                             isNull
                               ? "NULL"
-                              : ((formData[col.name] as
-                                  | string
-                                  | number
-                                  | boolean
-                                  | null) ?? true)
+                              : toBoolean(text) === null
+                                ? ""
+                                : String(toBoolean(text))
                           }
-                          onChange={(val) => onInputChange(col.name, val)}
+                          onChange={(val) =>
+                            val === "NULL"
+                              ? onToggleNull(col.name)
+                              : onInputChange(col.name, val)
+                          }
                           options={[
                             ...(col.nullable === "YES"
                               ? [{ label: "NULL (Unset)", value: "NULL" }]
                               : []),
-                            { label: "True", value: true },
-                            { label: "False", value: false },
+                            { label: "True", value: "true" },
+                            { label: "False", value: "false" },
                           ]}
                           placeholder={`Set ${col.name}...`}
                           disabled={isDisabled}
                         />
                       ) : enumOptions ? (
-                        <CustomSelect
-                          value={
-                            isNull
-                              ? "NULL"
-                              : ((formData[col.name] as
-                                  | string
-                                  | number
-                                  | boolean
-                                  | null) ?? "")
+                        <CustomSelect<string>
+                          value={isNull ? "NULL" : text}
+                          onChange={(val) =>
+                            val === "NULL"
+                              ? onToggleNull(col.name)
+                              : onInputChange(col.name, val)
                           }
-                          onChange={(val) => onInputChange(col.name, val)}
                           options={[
                             ...(col.nullable === "YES"
                               ? [{ label: "NULL (Unset)", value: "NULL" }]
@@ -217,41 +199,51 @@ const DataRowModal = ({
                         />
                       ) : isDate || isDateTime ? (
                         <CustomDatePicker
-                          value={
-                            isNull ? "" : ((formData[col.name] as string) ?? "")
-                          }
+                          value={isNull ? "" : text}
                           onChange={(val) => onInputChange(col.name, val)}
                           isDateTime={isDateTime}
                           disabled={isDisabled}
                           isNull={isNull}
+                        />
+                      ) : isJson && !isNull ? (
+                        <textarea
+                          name={col.name}
+                          rows={6}
+                          spellCheck={false}
+                          value={text}
+                          placeholder={
+                            kind === "array" ? '["a", "b"]' : '{"key": "value"}'
+                          }
+                          onChange={(e) =>
+                            onInputChange(col.name, e.target.value)
+                          }
+                          disabled={isDisabled}
+                          className="w-full border rounded-xl px-4 py-3 text-xs font-mono bg-white/[0.02] border-border/50 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 resize-y"
                         />
                       ) : (
                         <div className="relative group/input">
                           <input
                             name={col.name}
                             type={
-                              isNull
-                                ? "text"
-                                : lowerType.includes("int") ||
-                                    lowerType === "decimal"
-                                  ? "number"
-                                  : "text"
+                              !isNull &&
+                              (kind === "integer" || kind === "float")
+                                ? "number"
+                                : "text"
+                            }
+                            inputMode={
+                              kind === "bigint" || kind === "decimal"
+                                ? "decimal"
+                                : undefined
                             }
                             placeholder={
-                              col.defaultValue ||
-                              (col.nullable === "YES"
-                                ? "NULL"
-                                : `Enter ${col.name}...`)
+                              kind === "binary"
+                                ? "0x…"
+                                : col.defaultValue ||
+                                  (col.nullable === "YES"
+                                    ? "NULL"
+                                    : `Enter ${col.name}...`)
                             }
-                            value={
-                              isNull
-                                ? "NULL"
-                                : ((formData[col.name] as
-                                    | string
-                                    | number
-                                    | readonly string[]
-                                    | undefined) ?? "")
-                            }
+                            value={isNull ? "NULL" : text}
                             readOnly={isNull}
                             onChange={(e) =>
                               onInputChange(col.name, e.target.value)
@@ -275,9 +267,13 @@ const DataRowModal = ({
                       )}
                     </div>
 
-                    {col.columnKey === "PRI" && (
+                    {(col.columnKey === "PRI" || col.isGenerated) && (
                       <p className="text-[8px] text-primary/50 font-black uppercase tracking-widest pt-1">
-                        Primary Key (Auto-generated)
+                        {col.isGenerated
+                          ? "Generated column (read-only)"
+                          : col.isAutoIncrement
+                            ? "Primary Key (Auto-generated)"
+                            : "Primary Key"}
                       </p>
                     )}
                   </div>

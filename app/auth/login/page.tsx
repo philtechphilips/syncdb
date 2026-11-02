@@ -12,11 +12,24 @@ export default function LoginPage() {
   const { login, isLoading, error, clearError, isAuthenticated } =
     useAuthStore();
 
+  // `?redirect=` (only same-site paths) and `?error=` from the OAuth flow.
+  const [redirectTo] = useState(() => {
+    if (typeof window === "undefined") return "/dashboard";
+    const target = new URLSearchParams(window.location.search).get("redirect");
+    return target && target.startsWith("/") && !target.startsWith("//")
+      ? target
+      : "/dashboard";
+  });
+  React.useEffect(() => {
+    const oauthError = new URLSearchParams(window.location.search).get("error");
+    if (oauthError) useAuthStore.setState({ error: oauthError });
+  }, []);
+
   React.useEffect(() => {
     if (isAuthenticated) {
-      router.push("/dashboard");
+      router.push(redirectTo);
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, redirectTo]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,7 +39,7 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       await login({ email, password });
-      router.push("/dashboard");
+      router.push(redirectTo);
     } catch {
       // Error is handled by the store
     }

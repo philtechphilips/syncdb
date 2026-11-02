@@ -9,6 +9,50 @@ interface CustomDatePickerProps {
   isDateTime?: boolean;
 }
 
+/**
+ * Values are database strings ("2026-11-02", "2026-11-02 08:30:00",
+ * "2026-11-02 08:30:00+01"). They are split into parts and rebuilt as text,
+ * never converted through a JS Date, so nothing shifts by the browser's
+ * timezone.
+ */
+const VALUE_RE =
+  /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(\.\d+)?)?)?\s*(Z|[+-]\d{2}(?::?\d{2})?)?$/i;
+
+interface Parts {
+  y: number;
+  m: number; // 1-12
+  d: number;
+  time: string; // HH:MM:SS[.fff]
+  zone: string;
+}
+
+const pad = (n: number) => String(n).padStart(2, "0");
+
+function parseValue(value: string): Parts | null {
+  const m = VALUE_RE.exec(value.trim());
+  if (!m) return null;
+  const time = m[4]
+    ? `${m[4]}:${m[5]}:${m[6] ?? "00"}${m[7] ?? ""}`
+    : "00:00:00";
+  return { y: +m[1], m: +m[2], d: +m[3], time, zone: m[8] ?? "" };
+}
+
+function formatValue(p: Parts, isDateTime?: boolean) {
+  const date = `${p.y}-${pad(p.m)}-${pad(p.d)}`;
+  return isDateTime ? `${date} ${p.time}${p.zone}` : date;
+}
+
+function todayParts(): Parts {
+  const now = new Date();
+  return {
+    y: now.getFullYear(),
+    m: now.getMonth() + 1,
+    d: now.getDate(),
+    time: "00:00:00",
+    zone: "",
+  };
+}
+
 const CustomDatePicker = ({
   value,
   onChange,
@@ -18,9 +62,11 @@ const CustomDatePicker = ({
 }: CustomDatePickerProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const [viewDate, setViewDate] = useState(
-    value ? new Date(value) : new Date(),
-  );
+  const selected = value ? parseValue(value) : null;
+  const [view, setView] = useState(() => {
+    const p = selected ?? todayParts();
+    return { year: p.y, month: p.m - 1 };
+  });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -41,18 +87,28 @@ const CustomDatePicker = ({
     new Date(year, month, 1).getDay();
 
   const handleDayClick = (day: number) => {
-    const newDate = new Date(viewDate);
-    newDate.setDate(day);
-
-    if (isDateTime) {
-      const current = value ? new Date(value) : new Date();
-      newDate.setHours(current.getHours(), current.getMinutes(), 0, 0);
-      onChange(newDate.toISOString().slice(0, 16));
-    } else {
-      onChange(newDate.toISOString().slice(0, 10));
-      setIsOpen(false);
-    }
+    const base = selected ?? todayParts();
+    onChange(
+      formatValue(
+        { ...base, y: view.year, m: view.month + 1, d: day },
+        isDateTime,
+      ),
+    );
+    if (!isDateTime) setIsOpen(false);
   };
+
+  const handleTimeChange = (hhmm: string) => {
+    if (!hhmm) return;
+    const base = selected ?? todayParts();
+    const seconds = base.time.slice(5) || ":00";
+    onChange(formatValue({ ...base, time: `${hhmm}${seconds}` }, isDateTime));
+  };
+
+  const shiftMonth = (delta: number) =>
+    setView(({ year, month }) => {
+      const next = new Date(year, month + delta, 1);
+      return { year: next.getFullYear(), month: next.getMonth() };
+    });
 
   const monthNames = [
     "January",
@@ -68,8 +124,10 @@ const CustomDatePicker = ({
     "November",
     "December",
   ];
-  const today = new Date();
-  const selectedDate = value ? new Date(value) : null;
+  const today = todayParts();
+  const label = selected
+    ? formatValue(selected, isDateTime)
+    : value || `Select ${isDateTime ? "Date & Time" : "Date"}...`;
 
   return (
     <div className="relative" ref={containerRef}>
@@ -86,12 +144,8 @@ const CustomDatePicker = ({
             <Calendar className="h-4 w-4 text-primary/50" />
           )}
         </div>
-        <span className={value ? "text-white" : "text-zinc-500"}>
-          {value
-            ? isDateTime
-              ? new Date(value).toLocaleString()
-              : new Date(value).toLocaleDateString()
-            : `Select ${isDateTime ? "Date & Time" : "Date"}...`}
+        <span className={value ? "text-white font-mono" : "text-zinc-500"}>
+          {label}
         </span>
       </button>
 
@@ -99,27 +153,19 @@ const CustomDatePicker = ({
         <div className="absolute top-full mt-2 left-0 z-[210] bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-150 min-w-[300px]">
           <div className="flex items-center justify-between mb-4 px-1">
             <span className="text-xs font-black text-white uppercase tracking-widest">
-              {monthNames[viewDate.getMonth()]} {viewDate.getFullYear()}
+              {monthNames[view.month]} {view.year}
             </span>
             <div className="flex items-center gap-1">
               <button
                 type="button"
-                onClick={() =>
-                  setViewDate(
-                    new Date(viewDate.getFullYear(), viewDate.getMonth() - 1),
-                  )
-                }
+                onClick={() => shiftMonth(-1)}
                 className="p-1.5 hover:bg-white/5 rounded-md text-zinc-500 hover:text-white transition-all"
               >
                 <ChevronDown className="h-3.5 w-3.5 rotate-90" />
               </button>
               <button
                 type="button"
-                onClick={() =>
-                  setViewDate(
-                    new Date(viewDate.getFullYear(), viewDate.getMonth() + 1),
-                  )
-                }
+                onClick={() => shiftMonth(1)}
                 className="p-1.5 hover:bg-white/5 rounded-md text-zinc-500 hover:text-white transition-all"
               >
                 <ChevronDown className="h-3.5 w-3.5 -rotate-90" />
@@ -140,27 +186,23 @@ const CustomDatePicker = ({
 
           <div className="grid grid-cols-7 gap-1">
             {Array.from({
-              length: firstDayOfMonth(
-                viewDate.getFullYear(),
-                viewDate.getMonth(),
-              ),
+              length: firstDayOfMonth(view.year, view.month),
             }).map((_, i) => (
               <div key={`empty-${i}`} className="p-2"></div>
             ))}
             {Array.from({
-              length: daysInMonth(viewDate.getFullYear(), viewDate.getMonth()),
+              length: daysInMonth(view.year, view.month),
             }).map((_, i) => {
               const day = i + 1;
               const isSelected =
-                (selectedDate &&
-                  selectedDate.getDate() === day &&
-                  selectedDate.getMonth() === viewDate.getMonth() &&
-                  selectedDate.getFullYear() === viewDate.getFullYear()) ||
-                false;
+                !!selected &&
+                selected.d === day &&
+                selected.m === view.month + 1 &&
+                selected.y === view.year;
               const isToday =
-                today.getDate() === day &&
-                today.getMonth() === viewDate.getMonth() &&
-                today.getFullYear() === viewDate.getFullYear();
+                today.d === day &&
+                today.m === view.month + 1 &&
+                today.y === view.year;
 
               return (
                 <button
@@ -182,27 +224,17 @@ const CustomDatePicker = ({
                   <Clock className="h-3 w-3" />
                   Time Precision
                 </span>
-                {value && (
-                  <span className="text-[10px] font-bold text-primary">
-                    {new Date(value).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                {selected && (
+                  <span className="text-[10px] font-bold text-primary font-mono">
+                    {selected.time}
+                    {selected.zone}
                   </span>
                 )}
               </div>
               <input
                 type="time"
-                value={
-                  value ? new Date(value).toISOString().slice(11, 16) : "12:00"
-                }
-                onChange={(e) => {
-                  const [h, m] = e.target.value.split(":");
-                  const current = value ? new Date(value) : new Date();
-                  const newDate = new Date(current);
-                  newDate.setHours(parseInt(h), parseInt(m));
-                  onChange(newDate.toISOString().slice(0, 16));
-                }}
+                value={selected ? selected.time.slice(0, 5) : ""}
+                onChange={(e) => handleTimeChange(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all [color-scheme:dark]"
               />
             </div>

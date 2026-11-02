@@ -95,25 +95,19 @@ const CustomFKSelect = ({
     [clusterId, hasMore, isLoading, referencedTable],
   );
 
+  // Loads the first page when opened, and again (debounced) when searching.
   useEffect(() => {
-    if (isOpen) {
-      setPage(1);
-      setHasMore(true);
-      fetchOptions(1);
-    }
-  }, [isOpen, referencedTable, fetchOptions]);
-
-  // Handle searching with a delay to avoid too many requests
-  useEffect(() => {
-    if (isOpen && search !== undefined) {
-      const timer = setTimeout(() => {
+    if (!isOpen) return;
+    const timer = setTimeout(
+      () => {
         setPage(1);
         setHasMore(true);
-        fetchOptions(1, true);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [search, isOpen, fetchOptions]);
+        void fetchOptions(1, true);
+      },
+      search ? 300 : 0,
+    );
+    return () => clearTimeout(timer);
+  }, [search, isOpen, referencedTable, fetchOptions]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;

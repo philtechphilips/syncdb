@@ -51,7 +51,9 @@ export default function BackupRestorePage() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `backup_${selectedCluster.name}_${new Date().toISOString().split("T")[0]}.${backupFormat}`;
+      // A CSV backup holds one CSV per table, packed as a JSON map.
+      const extension = backupFormat === "csv" ? "csv.json" : backupFormat;
+      a.download = `backup_${selectedCluster.name}_${new Date().toISOString().split("T")[0]}.${extension}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -79,7 +81,20 @@ export default function BackupRestorePage() {
       if (restoreFormat === "json") {
         restoreData = JSON.parse(text);
       } else if (restoreFormat === "csv") {
-        restoreData = { [selectedCluster.name]: text };
+        // Either a CSV backup from SynqDB ({ table: csv }) or a single CSV
+        // file, restored into the table named after the file.
+        let parsed: unknown = null;
+        try {
+          parsed = JSON.parse(text);
+        } catch {
+          // not JSON — a plain CSV file
+        }
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          restoreData = parsed;
+        } else {
+          const tableName = file.name.replace(/\.csv$/i, "");
+          restoreData = { [tableName]: text };
+        }
       } else {
         restoreData = { content: text };
       }
@@ -284,7 +299,7 @@ export default function BackupRestorePage() {
                       ? ".sql"
                       : restoreFormat === "json"
                         ? ".json"
-                        : ".csv"
+                        : ".csv,.json"
                   }
                   onChange={handleRestore}
                   disabled={isRestoring}

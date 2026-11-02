@@ -42,42 +42,34 @@ const FKTablePickerModal = ({
   const [totalRows, setTotalRows] = useState(0);
   const limit = 100;
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      // Fetch columns first if not loaded
-      if (columns.length === 0) {
-        const colRes = await api.get(
-          `/v1/clusters/${clusterId}/tables/${referencedTable}/columns`,
-        );
-        setColumns(colRes.data || []);
-      }
-
-      // Fetch table data
-      const dataRes = await api.get(
-        `/v1/clusters/${clusterId}/tables/${referencedTable}`,
-        {
+  // Loading starts true and is set again by the page buttons, so the
+  // effect below only does async work.
+  const fetchData = useCallback(() => {
+    // Fetch columns first if not loaded, then the page of rows.
+    const columnsRequest =
+      columns.length === 0
+        ? api
+            .get(`/v1/clusters/${clusterId}/tables/${referencedTable}/columns`)
+            .then((colRes) => setColumns(colRes.data || []))
+        : Promise.resolve();
+    return columnsRequest
+      .then(() =>
+        api.get(`/v1/clusters/${clusterId}/tables/${referencedTable}`, {
           params: { page, limit },
-        },
-      );
-
-      // Handle paginated response format { data, total, page, limit }
-      const records = dataRes.data?.data || dataRes.data || [];
-      const total = dataRes.data?.total || records.length || 0;
-
-      setData(records);
-      setTotalRows(total);
-    } catch (error) {
-      console.error("Failed to fetch FK table data:", error);
-    } finally {
-      setIsLoading(false);
-    }
+        }),
+      )
+      .then((dataRes) => {
+        // Paginated response format { data, total, page, limit }
+        const records = dataRes.data?.data || dataRes.data || [];
+        setData(records);
+        setTotalRows(dataRes.data?.total || records.length || 0);
+      })
+      .catch((error) => console.error("Failed to fetch FK table data:", error))
+      .finally(() => setIsLoading(false));
   }, [clusterId, columns.length, page, referencedTable]);
 
   useEffect(() => {
-    if (isOpen) {
-      fetchData();
-    }
+    if (isOpen) void fetchData();
   }, [isOpen, fetchData]);
 
   const filteredData = data.filter((row) =>
@@ -242,6 +234,7 @@ const FKTablePickerModal = ({
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                setIsLoading(true);
                 setPage(page - 1);
               }}
               className="p-2 rounded-lg bg-white/5 border border-white/5 text-zinc-400 hover:text-white hover:bg-white/10 disabled:opacity-20 transition-all font-black"
@@ -257,6 +250,7 @@ const FKTablePickerModal = ({
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                setIsLoading(true);
                 setPage(page + 1);
               }}
               className="p-2 rounded-lg bg-white/5 border border-white/5 text-zinc-400 hover:text-white hover:bg-white/10 disabled:opacity-20 transition-all"

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   X,
   Database,
@@ -18,7 +18,9 @@ import {
   Plug,
 } from "lucide-react";
 import { useClusterStore, Cluster } from "@/store/useClusterStore";
+import { useAuthStore, AgentConnectionInfo } from "@/store/useAuthStore";
 import { UI_CLASSES } from "@/lib/constants";
+import { getErrorMessage } from "@/lib/errorUtils";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -102,8 +104,36 @@ const ConnectionDialog = ({
     environment:
       (editCluster?.environment as EnvType) ?? ("development" as EnvType),
     color: editCluster?.color ?? "#00ED64",
+    sslMode: editCluster?.sslMode ?? "prefer",
   });
   const [isLocal, setIsLocal] = useState(editCluster?.isLocal ?? false);
+  // Local clusters point at a connection saved on the agent, so their
+  // credentials never reach the browser or the SynqDB server.
+  const [agentConnection, setAgentConnection] = useState(
+    editCluster?.agentConnection ?? "",
+  );
+  const [agentConnections, setAgentConnections] = useState<
+    AgentConnectionInfo[] | null
+  >(null);
+  const { fetchAgentStatus } = useAuthStore();
+  const legacyLocal =
+    isEdit && !!editCluster?.isLocal && !editCluster?.agentConnection;
+
+  useEffect(() => {
+    if (!isOpen || !isLocal) return;
+    let cancelled = false;
+    fetchAgentStatus()
+      .then((status) => {
+        if (!cancelled)
+          setAgentConnections(status.connected ? status.connections : []);
+      })
+      .catch(() => {
+        if (!cancelled) setAgentConnections([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, isLocal, fetchAgentStatus]);
   const [showPassword, setShowPassword] = useState(false);
   const [testResult, setTestResult] = useState<{
     success: boolean;
@@ -121,7 +151,51 @@ const ConnectionDialog = ({
     const db = DB_OPTIONS.find((d) => d.id === id)!;
     setSelectedDb(id);
     setFormData((f) => ({ ...f, type: id, port: db.port }));
+    // SQLite files live on your machine, so they always go through the agent.
+    if (id === "sqlite") setIsLocal(true);
     setTestResult(null);
+  };
+
+  const pickAgentConnection = (name: string) => {
+    setAgentConnection(name);
+    const saved = agentConnections?.find((c) => c.name === name);
+    if (saved && DB_OPTIONS.some((d) => d.id === saved.type)) {
+      setSelectedDb(saved.type as DbType);
+      setFormData((f) => ({ ...f, type: saved.type as DbType }));
+    }
+    setTestResult(null);
+  };
+
+  /** Request body with only the fields that apply to this engine. */
+  const connectionPayload = () => {
+    const isSqlite = selectedDb === "sqlite";
+    if (isLocal) {
+      return {
+        name: formData.name,
+        type: selectedDb,
+        environment: formData.environment,
+        color: formData.color,
+        isLocal: true,
+        agentConnection,
+      };
+    }
+    return {
+      name: formData.name,
+      type: selectedDb,
+      environment: formData.environment,
+      color: formData.color,
+      isLocal,
+      host: formData.host,
+      ...(isSqlite
+        ? {}
+        : {
+            port: formData.port ? parseInt(formData.port, 10) : undefined,
+            database: formData.database,
+            username: formData.username,
+            password: formData.password,
+            sslMode: formData.sslMode,
+          }),
+    };
   };
 
   const handleEnvSelect = (env: (typeof ENV_OPTIONS)[number]) => {
@@ -130,17 +204,12 @@ const ConnectionDialog = ({
 
   const handleTest = async () => {
     try {
-      const result = (await testConnection({
-        ...formData,
-        type: selectedDb,
-        port: parseInt(formData.port),
-      })) as { message: string };
+      const result = (await testConnection(connectionPayload())) as {
+        message: string;
+      };
       setTestResult({ success: true, message: result.message });
-    } catch (err: any) {
-      setTestResult({
-        success: false,
-        message: err?.response?.data?.message ?? "Connection failed",
-      });
+    } catch (err) {
+      setTestResult({ success: false, message: getErrorMessage(err) });
     }
   };
 
@@ -155,6 +224,15 @@ const ConnectionDialog = ({
           color: formData.color,
           isLocal,
         };
+        if (isLocal && agentConnection) {
+          // Moving to (or between) saved agent connections; the server
+          // forgets any credentials it stored for this cluster.
+          patch.agentConnection = agentConnection;
+          await updateCluster(editCluster.id, patch);
+          onClose();
+          return;
+        }
+        if (selectedDb !== "sqlite") patch.sslMode = formData.sslMode;
         // Only send connection fields if the user filled them in
         if (formData.host) patch.host = formData.host;
         if (formData.port) patch.port = parseInt(formData.port);
@@ -163,12 +241,7 @@ const ConnectionDialog = ({
         if (formData.password) patch.password = formData.password;
         await updateCluster(editCluster.id, patch);
       } else {
-        await createCluster({
-          ...formData,
-          type: selectedDb,
-          port: parseInt(formData.port),
-          isLocal,
-        });
+        await createCluster(connectionPayload());
       }
       onClose();
     } catch {
@@ -257,6 +330,12 @@ const ConnectionDialog = ({
                 <SectionLabel>Connection Mode</SectionLabel>
                 <button
                   type="button"
+                  disabled={selectedDb === "sqlite"}
+                  title={
+                    selectedDb === "sqlite"
+                      ? "SQLite files are always opened by the local agent"
+                      : undefined
+                  }
                   onClick={() => {
                     setIsLocal((v) => !v);
                     setTestResult(null);
@@ -377,15 +456,70 @@ const ConnectionDialog = ({
                 </div>
               </div>
 
+              {/* Saved agent connection (local clusters) */}
+              {isLocal && (
+                <div className="space-y-2">
+                  <FieldLabel>Saved connection on your machine</FieldLabel>
+                  {agentConnections && agentConnections.length > 0 ? (
+                    <select
+                      required={!legacyLocal}
+                      value={agentConnection}
+                      onChange={(e) => pickAgentConnection(e.target.value)}
+                      className={inputCls}
+                    >
+                      <option value="">Choose a connection…</option>
+                      {agentConnections.map((c) => (
+                        <option key={c.name} value={c.name}>
+                          {c.name} — {c.type}
+                          {c.database ? ` · ${c.database}` : ""}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      required={!legacyLocal}
+                      value={agentConnection}
+                      onChange={(e) =>
+                        pickAgentConnection(e.target.value.trim())
+                      }
+                      placeholder={
+                        agentConnections === null
+                          ? "Loading…"
+                          : "Connection name, e.g. local-postgres"
+                      }
+                      pattern="[A-Za-z0-9_.\-]{1,64}"
+                      className={inputCls}
+                    />
+                  )}
+                  <p className="text-[11px] text-zinc-500 leading-relaxed">
+                    Save it once on your machine — the password never leaves it:
+                    <code className="block mt-1.5 text-primary font-mono bg-white/5 px-2 py-1.5 rounded break-all">
+                      synqdb-agent add {agentConnection || "my-db"}{" "}
+                      {selectedDb === "sqlite"
+                        ? "sqlite:///path/to/file.db"
+                        : `${selectedDb === "mssql" ? "sqlserver" : selectedDb}://user@localhost/dbname`}
+                    </code>
+                  </p>
+                  {legacyLocal && (
+                    <p className="text-[11px] text-amber-400/80 leading-relaxed">
+                      This cluster&apos;s credentials are still stored on the
+                      SynqDB server. Choose a saved connection to keep them only
+                      on your machine.
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Host + Port (or File Path for SQLite) */}
-              {formData.type === "sqlite" ? (
+              {isLocal ? null : formData.type === "sqlite" ? (
                 <div>
                   <FieldLabel>File Path</FieldLabel>
                   <div className="relative">
                     <Database className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600" />
                     <input
                       type="text"
-                      required
+                      required={!isEdit}
                       value={formData.host}
                       onChange={(e) => field("host", e.target.value)}
                       placeholder="/path/to/database.db"
@@ -405,7 +539,7 @@ const ConnectionDialog = ({
                       <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600" />
                       <input
                         type="text"
-                        required
+                        required={!isEdit}
                         value={formData.host}
                         onChange={(e) => field("host", e.target.value)}
                         placeholder={isLocal ? "localhost" : "db.example.com"}
@@ -426,13 +560,14 @@ const ConnectionDialog = ({
                 </div>
               )}
 
-              {/* Database name (hidden for SQLite — file path is the database) */}
-              {formData.type !== "sqlite" && (
+              {/* Database name (hidden for SQLite, where the file is the database,
+                  and for local clusters, where the agent connection has it) */}
+              {formData.type !== "sqlite" && !isLocal && (
                 <div>
                   <FieldLabel>Database</FieldLabel>
                   <input
                     type="text"
-                    required
+                    required={!isEdit}
                     value={formData.database}
                     onChange={(e) => field("database", e.target.value)}
                     placeholder="my_database"
@@ -441,14 +576,14 @@ const ConnectionDialog = ({
                 </div>
               )}
 
-              {/* Credentials (hidden for SQLite) */}
-              {formData.type !== "sqlite" && (
+              {/* Credentials (hidden for SQLite and local clusters) */}
+              {formData.type !== "sqlite" && !isLocal && (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <FieldLabel>Username</FieldLabel>
                     <input
                       type="text"
-                      required
+                      required={!isEdit}
                       value={formData.username}
                       onChange={(e) => field("username", e.target.value)}
                       placeholder="admin"
@@ -482,6 +617,27 @@ const ConnectionDialog = ({
                 </div>
               )}
 
+              {/* Transport security */}
+              {formData.type !== "sqlite" && !isLocal && (
+                <div>
+                  <FieldLabel>SSL / TLS</FieldLabel>
+                  <select
+                    value={formData.sslMode}
+                    onChange={(e) => field("sslMode", e.target.value)}
+                    className={inputCls}
+                  >
+                    <option value="prefer">
+                      Prefer (use TLS when the server supports it)
+                    </option>
+                    <option value="require">Require (always encrypt)</option>
+                    <option value="verify">
+                      Verify certificate (encrypt and check the CA)
+                    </option>
+                    <option value="disable">Disable (plain connection)</option>
+                  </select>
+                </div>
+              )}
+
               {/* Local agent info banner */}
               {isLocal && (
                 <div className="flex items-start gap-3 px-4 py-3 rounded-xl border border-primary/20 bg-primary/5 animate-in fade-in slide-in-from-top-1 duration-200">
@@ -491,11 +647,14 @@ const ConnectionDialog = ({
                     <code className="text-primary font-mono bg-white/5 px-1 rounded">
                       synqdb-agent login
                     </code>{" "}
-                    then{" "}
+                    once, then keep{" "}
                     <code className="text-primary font-mono bg-white/5 px-1 rounded">
                       synqdb-agent
                     </code>{" "}
-                    on your machine. No keys to copy.
+                    running on your machine.
+                    {agentConnections !== null &&
+                      agentConnections.length === 0 &&
+                      " The agent isn't connected right now."}
                   </p>
                 </div>
               )}
@@ -542,7 +701,7 @@ const ConnectionDialog = ({
               >
                 Cancel
               </button>
-              {!isLocal && (
+              {(!isLocal || !!agentConnection) && (
                 <button
                   type="button"
                   disabled={isLoading}

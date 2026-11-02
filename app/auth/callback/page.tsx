@@ -1,44 +1,31 @@
 "use client";
 
 import React, { useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useClusterStore } from "@/store/useClusterStore";
 
 function AuthCallbackContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const { checkAuth, setTokens } = useAuthStore();
+  const { checkAuth } = useAuthStore();
 
   useEffect(() => {
-    const accessToken = searchParams.get("access_token");
-    const refreshToken = searchParams.get("refresh_token");
-
-    if (accessToken && refreshToken) {
-      // Load tokens into the auth store (access_token in-memory,
-      // refresh_token in localStorage) so checkAuth() can verify them.
-      setTokens(accessToken, refreshToken);
-
-      checkAuth()
-        .then(() => {
-          const { isAuthenticated } = useAuthStore.getState();
-          if (!isAuthenticated) {
-            router.push("/auth/login?error=Authentication failed");
-            return;
-          }
-          // Clear any stale cluster selection so the user always lands on
-          // the cluster picker after a fresh OAuth login.
-          useClusterStore.getState().selectCluster(null);
-          router.push("/dashboard");
-        })
-        .catch(() => {
-          router.push("/auth/login?error=Authentication failed");
-        });
-    } else {
-      router.push("/auth/login?error=No token received");
-    }
-  }, [searchParams, router, checkAuth, setTokens]);
+    // The API set the refresh cookie during the OAuth redirect; exchange it
+    // for an access token. Tokens are never passed in the URL.
+    checkAuth()
+      .then((ok) => {
+        if (!ok) {
+          router.replace("/auth/login?error=Authentication failed");
+          return;
+        }
+        // Clear any stale cluster selection so the user always lands on
+        // the cluster picker after a fresh OAuth login.
+        useClusterStore.getState().selectCluster(null);
+        router.replace("/dashboard");
+      })
+      .catch(() => router.replace("/auth/login?error=Authentication failed"));
+  }, [router, checkAuth]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-6 p-6">

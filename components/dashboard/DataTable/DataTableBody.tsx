@@ -1,34 +1,33 @@
 import React from "react";
-import { ArrowUpDown, Maximize2, MoreHorizontal } from "lucide-react";
+import { Maximize2, MoreHorizontal } from "lucide-react";
+import { displayValue } from "@/lib/cellValue";
 
 interface DataTableBodyProps {
   rows: Record<string, unknown>[];
   filteredRows: Record<string, unknown>[];
-  selectedRows: Set<string | number>;
-  onToggleRow: (id: string | number) => void;
+  /** Key of each row (primary key, or position for key-less tables). */
+  getRowKey: (row: Record<string, unknown>) => string;
+  selectedRows: Set<string>;
+  onToggleRow: (key: string) => void;
   onToggleAll: () => void;
   onOpenUpdateModal: (row: Record<string, unknown>) => void;
-  onContextMenu: (
-    e: React.MouseEvent,
-    rowId: string | number,
-    colName: string,
-    value: any,
-  ) => void;
+  onContextMenu: (e: React.MouseEvent, rowKey: string, colName: string) => void;
   editingCell: {
-    rowId: string | number;
+    rowKey: string;
     colName: string;
     value: string;
   } | null;
-  onStartEdit: (rowId: string | number, colName: string, value: string) => void;
+  onStartEdit: (rowKey: string, colName: string) => void;
   onEditValueChange: (val: string) => void;
   onSaveEdit: () => void;
   onCancelEdit: () => void;
-  activeCell: { rowId: string | number; colName: string } | null;
+  activeCell: { rowKey: string; colName: string } | null;
 }
 
 const DataTableBody = ({
   rows,
   filteredRows,
+  getRowKey,
   selectedRows,
   onToggleRow,
   onToggleAll,
@@ -101,7 +100,7 @@ const DataTableBody = ({
         </thead>
         <tbody className="divide-y divide-white/[0.03]">
           {filteredRows.map((row) => {
-            const rowId = row.id as string | number;
+            const rowId = getRowKey(row);
             return (
               <tr
                 key={rowId}
@@ -126,23 +125,17 @@ const DataTableBody = ({
                 </td>
                 {Object.keys(row).map((col) => {
                   const isEditing =
-                    editingCell?.rowId === rowId &&
+                    editingCell?.rowKey === rowId &&
                     editingCell?.colName === col;
+                  const isNull = row[col] === null || row[col] === undefined;
                   return (
                     <td
                       key={col}
-                      onContextMenu={(e) =>
-                        onContextMenu(e, rowId, col, row[col])
-                      }
-                      onDoubleClick={() =>
-                        col !== "id" &&
-                        onStartEdit(rowId, col, String(row[col]))
-                      }
+                      onContextMenu={(e) => onContextMenu(e, rowId, col)}
+                      onDoubleClick={() => onStartEdit(rowId, col)}
                       style={{ width: columnWidths[col] || 150 }}
-                      className={`px-6 py-3 font-mono text-[11px] border-r border-border/10 last:border-0 relative transition-all break-words whitespace-pre-wrap cursor-pointer select-none ${
-                        col === "id" ? "text-muted-foreground" : "text-zinc-300"
-                      } ${row[col] === "NULL" ? "italic text-zinc-600" : ""} ${
-                        activeCell?.rowId === rowId &&
+                      className={`px-6 py-3 font-mono text-[11px] border-r border-border/10 last:border-0 relative transition-all break-words whitespace-pre-wrap cursor-pointer select-none text-zinc-300 ${isNull ? "italic text-zinc-600" : ""} ${
+                        activeCell?.rowKey === rowId &&
                         activeCell?.colName === col
                           ? "outline outline-1 outline-primary/30 bg-primary/5 z-10 shadow-[0_0_15px_rgba(0,237,100,0.05)]"
                           : ""
@@ -175,14 +168,12 @@ const DataTableBody = ({
                           <span
                             className={`${row[col] === "Active" ? "text-zinc-200" : "text-muted-foreground"}`}
                           >
-                            {row[col] as React.ReactNode}
+                            {displayValue(row[col])}
                           </span>
                         </div>
                       ) : (
                         <div className="max-h-[100px] overflow-y-auto scrollbar-hide font-mono">
-                          {typeof row[col] === "object"
-                            ? JSON.stringify(row[col])
-                            : String(row[col])}
+                          {displayValue(row[col])}
                         </div>
                       )}
                     </td>

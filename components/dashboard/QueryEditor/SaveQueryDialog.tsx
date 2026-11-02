@@ -41,23 +41,24 @@ const SaveQueryDialog: React.FC<SaveQueryDialogProps> = ({
   const [tags, setTags] = useState<string[]>([]);
 
   useEffect(() => {
-    if (isOpen) {
-      fetchCollections();
+    if (isOpen) fetchCollections();
+  }, [isOpen, fetchCollections]);
 
-      if (persistentId) {
-        const existing = savedQueries.find((q) => q.id === persistentId);
-        if (existing) {
-          setName(existing.name);
-          setCollectionId(existing.collectionId || "");
-          setTags(existing.tags || []);
-        }
-      } else {
-        setName(`Query ${new Date().toLocaleDateString()}`);
-        setCollectionId("");
-        setTags([]);
-      }
+  // Fill the form once each time the dialog opens (not on every store update,
+  // which used to overwrite what the user was typing).
+  const openKey = isOpen ? `open:${persistentId ?? ""}` : null;
+  const [filledFor, setFilledFor] = useState<string | null>(null);
+  if (openKey !== filledFor) {
+    setFilledFor(openKey);
+    if (openKey) {
+      const existing = persistentId
+        ? savedQueries.find((q) => q.id === persistentId)
+        : undefined;
+      setName(existing?.name ?? `Query ${new Date().toLocaleDateString()}`);
+      setCollectionId(existing?.collectionId || "");
+      setTags(existing?.tags || []);
     }
-  }, [isOpen, fetchCollections, persistentId, savedQueries]);
+  }
 
   const handleAddTag = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && tagInput.trim()) {

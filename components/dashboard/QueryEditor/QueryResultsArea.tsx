@@ -18,9 +18,29 @@ import DataContextMenu from "../DataTable/DataContextMenu";
 import { calculateContextMenuPosition, copyToClipboard } from "@/lib/uiUtils";
 import { formatData } from "@/lib/exportUtils";
 import { toast } from "sonner";
+import type { QueryResultSet } from "@/store/useClusterStore";
+
+type Cell = { resultSetIdx: number; rowId: string | number; colName: string };
+
+interface ResultTableProps {
+  rows: Record<string, unknown>[];
+  resultSetIdx: number;
+  onContextMenu: (
+    e: React.MouseEvent,
+    resultSetIdx: number,
+    rowId: string | number,
+    colName: string,
+  ) => void;
+  activeCell: Cell | null;
+  editingCell: (Cell & { value: string }) | null;
+  setEditingCell: (cell: (Cell & { value: string }) | null) => void;
+  totalRows: number;
+  onPageChange?: (page: number) => void;
+  isPagingEnabled?: boolean;
+}
 
 interface QueryResultsAreaProps {
-  queryResults: any[] | null;
+  queryResults: QueryResultSet[] | null;
   queryTotals: number[];
   bottomTab: "results" | "history";
   onSetTab: (tab: "results" | "history") => void;
@@ -52,7 +72,7 @@ const ResultTable = ({
   totalRows,
   onPageChange,
   isPagingEnabled,
-}: any) => {
+}: ResultTableProps) => {
   const [localPage, setLocalPage] = useState(1);
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
   const rowsPerPage = 50;
@@ -127,9 +147,10 @@ const ResultTable = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-white/[0.03]">
-            {paginatedRows.map((row: any, i: number) => {
+            {paginatedRows.map((row, i) => {
               const globalIdx = (localPage - 1) * rowsPerPage + i;
-              const rowId = row.id || globalIdx;
+              // Position in the result set (query rows may have no unique id).
+              const rowId = globalIdx;
               return (
                 <tr
                   key={globalIdx}
@@ -375,9 +396,10 @@ const QueryResultsArea = ({
             )
           }
           onCopyValue={(rid, col) => {
-            const val = (
-              queryResults?.[contextMenu!.resultSetIdx] as any[]
-            ).find((r, idx) => (r.id || idx) === rid)?.[col];
+            const resultSet = queryResults?.[contextMenu!.resultSetIdx];
+            const val = Array.isArray(resultSet)
+              ? resultSet[Number(rid)]?.[col]
+              : undefined;
             copyToClipboard(String(val ?? ""));
           }}
           onFilterByValue={() =>
@@ -433,12 +455,11 @@ const QueryResultsArea = ({
                 const isSelect =
                   Array.isArray(resultSet) &&
                   (resultSet.length === 0 || typeof resultSet[0] === "object");
-                const rows = isSelect ? (resultSet as any[]) : [];
-                const affectedRows = !isSelect
-                  ? ((resultSet as any)?.affectedRows ??
-                    (resultSet as any)?.rowCount ??
-                    null)
-                  : null;
+                const rows = Array.isArray(resultSet) ? resultSet : [];
+                const affectedRows =
+                  !isSelect && resultSet && !Array.isArray(resultSet)
+                    ? (resultSet.affectedRows ?? resultSet.rowCount ?? null)
+                    : null;
 
                 return (
                   <div key={idx} className="w-full">

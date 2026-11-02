@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Zap,
@@ -164,11 +164,15 @@ export default function ProjectSettingsPage() {
   });
   const [isSaved, setIsSaved] = useState(false);
 
-  useEffect(() => {
-    if (user?.settings) {
-      setSettings((prev) => ({ ...prev, ...user.settings }));
-    }
-  }, [user?.settings]);
+  // Pick up saved settings when they arrive (adjusting state during render
+  // instead of in an effect avoids an extra render pass).
+  const [loadedFrom, setLoadedFrom] = useState<
+    Record<string, unknown> | undefined
+  >(undefined);
+  if (user?.settings !== loadedFrom) {
+    setLoadedFrom(user?.settings);
+    if (user?.settings) setSettings((prev) => ({ ...prev, ...user.settings }));
+  }
 
   const handleSave = async () => {
     try {
@@ -181,7 +185,7 @@ export default function ProjectSettingsPage() {
     }
   };
 
-  const update = (key: string, value: any) => {
+  const update = (key: string, value: string | number | boolean) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
   };
 

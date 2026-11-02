@@ -2,45 +2,51 @@ import axios, { AxiosInstance } from "axios";
 import { toast } from "sonner";
 import { getErrorMessage } from "./errorUtils";
 
+declare module "axios" {
+  interface AxiosRequestConfig {
+    /** Don't show the global error toast for this request. */
+    _skipToast?: boolean;
+    _retry?: boolean;
+  }
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 if (!API_URL) {
   console.warn("NEXT_PUBLIC_API_URL is not defined in environment variables.");
 }
 
+// The refresh token is an httpOnly cookie set by the API, so requests must
+// include credentials; the access token lives only in memory.
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,
   headers: { "Content-Type": "application/json" },
+  withCredentials: true,
 });
 
 // Single in-flight refresh promise — prevents concurrent 401s from each
-// triggering their own refresh and racing each other to invalidate the token.
+// triggering their own refresh.
 let refreshPromise: Promise<string | null> | null = null;
 
-async function attemptRefresh(): Promise<string | null> {
+export async function refreshAccessToken(): Promise<string | null> {
   if (refreshPromise) return refreshPromise;
 
   refreshPromise = (async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { useAuthStore } = require("@/store/useAuthStore");
     try {
-      const { useAuthStore } = require("@/store/useAuthStore");
-      const refreshToken = useAuthStore.getState().getRefreshToken();
-      if (!refreshToken) return null;
-
-      const res = await axios.post(`${API_URL}/v1/auth/refresh`, {
-        refresh_token: refreshToken,
-      });
-
-      const { access_token, refresh_token: newRefresh } = res.data;
-      useAuthStore
-        .getState()
-        .setTokens(access_token, newRefresh ?? refreshToken);
+      const res = await axios.post(
+        `${API_URL}/v1/auth/refresh`,
+        {},
+        { withCredentials: true },
+      );
+      const { access_token, user } = res.data;
+      useAuthStore.getState().setSession(access_token, user);
       return access_token as string;
     } catch {
-      const { useAuthStore } = require("@/store/useAuthStore");
       useAuthStore.getState().logout();
       return null;
     } finally {
-      // Clear so the next expiry triggers a fresh refresh
       refreshPromise = null;
     }
   })();
@@ -50,6 +56,7 @@ async function attemptRefresh(): Promise<string | null> {
 
 // ── Request interceptor — attach access token ─────────────────────────────────
 api.interceptors.request.use((config) => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { useAuthStore } = require("@/store/useAuthStore");
   const token = useAuthStore.getState().access_token;
   if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -62,20 +69,22 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._retry
+    ) {
       originalRequest._retry = true;
-
-      const newToken = await attemptRefresh();
+      const newToken = await refreshAccessToken();
       if (newToken) {
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return api(originalRequest);
       }
-
-      // attemptRefresh already called logout — just reject quietly
+      // refreshAccessToken already called logout — just reject quietly
       return Promise.reject(error);
     }
 
-    if (error.response?.status !== 401 && !originalRequest._skipToast) {
+    if (error.response?.status !== 401 && !originalRequest?._skipToast) {
       toast.error(getErrorMessage(error));
     }
 
