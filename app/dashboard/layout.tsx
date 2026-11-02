@@ -90,8 +90,8 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   if (!isInitialized || isAuthLoading) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <Loader2 className="h-8 w-8 text-primary animate-spin" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 animate-pulse">
+        <Loader2 className="h-8 w-8 text-accent-fg animate-spin" />
+        <p className="text-[11px] text-subtle animate-pulse">
           Initializing Session...
         </p>
       </div>
@@ -108,12 +108,13 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     if (pathname.includes("/dashboard/logs")) return "logs";
     if (pathname.includes("/dashboard/sync")) return "sync";
     if (pathname.includes("/dashboard/backup")) return "backup";
+    if (pathname.includes("/dashboard/settings")) return "settings";
     return activeTab;
   };
 
   return (
     <ClusterGate>
-      <div className="flex min-h-screen max-w-full bg-background text-foreground animate-in fade-in duration-700 font-sans overflow-x-hidden">
+      <div className="flex min-h-screen max-w-full bg-chrome text-foreground font-sans overflow-x-hidden">
         {/* Sidebar navigation */}
         <Sidebar
           onOpenConnect={() => setIsConnectOpen(true)}
@@ -125,6 +126,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
               | "logs"
               | "sync"
               | "backup"
+              | "settings"
           }
           onTabChange={(tab) => {
             setActiveTab(tab);
@@ -144,26 +146,30 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
         {isSidebarMobileOpen && (
           <div
-            className="fixed inset-0 z-30 bg-background/80 backdrop-blur-sm lg:hidden h-full w-full"
+            className="fixed inset-0 z-40 bg-black/25 lg:hidden h-full w-full"
             onClick={() => setIsSidebarMobileOpen(false)}
           />
         )}
 
         {/* Main Content Area */}
-        <div className="flex h-screen flex-1 flex-col lg:pl-64 min-w-0 max-w-full relative overflow-hidden">
+        <div className="flex h-screen flex-1 flex-col lg:pl-[220px] min-w-0 max-w-full relative overflow-hidden">
           {/* Top Navbar */}
           <Navbar
             onOpenConnect={() => setIsConnectOpen(true)}
             onOpenSidebar={() => setIsSidebarMobileOpen(true)}
           />
 
-          {/* Workspace */}
-          <main className="flex flex-1 flex-col pt-14 pb-0 bg-background transition-all overflow-hidden">
-            {children}
-          </main>
+          {/* Workspace: a white panel inside the gray frame */}
+          <div className="flex min-h-0 flex-1 flex-col lg:pr-2">
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden border-t border-border bg-panel shadow-[0_1px_3px_rgb(0_0_0/0.04)] lg:rounded-t-2xl lg:border-x">
+              <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                {children}
+              </main>
 
-          {/* Bottom Status Bar */}
-          <StatusBar />
+              {/* Bottom Status Bar */}
+              <StatusBar />
+            </div>
+          </div>
         </div>
 
         {/* Connection Dialog Modal */}
@@ -190,8 +196,8 @@ export default function DashboardLayout({
     <Suspense
       fallback={
         <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-          <Loader2 className="h-8 w-8 text-primary animate-spin" />
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 animate-pulse">
+          <Loader2 className="h-8 w-8 text-accent-fg animate-spin" />
+          <p className="text-[11px] text-subtle animate-pulse">
             Initializing Session...
           </p>
         </div>

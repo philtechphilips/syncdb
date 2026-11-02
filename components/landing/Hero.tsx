@@ -19,17 +19,17 @@ const fadeUp: Variants = {
 };
 
 const DashboardMockup = () => (
-  <div className="relative w-full rounded-2xl overflow-hidden border border-white/8 bg-[#061018]">
+  <div className="relative w-full rounded-xl overflow-hidden border border-border bg-background">
     {/* Window chrome */}
-    <div className="flex items-center justify-between px-4 py-3 bg-[#040c14] border-b border-white/5">
+    <div className="flex items-center justify-between px-4 py-3 bg-background border-b border-border">
       <div className="flex items-center gap-1.5">
-        <div className="h-3 w-3 rounded-full bg-red-500/50" />
-        <div className="h-3 w-3 rounded-full bg-yellow-500/50" />
-        <div className="h-3 w-3 rounded-full bg-green-500/50" />
+        <div className="h-3 w-3 rounded-full bg-err/50" />
+        <div className="h-3 w-3 rounded-full bg-warn/50" />
+        <div className="h-3 w-3 rounded-full bg-ok/50" />
       </div>
-      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/5">
+      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-ink/[0.04] border border-border">
         <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-        <span className="text-[10px] font-mono text-zinc-500">
+        <span className="text-[11px] font-mono text-subtle">
           synqdb.app / dashboard
         </span>
       </div>
@@ -38,23 +38,21 @@ const DashboardMockup = () => (
 
     <div className="flex" style={{ height: 360 }}>
       {/* Sidebar */}
-      <div className="w-44 border-r border-white/5 bg-[#040c14] flex flex-col shrink-0 p-3 gap-3">
+      <div className="w-44 border-r border-border bg-background flex flex-col shrink-0 p-3 gap-3">
         {/* Cluster list */}
         <div>
-          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600 mb-2 px-1">
-            Clusters
-          </p>
+          <p className="text-[11px] text-subtle mb-2 px-1">Clusters</p>
           {[
-            { name: "postgres-prod", dot: "#4CAF76", active: true },
+            { name: "postgres-prod", dot: "#16a34a", active: true },
             { name: "mysql-staging", dot: "#4479A1", active: false },
             { name: "mssql-replica", dot: "#A91D22", active: false },
           ].map((c, i) => (
             <div
               key={i}
-              className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-[10px] font-mono mb-0.5 cursor-default transition-colors ${
+              className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-[11px] font-mono mb-0.5 cursor-default transition-colors ${
                 c.active
-                  ? "bg-primary/10 border border-primary/20 text-white"
-                  : "text-zinc-600"
+                  ? "bg-primary/10 border border-primary/20 text-foreground"
+                  : "text-subtle"
               }`}
             >
               <div
@@ -68,14 +66,12 @@ const DashboardMockup = () => (
 
         {/* Table list */}
         <div className="mt-2">
-          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600 mb-2 px-1">
-            Tables
-          </p>
+          <p className="text-[11px] text-subtle mb-2 px-1">Tables</p>
           {["users", "orders", "products", "sessions"].map((t, i) => (
             <div
               key={i}
-              className={`px-2 py-1 text-[10px] font-mono rounded cursor-default flex items-center gap-1.5 mb-0.5 ${
-                i === 0 ? "text-primary" : "text-zinc-600"
+              className={`px-2 py-1 text-[11px] font-mono rounded cursor-default flex items-center gap-1.5 mb-0.5 ${
+                i === 0 ? "text-accent-fg" : "text-subtle"
               }`}
             >
               <span className="opacity-40">▸</span>
@@ -88,14 +84,14 @@ const DashboardMockup = () => (
       {/* Main panel */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Tabs */}
-        <div className="flex items-center border-b border-white/5 px-4 gap-1">
+        <div className="flex items-center border-b border-border px-4 gap-1">
           {["Query Editor", "Data Explorer", "ER Diagram"].map((tab, i) => (
             <div
               key={i}
-              className={`px-3 py-2.5 text-[9px] font-black uppercase tracking-widest border-b-2 cursor-default transition-colors whitespace-nowrap ${
+              className={`px-3 py-2.5 text-[11px] font-medium border-b-2 cursor-default transition-colors whitespace-nowrap ${
                 i === 0
-                  ? "border-primary text-white"
-                  : "border-transparent text-zinc-600"
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-subtle"
               }`}
             >
               {tab}
@@ -107,45 +103,45 @@ const DashboardMockup = () => (
         <div className="flex-1 p-4 font-mono text-xs leading-relaxed overflow-hidden">
           {[
             [
-              { t: "SELECT ", c: "#7DD3FC" },
-              { t: "u.name, ", c: "#E2E8F0" },
-              { t: "COUNT", c: "#FCD34D" },
-              { t: "(o.id) ", c: "#E2E8F0" },
-              { t: "AS ", c: "#7DD3FC" },
-              { t: "order_count", c: "#86EFAC" },
+              { t: "SELECT ", c: "var(--color-syn-kw)" },
+              { t: "u.name, ", c: "var(--color-syn-text)" },
+              { t: "COUNT", c: "var(--color-syn-fn)" },
+              { t: "(o.id) ", c: "var(--color-syn-text)" },
+              { t: "AS ", c: "var(--color-syn-kw)" },
+              { t: "order_count", c: "var(--color-syn-str)" },
             ],
             [
-              { t: "FROM ", c: "#7DD3FC" },
-              { t: "users u", c: "#E2E8F0" },
+              { t: "FROM ", c: "var(--color-syn-kw)" },
+              { t: "users u", c: "var(--color-syn-text)" },
             ],
             [
-              { t: "  JOIN ", c: "#7DD3FC" },
-              { t: "orders o ", c: "#E2E8F0" },
-              { t: "ON ", c: "#7DD3FC" },
-              { t: "u.id = o.user_id", c: "#E2E8F0" },
+              { t: "  JOIN ", c: "var(--color-syn-kw)" },
+              { t: "orders o ", c: "var(--color-syn-text)" },
+              { t: "ON ", c: "var(--color-syn-kw)" },
+              { t: "u.id = o.user_id", c: "var(--color-syn-text)" },
             ],
             [
-              { t: "WHERE ", c: "#7DD3FC" },
-              { t: "u.status = ", c: "#E2E8F0" },
-              { t: "'active'", c: "#FDBA74" },
+              { t: "WHERE ", c: "var(--color-syn-kw)" },
+              { t: "u.status = ", c: "var(--color-syn-text)" },
+              { t: "'active'", c: "var(--color-syn-str)" },
             ],
             [
-              { t: "GROUP BY ", c: "#7DD3FC" },
-              { t: "u.name", c: "#E2E8F0" },
+              { t: "GROUP BY ", c: "var(--color-syn-kw)" },
+              { t: "u.name", c: "var(--color-syn-text)" },
             ],
             [
-              { t: "ORDER BY ", c: "#7DD3FC" },
-              { t: "order_count ", c: "#E2E8F0" },
-              { t: "DESC", c: "#7DD3FC" },
+              { t: "ORDER BY ", c: "var(--color-syn-kw)" },
+              { t: "order_count ", c: "var(--color-syn-text)" },
+              { t: "DESC", c: "var(--color-syn-kw)" },
             ],
             [
-              { t: "LIMIT ", c: "#7DD3FC" },
-              { t: "10", c: "#FDBA74" },
-              { t: ";", c: "#64748B" },
+              { t: "LIMIT ", c: "var(--color-syn-kw)" },
+              { t: "10", c: "var(--color-syn-str)" },
+              { t: ";", c: "var(--color-syn-comment)" },
             ],
           ].map((line, li) => (
             <div key={li} className="flex items-start gap-3">
-              <span className="text-zinc-700 select-none w-4 text-right shrink-0 text-[10px] mt-0.5">
+              <span className="text-subtle/70 select-none w-4 text-right shrink-0 text-[11px] mt-0.5">
                 {li + 1}
               </span>
               <span>
@@ -160,7 +156,7 @@ const DashboardMockup = () => (
 
           {/* Blinking cursor */}
           <div className="flex items-start gap-3 mt-0.5">
-            <span className="text-zinc-700 select-none w-4 text-right shrink-0 text-[10px]">
+            <span className="text-subtle/70 select-none w-4 text-right shrink-0 text-[11px]">
               8
             </span>
             <span className="inline-block h-3.5 w-1.5 bg-primary/80 animate-pulse rounded-sm" />
@@ -168,16 +164,16 @@ const DashboardMockup = () => (
         </div>
 
         {/* Results strip */}
-        <div className="border-t border-white/5 bg-[#040c14] px-4 py-2 flex items-center justify-between">
+        <div className="border-t border-border bg-background px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
-              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] font-mono text-zinc-400">
+              <div className="h-1.5 w-1.5 rounded-full bg-ok animate-pulse" />
+              <span className="text-[11px] font-mono text-muted-foreground">
                 247 rows · 8ms
               </span>
             </div>
-            <span className="text-zinc-700 text-[10px]">·</span>
-            <span className="text-[10px] font-mono text-zinc-600">
+            <span className="text-subtle/70 text-[11px]">·</span>
+            <span className="text-[11px] font-mono text-subtle">
               postgres-prod
             </span>
           </div>
@@ -185,7 +181,7 @@ const DashboardMockup = () => (
             {["CSV", "JSON", "PDF"].map((fmt) => (
               <span
                 key={fmt}
-                className="px-2 py-0.5 rounded bg-white/[0.04] text-[9px] font-mono text-zinc-500 border border-white/5"
+                className="px-2 py-0.5 rounded bg-ink/[0.04] text-[11px] font-mono text-subtle border border-border"
               >
                 {fmt}
               </span>
@@ -201,10 +197,7 @@ export const Hero = ({ onLaunch }: { onLaunch: () => void }) => {
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-background">
       {/* Ambient glows */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-primary/[0.06] blur-[140px] rounded-full" />
-        <div className="absolute top-1/3 right-0 w-[400px] h-[400px] bg-primary/[0.04] blur-[100px] rounded-full" />
-      </div>
+      <div className="absolute inset-0 pointer-events-none overflow-hidden"></div>
 
       {/* Subtle grid */}
       <div className="absolute inset-0 tech-grid opacity-[0.018] pointer-events-none" />
@@ -220,11 +213,11 @@ export const Hero = ({ onLaunch }: { onLaunch: () => void }) => {
         >
           <button
             onClick={onLaunch}
-            className="group inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/30 bg-primary/[0.06] text-xs font-medium text-zinc-300 hover:border-primary/60 hover:text-white transition-all duration-300"
+            className="group inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/30 bg-primary/[0.06] text-xs font-medium text-foreground/80 hover:border-primary/60 hover:text-foreground transition-all duration-300"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
             Now in public beta — 4 database engines supported
-            <ArrowRight className="h-3 w-3 text-primary group-hover:translate-x-0.5 transition-transform" />
+            <ArrowRight className="h-3 w-3 text-accent-fg group-hover:translate-x-0.5 transition-transform" />
           </button>
         </motion.div>
 
@@ -234,11 +227,11 @@ export const Hero = ({ onLaunch }: { onLaunch: () => void }) => {
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          className="text-center text-[clamp(3rem,10vw,7rem)] font-serif text-white leading-[1.05] tracking-tighter mb-8"
+          className="text-center text-[clamp(2.5rem,6.5vw,4.75rem)] font-semibold text-foreground leading-[1.05] tracking-tight mb-8"
         >
           One Interface.
           <br />
-          <span className="text-primary italic">Every Database.</span>
+          <span className="text-accent-fg">Every Database.</span>
         </motion.h1>
 
         {/* Subheadline */}
@@ -247,7 +240,7 @@ export const Hero = ({ onLaunch }: { onLaunch: () => void }) => {
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          className="text-center text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto mb-10 leading-relaxed font-medium"
+          className="text-center text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed font-medium"
         >
           Connect PostgreSQL, MySQL, MSSQL, and SQLite in a single dashboard.
           Built for engineering teams who need speed, clarity, and control.
@@ -263,14 +256,14 @@ export const Hero = ({ onLaunch }: { onLaunch: () => void }) => {
         >
           <button
             onClick={onLaunch}
-            className="group flex items-center gap-2 px-7 py-3.5 rounded-full bg-primary text-white font-semibold text-sm transition-all hover:bg-primary/90 hover:scale-105 active:scale-95 shadow-lg shadow-primary/20 w-full sm:w-auto justify-center"
+            className="group flex items-center gap-2 px-7 py-3.5 rounded-full bg-primary text-white font-medium text-sm transition-all hover:bg-primary-hover shadow-[0_1px_2px_rgb(67_56_202/0.25)] w-full sm:w-auto justify-center"
           >
             Get started — it&apos;s free
             <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
           </button>
-          <button className="flex items-center gap-2.5 px-7 py-3.5 rounded-full border border-white/10 text-white text-sm font-medium hover:bg-white/[0.05] hover:border-white/20 transition-all w-full sm:w-auto justify-center">
-            <div className="h-6 w-6 rounded-full bg-white/10 flex items-center justify-center">
-              <Play className="h-2.5 w-2.5 text-white fill-white ml-0.5" />
+          <button className="flex items-center gap-2.5 px-7 py-3.5 rounded-full border border-border text-foreground text-sm font-medium hover:bg-ink/[0.05] hover:border-line-strong transition-all w-full sm:w-auto justify-center">
+            <div className="h-6 w-6 rounded-full bg-ink/10 flex items-center justify-center">
+              <Play className="h-2.5 w-2.5 text-foreground fill-white ml-0.5" />
             </div>
             Watch demo
           </button>
@@ -282,7 +275,7 @@ export const Hero = ({ onLaunch }: { onLaunch: () => void }) => {
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-16 text-xs text-zinc-500"
+          className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-16 text-xs text-subtle"
         >
           {[
             "No credit card required",
@@ -290,7 +283,7 @@ export const Hero = ({ onLaunch }: { onLaunch: () => void }) => {
             "Open source friendly",
           ].map((item, i) => (
             <div key={i} className="flex items-center gap-1.5">
-              <Check className="h-3 w-3 text-primary shrink-0" />
+              <Check className="h-3 w-3 text-accent-fg shrink-0" />
               <span>{item}</span>
             </div>
           ))}
@@ -305,10 +298,9 @@ export const Hero = ({ onLaunch }: { onLaunch: () => void }) => {
           className="relative max-w-5xl mx-auto"
         >
           {/* Glow beneath */}
-          <div className="absolute -inset-x-8 -top-6 bottom-0 bg-primary/[0.06] blur-3xl rounded-3xl pointer-events-none" />
 
           {/* Gradient border wrapper */}
-          <div className="relative rounded-2xl p-[1px] bg-gradient-to-b from-white/12 via-white/5 to-transparent">
+          <div className="relative rounded-xl p-[1px] bg-gradient-to-b from-ink/12 via-ink/5 to-transparent">
             <DashboardMockup />
           </div>
 
@@ -316,10 +308,10 @@ export const Hero = ({ onLaunch }: { onLaunch: () => void }) => {
           <motion.div
             animate={{ y: [0, -6, 0] }}
             transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -top-4 -right-4 md:right-8 flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-500/20 bg-[#040c14]/90 backdrop-blur-md shadow-lg"
+            className="absolute -top-4 -right-4 md:right-8 flex items-center gap-2 px-4 py-2 rounded-full border border-ok/20 bg-background/90 backdrop-blur-md shadow-lg"
           >
-            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-mono text-emerald-400 font-bold">
+            <div className="h-1.5 w-1.5 rounded-full bg-ok animate-pulse" />
+            <span className="text-[11px] font-mono text-ok font-medium">
               8ms avg query
             </span>
           </motion.div>
@@ -333,7 +325,7 @@ export const Hero = ({ onLaunch }: { onLaunch: () => void }) => {
               ease: "easeInOut",
               delay: 1,
             }}
-            className="absolute -bottom-4 -left-4 md:left-8 flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-[#040c14]/90 backdrop-blur-md shadow-lg"
+            className="absolute -bottom-4 -left-4 md:left-8 flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-background/90 backdrop-blur-md shadow-lg"
           >
             <div className="flex -space-x-1">
               {["#336791", "#4479A1", "#A91D22", "#003B57"].map((c, i) => (
@@ -344,7 +336,7 @@ export const Hero = ({ onLaunch }: { onLaunch: () => void }) => {
                 />
               ))}
             </div>
-            <span className="text-[10px] font-mono text-zinc-400">
+            <span className="text-[11px] font-mono text-muted-foreground">
               4 engines connected
             </span>
           </motion.div>
@@ -356,7 +348,7 @@ export const Hero = ({ onLaunch }: { onLaunch: () => void }) => {
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          className="mt-20 pt-12 border-t border-white/5 grid grid-cols-2 sm:grid-cols-4 gap-8 max-w-3xl mx-auto text-center"
+          className="mt-20 pt-12 border-t border-border grid grid-cols-2 sm:grid-cols-4 gap-8 max-w-3xl mx-auto text-center"
         >
           {[
             { val: "4", label: "DB Engines Supported" },
@@ -365,10 +357,10 @@ export const Hero = ({ onLaunch }: { onLaunch: () => void }) => {
             { val: "Open Beta", label: "Join Early" },
           ].map((stat, i) => (
             <div key={i} className="text-center group cursor-default">
-              <div className="text-2xl md:text-3xl font-serif text-white group-hover:text-primary transition-colors duration-300">
+              <div className="text-2xl md:text-3xl text-foreground group-hover:text-accent-fg transition-colors duration-300 tracking-tight font-semibold">
                 {stat.val}
               </div>
-              <div className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600 mt-1">
+              <div className="text-[11px] font-medium text-subtle mt-1">
                 {stat.label}
               </div>
             </div>

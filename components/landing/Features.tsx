@@ -31,38 +31,45 @@ const AICopilotCard = () => (
     {/* Fake prompt → response */}
     <div className="space-y-3">
       <div className="flex items-start gap-2">
-        <div className="h-5 w-5 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center shrink-0 mt-0.5">
-          <span className="text-[8px] text-zinc-400 font-bold">U</span>
+        <div className="h-5 w-5 rounded-full bg-muted border border-border flex items-center justify-center shrink-0 mt-0.5">
+          <span className="text-[11px] text-muted-foreground font-medium">
+            U
+          </span>
         </div>
-        <div className="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/5 text-xs text-zinc-400 font-mono leading-relaxed">
+        <div className="px-3 py-2 rounded-md bg-ink/[0.04] border border-border text-xs text-muted-foreground font-mono leading-relaxed">
           Show me users who signed up last month and haven&apos;t placed an
           order yet
         </div>
       </div>
       <div className="flex items-start gap-2">
         <div className="h-5 w-5 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0 mt-0.5">
-          <Sparkles className="h-2.5 w-2.5 text-primary" />
+          <Sparkles className="h-2.5 w-2.5 text-subtle" />
         </div>
-        <div className="px-3 py-2 rounded-xl bg-primary/[0.06] border border-primary/15 font-mono text-xs leading-loose">
-          <span style={{ color: "#7DD3FC" }}>SELECT </span>
-          <span className="text-white">u.name, u.email</span>
+        <div className="px-3 py-2 rounded-md bg-primary/[0.06] border border-primary/15 font-mono text-xs leading-loose">
+          <span style={{ color: "var(--color-syn-kw)" }}>SELECT </span>
+          <span className="text-foreground">u.name, u.email</span>
           <br />
-          <span style={{ color: "#7DD3FC" }}>FROM </span>
-          <span className="text-white">users u</span>
+          <span style={{ color: "var(--color-syn-kw)" }}>FROM </span>
+          <span className="text-foreground">users u</span>
           <br />
-          <span style={{ color: "#7DD3FC" }}>LEFT JOIN </span>
-          <span className="text-white">orders o </span>
-          <span style={{ color: "#7DD3FC" }}>ON </span>
-          <span className="text-white">u.id = o.user_id</span>
+          <span style={{ color: "var(--color-syn-kw)" }}>LEFT JOIN </span>
+          <span className="text-foreground">orders o </span>
+          <span style={{ color: "var(--color-syn-kw)" }}>ON </span>
+          <span className="text-foreground">u.id = o.user_id</span>
           <br />
-          <span style={{ color: "#7DD3FC" }}>WHERE </span>
-          <span className="text-white">o.id </span>
-          <span style={{ color: "#7DD3FC" }}>IS NULL</span>
+          <span style={{ color: "var(--color-syn-kw)" }}>WHERE </span>
+          <span className="text-foreground">o.id </span>
+          <span style={{ color: "var(--color-syn-kw)" }}>IS NULL</span>
           <br />
-          <span className="text-white ml-2">AND u.created_at &gt;= </span>
-          <span style={{ color: "#FDBA74" }}>NOW() - INTERVAL</span>
-          <span style={{ color: "#FDBA74" }}> &apos;30 days&apos;</span>
-          <span className="text-zinc-500">;</span>
+          <span className="text-foreground ml-2">AND u.created_at &gt;= </span>
+          <span style={{ color: "var(--color-syn-str)" }}>
+            NOW() - INTERVAL
+          </span>
+          <span style={{ color: "var(--color-syn-str)" }}>
+            {" "}
+            &apos;30 days&apos;
+          </span>
+          <span className="text-subtle">;</span>
         </div>
       </div>
     </div>
@@ -80,7 +87,7 @@ const AICopilotCard = () => (
         className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce"
         style={{ animationDelay: "300ms" }}
       />
-      <span className="text-[9px] text-zinc-600 uppercase tracking-widest font-bold ml-1">
+      <span className="text-[11px] text-subtle font-medium ml-1">
         Generating
       </span>
     </div>
@@ -97,8 +104,8 @@ const ERDiagramCard = () => (
         width="70"
         height="48"
         rx="6"
-        fill="rgba(39,121,85,0.08)"
-        stroke="rgba(39,121,85,0.3)"
+        fill="rgba(99,102,241,0.08)"
+        stroke="rgba(99,102,241,0.3)"
         strokeWidth="1"
       />
       <rect
@@ -107,20 +114,26 @@ const ERDiagramCard = () => (
         width="66"
         height="10"
         rx="4"
-        fill="rgba(39,121,85,0.2)"
+        fill="rgba(99,102,241,0.2)"
       />
       <text
         x="45"
         y="20"
         textAnchor="middle"
-        fill="#4CAF76"
+        fill="var(--color-primary)"
         fontSize="5"
         fontWeight="bold"
       >
         USERS
       </text>
       {["id", "name", "email", "status"].map((f, i) => (
-        <text key={f} x="16" y={30 + i * 7} fill="#64748B" fontSize="4.5">
+        <text
+          key={f}
+          x="16"
+          y={30 + i * 7}
+          fill="var(--color-subtle)"
+          fontSize="4.5"
+        >
           {f}
         </text>
       ))}
@@ -131,8 +144,8 @@ const ERDiagramCard = () => (
         width="70"
         height="48"
         rx="6"
-        fill="rgba(39,121,85,0.05)"
-        stroke="rgba(255,255,255,0.08)"
+        fill="rgba(99,102,241,0.05)"
+        stroke="rgba(127,127,127,0.20)"
         strokeWidth="1"
       />
       <rect
@@ -141,20 +154,26 @@ const ERDiagramCard = () => (
         width="66"
         height="10"
         rx="4"
-        fill="rgba(255,255,255,0.05)"
+        fill="rgba(127,127,127,0.12)"
       />
       <text
         x="155"
         y="20"
         textAnchor="middle"
-        fill="#94A3B8"
+        fill="var(--color-fg-muted)"
         fontSize="5"
         fontWeight="bold"
       >
         ORDERS
       </text>
       {["id", "user_id", "total", "status"].map((f, i) => (
-        <text key={f} x="124" y={30 + i * 7} fill="#64748B" fontSize="4.5">
+        <text
+          key={f}
+          x="124"
+          y={30 + i * 7}
+          fill="var(--color-subtle)"
+          fontSize="4.5"
+        >
           {f}
         </text>
       ))}
@@ -165,8 +184,8 @@ const ERDiagramCard = () => (
         width="70"
         height="40"
         rx="6"
-        fill="rgba(39,121,85,0.05)"
-        stroke="rgba(255,255,255,0.08)"
+        fill="rgba(99,102,241,0.05)"
+        stroke="rgba(127,127,127,0.20)"
         strokeWidth="1"
       />
       <rect
@@ -175,20 +194,26 @@ const ERDiagramCard = () => (
         width="66"
         height="10"
         rx="4"
-        fill="rgba(255,255,255,0.05)"
+        fill="rgba(127,127,127,0.12)"
       />
       <text
         x="100"
         y="110"
         textAnchor="middle"
-        fill="#94A3B8"
+        fill="var(--color-fg-muted)"
         fontSize="5"
         fontWeight="bold"
       >
         PRODUCTS
       </text>
       {["id", "order_id", "name"].map((f, i) => (
-        <text key={f} x="69" y={120 + i * 7} fill="#64748B" fontSize="4.5">
+        <text
+          key={f}
+          x="69"
+          y={120 + i * 7}
+          fill="var(--color-subtle)"
+          fontSize="4.5"
+        >
           {f}
         </text>
       ))}
@@ -196,20 +221,20 @@ const ERDiagramCard = () => (
       {/* Relation lines */}
       <path
         d="M80 34 L120 34"
-        stroke="rgba(39,121,85,0.5)"
+        stroke="rgba(99,102,241,0.5)"
         strokeWidth="1"
         strokeDasharray="3,2"
         markerEnd="url(#arrow)"
       />
       <path
         d="M45 58 L100 100"
-        stroke="rgba(255,255,255,0.1)"
+        stroke="rgba(127,127,127,0.25)"
         strokeWidth="1"
         strokeDasharray="3,2"
       />
       <path
         d="M155 58 L100 100"
-        stroke="rgba(255,255,255,0.1)"
+        stroke="rgba(127,127,127,0.25)"
         strokeWidth="1"
         strokeDasharray="3,2"
       />
@@ -223,7 +248,7 @@ const ERDiagramCard = () => (
           refY="2"
           orient="auto"
         >
-          <path d="M0,0 L4,2 L0,4 Z" fill="rgba(39,121,85,0.6)" />
+          <path d="M0,0 L4,2 L0,4 Z" fill="rgba(99,102,241,0.6)" />
         </marker>
       </defs>
     </svg>
@@ -239,19 +264,19 @@ const FilterCard = () => (
     ].map((f, i) => (
       <div
         key={i}
-        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-[10px] font-mono transition-colors ${
+        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-[11px] font-mono transition-colors ${
           f.active
-            ? "bg-primary/[0.07] border-primary/20 text-white"
-            : "bg-white/[0.02] border-white/5 text-zinc-500"
+            ? "bg-primary/[0.07] border-primary/20 text-foreground"
+            : "bg-ink/[0.02] border-border text-subtle"
         }`}
       >
-        <span className={f.active ? "text-zinc-300" : "text-zinc-600"}>
+        <span className={f.active ? "text-foreground/80" : "text-subtle"}>
           {f.field}
         </span>
-        <span className={f.active ? "text-primary" : "text-zinc-700"}>
+        <span className={f.active ? "text-accent-fg" : "text-subtle/70"}>
           {f.op}
         </span>
-        <span className={f.active ? "text-zinc-200" : "text-zinc-600"}>
+        <span className={f.active ? "text-foreground" : "text-subtle"}>
           &quot;{f.val}&quot;
         </span>
         {f.active && (
@@ -271,9 +296,11 @@ const SecurityCard = () => (
     ].map((item) => (
       <div key={item.label} className="flex items-center gap-3">
         <div className="h-4 w-4 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">
-          <ShieldCheck className="h-2.5 w-2.5 text-primary" />
+          <ShieldCheck className="h-2.5 w-2.5 text-subtle" />
         </div>
-        <span className="text-xs text-zinc-400 font-medium">{item.label}</span>
+        <span className="text-xs text-muted-foreground font-medium">
+          {item.label}
+        </span>
       </div>
     ))}
   </div>
@@ -354,15 +381,13 @@ export const Features = () => {
             whileInView="visible"
             viewport={{ once: true }}
           >
-            <span className="text-primary text-[10px] font-black tracking-[0.4em] uppercase block mb-3">
+            <span className="text-accent-fg text-[11px] font-medium block mb-3">
               Features
             </span>
-            <h2 className="text-4xl md:text-5xl font-serif text-white leading-[1.1] tracking-tighter">
+            <h2 className="text-4xl md:text-5xl text-foreground leading-[1.1] tracking-tight font-semibold">
               Everything you need.
               <br />
-              <span className="text-primary italic">
-                Nothing you don&apos;t.
-              </span>
+              <span className="text-accent-fg">Nothing you don&apos;t.</span>
             </h2>
           </motion.div>
 
@@ -374,7 +399,7 @@ export const Features = () => {
             viewport={{ once: true }}
             className="flex items-end"
           >
-            <p className="text-xl text-zinc-500 font-medium leading-relaxed max-w-md">
+            <p className="text-xl text-subtle leading-relaxed max-w-md">
               A purpose-built toolkit for developers who manage more than one
               database — with zero compromises on speed or usability.
             </p>
@@ -391,7 +416,7 @@ export const Features = () => {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
-              className={`${card.colSpan} ${card.rowHeight} group relative rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 flex flex-col gap-5 hover:border-primary/20 hover:bg-white/[0.03] transition-all duration-500 overflow-hidden`}
+              className={`${card.colSpan} ${card.rowHeight} group relative rounded-xl border border-border bg-ink/[0.02] p-6 flex flex-col gap-5 hover:border-primary/20 hover:bg-ink/[0.03] transition-all duration-500 overflow-hidden`}
             >
               {/* Hover glow */}
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
@@ -402,17 +427,17 @@ export const Features = () => {
               <div className="flex items-start justify-between gap-4 shrink-0">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <div className="h-7 w-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300">
+                    <div className="h-7 w-7 rounded-lg bg-bg-200 border border-border flex items-center justify-center text-muted-foreground group-hover:scale-110 transition-transform duration-300">
                       {card.icon}
                     </div>
-                    <span className="text-[9px] font-black uppercase tracking-[0.35em] text-primary/60">
+                    <span className="text-[11px] font-medium text-accent-fg/60">
                       {card.label}
                     </span>
                   </div>
-                  <h3 className="text-lg font-bold text-white tracking-tight leading-snug">
+                  <h3 className="text-lg font-semibold text-foreground tracking-tight leading-snug">
                     {card.title}
                   </h3>
-                  <p className="text-sm text-zinc-500 leading-relaxed max-w-xs group-hover:text-zinc-400 transition-colors duration-300">
+                  <p className="text-sm text-subtle leading-relaxed max-w-xs group-hover:text-muted-foreground transition-colors duration-300">
                     {card.description}
                   </p>
                 </div>

@@ -124,29 +124,29 @@ const ResultTable = ({
 
   return (
     <div className="flex flex-col w-full">
-      <div className="overflow-x-auto w-full scrollbar-hide border-b border-white/5 pb-2">
-        <table className="w-full text-left border-collapse text-[11px] min-w-max table-fixed">
-          <thead className="sticky top-0 bg-[#021016]/80 backdrop-blur-md z-10 shadow-sm border-b border-border/50">
+      <div className="overflow-x-auto w-full thin-scrollbar border-b border-border pb-2">
+        <table className="w-full text-left border-collapse text-xs min-w-max table-fixed">
+          <thead className="sticky top-0 bg-bg-200 z-10 border-b border-border">
             <tr>
               {Object.keys(rows[0] || {}).map((key) => (
                 <th
                   key={key}
                   style={{ width: columnWidths[key] || 150 }}
-                  className="px-6 py-3 font-bold text-zinc-400 tracking-wider border-r border-border/30 last:border-0 relative group/header font-mono"
+                  className="h-9 px-3 text-xs font-medium text-muted-foreground border-r border-border last:border-0 relative group/header font-mono"
                 >
                   <div className="flex items-center justify-between">
                     <span className="truncate">{key}</span>
                     <div
                       onMouseDown={(e) => startResize(e, key)}
-                      className="absolute top-0 right-0 w-[3px] h-full cursor-col-resize bg-white/[0.08] hover:bg-primary/50 transition-colors z-20 border-r border-white/[0.1] active:bg-primary"
+                      className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 transition-colors z-20 active:bg-primary"
                     />
                   </div>
                 </th>
               ))}
-              <th className="px-6 py-3 w-10"></th>
+              <th className="h-9 w-10"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/[0.03]">
+          <tbody className="divide-y divide-border">
             {paginatedRows.map((row, i) => {
               const globalIdx = (localPage - 1) * rowsPerPage + i;
               // Position in the result set (query rows may have no unique id).
@@ -154,7 +154,7 @@ const ResultTable = ({
               return (
                 <tr
                   key={globalIdx}
-                  className="group bg-white/[0.01] hover:bg-white/[0.04] transition-all border-l-2 border-transparent hover:border-l-primary/40"
+                  className="group hover:bg-ink/[0.02] transition-colors"
                 >
                   {Object.keys(row).map((col) => {
                     const val = row[col];
@@ -182,7 +182,7 @@ const ResultTable = ({
                           })
                         }
                         style={{ width: columnWidths[col] || 150 }}
-                        className={`px-6 py-3 font-mono text-zinc-300 border-r border-border/10 last:border-0 relative break-words whitespace-pre-wrap ${
+                        className={`h-9 max-w-0 px-3 font-mono text-foreground/80 border-r border-border last:border-0 relative ${
                           isActive
                             ? "bg-primary/5 outline outline-1 outline-primary/30 z-10"
                             : ""
@@ -192,7 +192,7 @@ const ResultTable = ({
                           <div className="absolute inset-0 z-50 bg-card border border-primary shadow-xl rounded flex items-center p-0.5">
                             <textarea
                               autoFocus
-                              className="w-full h-full bg-transparent border-none outline-none text-[11px] text-white px-2 py-1 resize-none"
+                              className="w-full h-full bg-transparent border-none outline-none text-[11px] text-foreground px-2 py-1 resize-none"
                               value={editingCell.value}
                               onChange={(e) =>
                                 setEditingCell({
@@ -209,9 +209,16 @@ const ResultTable = ({
                             />
                           </div>
                         ) : val === null ? (
-                          <span className="italic text-zinc-600">NULL</span>
+                          <span className="italic text-subtle">NULL</span>
                         ) : (
-                          <div className="max-h-[100px] overflow-y-auto scrollbar-hide font-mono">
+                          <div
+                            className="truncate"
+                            title={
+                              typeof val === "object"
+                                ? JSON.stringify(val)
+                                : String(val)
+                            }
+                          >
                             {typeof val === "object"
                               ? JSON.stringify(val)
                               : String(val)}
@@ -220,8 +227,8 @@ const ResultTable = ({
                       </td>
                     );
                   })}
-                  <td className="px-4 py-3 text-right">
-                    <button className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-white/5 transition-all text-zinc-600 hover:text-white">
+                  <td className="h-9 pr-2 text-right">
+                    <button className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-ink/5 transition-all text-subtle hover:text-foreground">
                       <MoreHorizontal className="h-4 w-4" />
                     </button>
                   </td>
@@ -233,8 +240,8 @@ const ResultTable = ({
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-6 py-3 bg-black/20 border-t border-white/5">
-          <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+        <div className="flex items-center justify-between px-6 py-3 bg-bg-200 border-t border-border">
+          <div className="text-[11px] font-medium text-subtle">
             Showing {(localPage - 1) * rowsPerPage + 1} to{" "}
             {Math.min(localPage * rowsPerPage, displayTotal)} of {displayTotal}
           </div>
@@ -242,19 +249,19 @@ const ResultTable = ({
             <button
               onClick={handlePrev}
               disabled={localPage === 1}
-              className="p-1.5 rounded bg-white/5 hover:bg-white/10 disabled:opacity-20 transition-all"
+              className="p-1.5 rounded bg-ink/5 hover:bg-ink/10 disabled:opacity-20 transition-all"
             >
-              <ChevronLeft className="h-4 w-4 text-white" />
+              <ChevronLeft className="h-4 w-4 text-foreground" />
             </button>
-            <div className="px-3 py-1 rounded bg-primary/10 border border-primary/20 text-[10px] font-black text-primary">
+            <div className="px-3 py-1 rounded bg-primary/10 border border-primary/20 text-[11px] font-medium text-accent-fg">
               {localPage} / {totalPages}
             </div>
             <button
               onClick={handleNext}
               disabled={localPage === totalPages}
-              className="p-1.5 rounded bg-white/5 hover:bg-white/10 disabled:opacity-20 transition-all"
+              className="p-1.5 rounded bg-ink/5 hover:bg-ink/10 disabled:opacity-20 transition-all"
             >
-              <ChevronRight className="h-4 w-4 text-white" />
+              <ChevronRight className="h-4 w-4 text-foreground" />
             </button>
           </div>
         </div>
@@ -345,15 +352,15 @@ const QueryResultsArea = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-[#021016]/50 overflow-hidden border-t border-border/50 min-h-0 animate-in slide-in-from-bottom duration-500">
-      <div className="flex items-center justify-between px-4 lg:px-6 py-2 border-b border-border/50 bg-muted/20 shrink-0">
+    <div className="flex-1 flex flex-col bg-background/50 overflow-hidden border-t border-border min-h-0 animate-in slide-in-from-bottom duration-500">
+      <div className="flex items-center justify-between px-4 lg:px-6 py-2 border-b border-border bg-muted/20 shrink-0">
         <div className="flex items-center gap-4 lg:gap-6">
           <button
             onClick={() => onSetTab("results")}
-            className={`flex items-center gap-2 lg:gap-3 py-1 transition-all relative ${bottomTab === "results" ? "text-white" : "text-muted-foreground hover:text-zinc-300"}`}
+            className={`flex items-center gap-2 lg:gap-3 py-1 transition-all relative ${bottomTab === "results" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
           >
-            <Terminal className="h-3.5 w-3.5 text-white" />
-            <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
+            <Terminal className="h-3.5 w-3.5 text-foreground" />
+            <span className="text-[11px] font-medium whitespace-nowrap">
               Query Output
             </span>
             {bottomTab === "results" && (
@@ -362,10 +369,10 @@ const QueryResultsArea = ({
           </button>
           <button
             onClick={() => onSetTab("history")}
-            className={`flex items-center gap-2 lg:gap-3 py-1 transition-all relative ${bottomTab === "history" ? "text-white" : "text-muted-foreground hover:text-zinc-300"}`}
+            className={`flex items-center gap-2 lg:gap-3 py-1 transition-all relative ${bottomTab === "history" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
           >
-            <HistoryIcon className="h-3.5 w-3.5 text-white" />
-            <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
+            <HistoryIcon className="h-3.5 w-3.5 text-foreground" />
+            <span className="text-[11px] font-medium whitespace-nowrap">
               History
             </span>
             {bottomTab === "history" && (
@@ -375,16 +382,16 @@ const QueryResultsArea = ({
         </div>
         <button
           onClick={onClose}
-          className="p-1 hover:text-white text-white transition-colors"
+          className="p-1 hover:text-foreground text-foreground transition-colors"
         >
           <X className="h-4 w-4" />
         </button>
       </div>
 
-      <div className="flex-1 overflow-auto bg-black/5 min-h-0 relative">
+      <div className="flex-1 overflow-auto min-h-0 relative">
         {isRunning && (
-          <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px] z-50 flex items-center justify-center">
-            <Loader2 className="h-8 w-8 text-primary animate-spin opacity-50" />
+          <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] z-50 flex items-center justify-center">
+            <Loader2 className="h-8 w-8 text-accent-fg animate-spin opacity-50" />
           </div>
         )}
         <DataContextMenu
@@ -422,13 +429,13 @@ const QueryResultsArea = ({
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
                 {aiMode === "explain" ? (
-                  <HelpCircle className="h-5 w-5 text-primary" />
+                  <HelpCircle className="h-5 w-5 text-subtle" />
                 ) : (
-                  <Lightbulb className="h-5 w-5 text-primary" />
+                  <Lightbulb className="h-5 w-5 text-subtle" />
                 )}
               </div>
               <div>
-                <h3 className="text-zinc-200 font-bold text-xs uppercase tracking-widest">
+                <h3 className="text-foreground font-medium text-xs">
                   {aiMode === "explain"
                     ? "Query Intelligence Report"
                     : "Optimization Suggestions"}
@@ -436,13 +443,13 @@ const QueryResultsArea = ({
               </div>
               <button
                 onClick={onCloseAiOutput}
-                className="ml-auto text-[10px] font-black text-muted-foreground hover:text-white uppercase tracking-widest flex items-center gap-2"
+                className="ml-auto text-[11px] font-medium text-muted-foreground hover:text-foreground flex items-center gap-2"
               >
                 <X className="h-4 w-4" />
                 Close
               </button>
             </div>
-            <div className="prose prose-invert prose-sm max-w-none text-zinc-400 leading-relaxed font-sans whitespace-pre-wrap">
+            <div className="prose dark:prose-invert prose-sm max-w-none text-muted-foreground leading-relaxed font-sans whitespace-pre-wrap">
               {aiOutput}
             </div>
           </div>
@@ -477,14 +484,14 @@ const QueryResultsArea = ({
                           isPagingEnabled={isPagingEnabled}
                         />
                       ) : (
-                        <div className="p-8 text-zinc-500 text-[10px] font-bold uppercase tracking-widest bg-white/[0.01]">
+                        <div className="p-8 text-subtle text-[11px] font-medium bg-ink/[0.01]">
                           Empty result set (0 rows)
                         </div>
                       )
                     ) : (
                       <div className="p-8 flex items-center gap-4 bg-primary/5 rounded-lg border border-primary/10 mx-4 mt-4">
-                        <CheckCircle2 className="h-4 w-4 text-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-300">
+                        <CheckCircle2 className="h-4 w-4 text-subtle" />
+                        <span className="text-[11px] font-medium text-foreground/80">
                           {affectedRows !== null
                             ? `Command executed: ${affectedRows} rows affected`
                             : "Command executed successfully"}
@@ -496,11 +503,9 @@ const QueryResultsArea = ({
               })}
             </div>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-zinc-600 p-12 text-center opacity-40">
+            <div className="h-full flex flex-col items-center justify-center text-subtle p-12 text-center opacity-40">
               <Terminal className="h-10 w-10 mb-4 opacity-20" />
-              <h4 className="text-[10px] font-black uppercase tracking-[0.2em]">
-                No results to display
-              </h4>
+              <h4 className="text-[11px] font-medium">No results to display</h4>
             </div>
           )
         ) : (
@@ -512,20 +517,20 @@ const QueryResultsArea = ({
                 showCheckbox={false}
               />
             ) : queryHistory.length > 0 ? (
-              <div className="overflow-x-auto w-full scrollbar-hide">
+              <div className="overflow-x-auto w-full thin-scrollbar">
                 <table className="w-full text-left border-collapse text-[11px] min-w-[700px]">
-                  <thead className="sticky top-0 bg-card z-10 shadow-sm border-b border-border/50">
+                  <thead className="sticky top-0 bg-bg-200 z-10 border-b border-border">
                     <tr>
-                      <th className="px-6 py-3 font-bold text-zinc-400 uppercase text-[9px]">
+                      <th className="px-6 py-3 font-medium text-muted-foreground text-[11px]">
                         Status
                       </th>
-                      <th className="px-6 py-3 font-bold text-zinc-400 uppercase text-[9px]">
+                      <th className="px-6 py-3 font-medium text-muted-foreground text-[11px]">
                         SQL Query
                       </th>
-                      <th className="px-6 py-3 font-bold text-zinc-400 uppercase text-[9px]">
+                      <th className="px-6 py-3 font-medium text-muted-foreground text-[11px]">
                         Duration
                       </th>
-                      <th className="px-6 py-3 font-bold text-zinc-400 uppercase text-[9px]">
+                      <th className="px-6 py-3 font-medium text-muted-foreground text-[11px]">
                         Timestamp
                       </th>
                     </tr>
@@ -534,25 +539,25 @@ const QueryResultsArea = ({
                     {queryHistory.map((log) => (
                       <tr
                         key={log.id}
-                        className="border-b border-white/[0.02] hover:bg-white/[0.04] transition-colors cursor-pointer text-left"
+                        className="border-b border-border hover:bg-ink/[0.04] transition-colors cursor-pointer text-left"
                         onClick={() => onRestoreQuery(log.query)}
                       >
                         <td className="px-6 py-3 text-center">
                           {log.success ? (
-                            <CheckCircle2 className="h-4 w-4 text-primary" />
+                            <CheckCircle2 className="h-4 w-4 text-subtle" />
                           ) : (
-                            <AlertCircle className="h-4 w-4 text-red-500" />
+                            <AlertCircle className="h-4 w-4 text-err" />
                           )}
                         </td>
-                        <td className="px-6 py-3 font-mono text-zinc-300">
+                        <td className="px-6 py-3 font-mono text-foreground/80">
                           <div className="line-clamp-1 max-w-md">
                             {log.query}
                           </div>
                         </td>
-                        <td className="px-6 py-3 font-mono text-zinc-500">
+                        <td className="px-6 py-3 font-mono text-subtle">
                           {log.executionTimeMs}ms
                         </td>
-                        <td className="px-6 py-3 text-zinc-600">
+                        <td className="px-6 py-3 text-subtle">
                           {new Date(log.createdAt).toLocaleString()}
                         </td>
                       </tr>
@@ -561,9 +566,9 @@ const QueryResultsArea = ({
                 </table>
               </div>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-zinc-600 p-10 text-center gap-4">
+              <div className="flex-1 flex flex-col items-center justify-center text-subtle p-10 text-center gap-4">
                 <HistoryIcon className="h-10 w-10 opacity-20" />
-                <h3 className="text-zinc-400 font-bold text-[11px] uppercase tracking-widest">
+                <h3 className="text-muted-foreground font-medium text-[11px]">
                   No History Yet
                 </h3>
               </div>

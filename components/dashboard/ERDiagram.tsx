@@ -296,7 +296,7 @@ const ERDiagram = () => {
 
   return (
     <div
-      className={`flex flex-col overflow-hidden rounded-xl border border-border bg-[#021016]/10 backdrop-blur-sm select-none transition-all duration-300 ${isFullscreen ? "fixed inset-0 z-[100] h-screen w-screen bg-black rounded-none border-none" : "h-full min-h-[600px]"}`}
+      className={`flex flex-col overflow-hidden rounded-xl border border-border bg-background/10 backdrop-blur-sm select-none transition-all duration-300 ${isFullscreen ? "fixed inset-0 z-[100] h-screen w-screen bg-black rounded-none border-none" : "h-full min-h-[600px]"}`}
       onMouseMove={handleMouseMove}
       onMouseUp={() => {
         setDraggingNode(null);
@@ -330,7 +330,7 @@ const ERDiagram = () => {
       />
 
       <div
-        className="relative flex-1 overflow-hidden p-8 bg-[#021016]/20"
+        className="relative flex-1 overflow-hidden p-8 bg-background/20"
         onMouseDown={(e) =>
           e.button === 0 &&
           setPanning({
@@ -342,9 +342,9 @@ const ERDiagram = () => {
         ref={diagramRef}
       >
         {isLoading && (
-          <div className="absolute inset-0 z-[100] bg-[#021016]/50 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
-            <Loader2 className="h-8 w-8 text-primary animate-spin" />
-            <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] animate-pulse">
+          <div className="absolute inset-0 z-[100] bg-background/50 backdrop-blur-[2px] flex flex-col items-center justify-center gap-4">
+            <Loader2 className="h-8 w-8 text-accent-fg animate-spin" />
+            <span className="text-[11px] font-medium text-accent-fg animate-pulse">
               Mapping Schema...
             </span>
           </div>
@@ -352,7 +352,7 @@ const ERDiagram = () => {
         <div
           className="absolute inset-0 pointer-events-none opacity-20"
           style={{
-            backgroundImage: `radial-gradient(circle, #277955 1px, transparent 1px)`,
+            backgroundImage: `radial-gradient(circle, var(--color-line-strong) 1px, transparent 1px)`,
             backgroundSize: `${40 * zoom}px ${40 * zoom}px`,
             backgroundPosition: `${canvasOffset.x}px ${canvasOffset.y}px`,
           }}
@@ -408,7 +408,7 @@ const ERDiagram = () => {
       {isFullscreen && (
         <button
           onClick={() => setIsFullscreen(false)}
-          className="absolute top-6 right-8 z-[110] px-4 py-2 rounded-lg bg-red-500/10 text-red-500 border border-red-500/20 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all shadow-xl"
+          className="absolute top-6 right-8 z-[110] px-4 py-2 rounded-lg bg-err/10 text-err border border-err/20 text-[11px] font-medium hover:bg-err hover:text-white transition-all shadow-xl"
         >
           Close [Esc]
         </button>

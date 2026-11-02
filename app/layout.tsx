@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { themeScript } from "@/lib/theme-script";
 
-const inter = Inter({
-  variable: "--font-sans",
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
   display: "swap",
 });
@@ -14,17 +15,11 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-serif",
-  weight: "400",
-  style: ["normal", "italic"],
-  subsets: ["latin"],
-  display: "swap",
-});
-
 export const viewport: Viewport = {
-  themeColor: "#021016",
-  colorScheme: "dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f6f6f7" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0b" },
+  ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -122,7 +117,7 @@ export const metadata: Metadata = {
   },
 };
 
-import { Toaster } from "sonner";
+import { ThemedToaster } from "@/components/ui/ThemedToaster";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
 
 export default function RootLayout({
@@ -131,11 +126,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body
-        className={`${inter.variable} ${geistMono.variable} ${instrumentSerif.variable} antialiased`}
-      >
-        <Toaster position="top-right" theme="dark" richColors closeButton />
+    // data-theme is set before paint by themeScript, so React must accept the DOM value.
+    <html
+      lang="en"
+      data-theme="light"
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body>
+        <ThemedToaster />
         <ConfirmationModal />
         {children}
       </body>

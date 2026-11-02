@@ -48,7 +48,7 @@ const ENV_OPTIONS: {
 ];
 
 const PRESET_COLORS = [
-  "#00ED64",
+  "#4338ca",
   "#3B82F6",
   "#A855F7",
   "#EC4899",
@@ -60,19 +60,17 @@ const PRESET_COLORS = [
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
-  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 mb-3">
-    {children}
-  </p>
+  <p className="text-[11px] text-subtle mb-3">{children}</p>
 );
 
 const FieldLabel = ({ children }: { children: React.ReactNode }) => (
-  <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-1.5 px-0.5">
+  <label className="block text-[11px] font-medium text-subtle mb-1.5 px-0.5">
     {children}
   </label>
 );
 
 const inputCls =
-  "h-11 w-full rounded-xl border border-white/6 bg-white/3 px-3.5 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-all font-medium";
+  "h-10 w-full rounded-md border border-line-strong bg-background px-3.5 text-sm text-foreground placeholder:text-subtle/70 outline-none focus:border-primary/60 transition-all";
 
 // ── Main component ────────────────────────────────────────────────────────────
 
@@ -103,7 +101,7 @@ const ConnectionDialog = ({
     password: "",
     environment:
       (editCluster?.environment as EnvType) ?? ("development" as EnvType),
-    color: editCluster?.color ?? "#00ED64",
+    color: editCluster?.color ?? "#4338ca",
     sslMode: editCluster?.sslMode ?? "prefer",
   });
   const [isLocal, setIsLocal] = useState(editCluster?.isLocal ?? false);
@@ -252,25 +250,19 @@ const ConnectionDialog = ({
   const selectedEnv = ENV_OPTIONS.find((e) => e.id === formData.environment)!;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl rounded-3xl bg-zinc-950 border border-white/8 shadow-2xl overflow-hidden max-h-[95vh] flex flex-col">
-        {/* Ambient glow tied to cluster colour */}
-        <div
-          className="absolute -top-32 -right-32 h-72 w-72 rounded-full blur-[120px] pointer-events-none opacity-10 transition-colors duration-500"
-          style={{ backgroundColor: formData.color }}
-        />
-
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/25 backdrop-blur-[2px] p-4 animate-in fade-in duration-200">
+      <div className="relative w-full max-w-4xl rounded-xl bg-card border border-border shadow-2xl overflow-hidden max-h-[95vh] flex flex-col">
         {/* ── Header ──────────────────────────────────────────────────────── */}
-        <div className="flex items-center justify-between px-8 pt-7 pb-5 border-b border-white/5 relative z-10">
+        <div className="flex items-center justify-between px-8 pt-7 pb-5 border-b border-border relative z-10">
           <div className="flex items-center gap-3.5">
-            <div className="h-9 w-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-              <Plug className="h-4 w-4 text-primary" />
+            <div className="h-9 w-9 rounded-xl bg-bg-200 border border-border flex items-center justify-center shrink-0">
+              <Plug className="h-4 w-4 text-subtle" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white tracking-tight leading-none mb-0.5">
+              <h2 className="text-base font-semibold text-foreground tracking-tight leading-none mb-0.5">
                 {isEdit ? "Edit Connection" : "New Connection"}
               </h2>
-              <p className="text-[11px] text-zinc-500 font-medium">
+              <p className="text-[11px] text-subtle">
                 {isEdit
                   ? `Editing ${editCluster?.name}`
                   : "Configure your database cluster"}
@@ -279,7 +271,7 @@ const ConnectionDialog = ({
           </div>
           <button
             onClick={onClose}
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/8 transition-all"
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-subtle hover:text-foreground hover:bg-ink/8 transition-all"
           >
             <X className="h-4 w-4" />
           </button>
@@ -288,9 +280,9 @@ const ConnectionDialog = ({
         {/* ── Body ────────────────────────────────────────────────────────── */}
         <form
           onSubmit={handleSubmit}
-          className="flex-1 overflow-y-auto scrollbar-hide"
+          className="flex-1 overflow-y-auto thin-scrollbar"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] divide-y lg:divide-y-0 lg:divide-x divide-white/5">
+          <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] divide-y lg:divide-y-0 lg:divide-x divide-border">
             {/* ── Left panel ─────────────────────────────────────────────── */}
             <div className="p-6 space-y-7">
               {/* Database engine */}
@@ -304,18 +296,18 @@ const ConnectionDialog = ({
                         key={db.id}
                         type="button"
                         onClick={() => handleDbSelect(db.id)}
-                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl border transition-all text-left ${
+                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md border transition-all text-left ${
                           active
-                            ? "border-primary/40 bg-primary/6 text-white"
-                            : "border-transparent bg-white/3 text-zinc-400 hover:bg-white/5 hover:text-zinc-300"
+                            ? "border-primary/40 bg-primary/6 text-foreground"
+                            : "border-transparent bg-ink/3 text-muted-foreground hover:bg-ink/5 hover:text-foreground"
                         }`}
                       >
                         <Database
-                          className={`h-3.5 w-3.5 shrink-0 ${active ? "text-primary" : "text-zinc-600"}`}
+                          className={`h-3.5 w-3.5 shrink-0 ${active ? "text-accent-fg" : "text-subtle"}`}
                         />
                         <span className="text-xs font-semibold">{db.name}</span>
                         <span
-                          className={`ml-auto font-mono text-[10px] ${active ? "text-primary/70" : "text-zinc-700"}`}
+                          className={`ml-auto font-mono text-[11px] ${active ? "text-accent-fg/70" : "text-subtle/70"}`}
                         >
                           :{db.port}
                         </span>
@@ -340,28 +332,28 @@ const ConnectionDialog = ({
                     setIsLocal((v) => !v);
                     setTestResult(null);
                   }}
-                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl border transition-all ${
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md border transition-all ${
                     isLocal
                       ? "border-primary/40 bg-primary/6"
-                      : "border-white/6 bg-white/3 hover:bg-white/5"
+                      : "border-border bg-ink/3 hover:bg-ink/5"
                   }`}
                 >
                   <Laptop
-                    className={`h-3.5 w-3.5 shrink-0 ${isLocal ? "text-primary" : "text-zinc-600"}`}
+                    className={`h-3.5 w-3.5 shrink-0 ${isLocal ? "text-accent-fg" : "text-subtle"}`}
                   />
                   <div className="text-left flex-1 min-w-0">
                     <p
-                      className={`text-xs font-semibold ${isLocal ? "text-white" : "text-zinc-400"}`}
+                      className={`text-xs font-semibold ${isLocal ? "text-foreground" : "text-muted-foreground"}`}
                     >
                       Local Database
                     </p>
-                    <p className="text-[10px] text-zinc-600 mt-0.5 font-medium">
+                    <p className="text-[11px] text-subtle mt-0.5">
                       Route via local agent CLI
                     </p>
                   </div>
                   {/* Toggle pill */}
                   <div
-                    className={`h-4 w-7 rounded-full relative shrink-0 transition-colors ${isLocal ? "bg-primary" : "bg-white/10"}`}
+                    className={`h-4 w-7 rounded-full relative shrink-0 transition-colors ${isLocal ? "bg-primary" : "bg-ink/10"}`}
                   >
                     <span
                       className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-all ${isLocal ? "left-3.5" : "left-0.5"}`}
@@ -381,10 +373,10 @@ const ConnectionDialog = ({
                         key={env.id}
                         type="button"
                         onClick={() => handleEnvSelect(env)}
-                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl border transition-all text-left ${
+                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md border transition-all text-left ${
                           active
-                            ? "border-white/15 bg-white/5 text-white"
-                            : "border-transparent bg-white/2 text-zinc-500 hover:bg-white/4 hover:text-zinc-400"
+                            ? "border-line-strong bg-ink/5 text-foreground"
+                            : "border-transparent bg-ink/2 text-subtle hover:bg-ink/4 hover:text-muted-foreground"
                         }`}
                       >
                         <span
@@ -397,7 +389,7 @@ const ConnectionDialog = ({
                           {env.label}
                         </span>
                         {env.id === "production" && (
-                          <span className="ml-auto text-[9px] font-bold uppercase tracking-wider text-red-500/70">
+                          <span className="ml-auto text-[11px] font-medium text-err/70">
                             Guarded
                           </span>
                         )}
@@ -416,11 +408,11 @@ const ConnectionDialog = ({
                       key={c}
                       type="button"
                       onClick={() => setFormData((f) => ({ ...f, color: c }))}
-                      className={`h-5 w-5 rounded-full border-2 transition-transform hover:scale-110 ${formData.color === c ? "border-white scale-110" : "border-transparent"}`}
+                      className={`h-5 w-5 rounded-full border-2 transition-transform hover:scale-110 ${formData.color === c ? "border-foreground scale-110" : "border-transparent"}`}
                       style={{ backgroundColor: c }}
                     />
                   ))}
-                  <div className="relative h-5 w-5 rounded-full overflow-hidden border border-white/10 ml-1">
+                  <div className="relative h-5 w-5 rounded-full overflow-hidden border border-border ml-1">
                     <input
                       type="color"
                       value={formData.color}
@@ -492,9 +484,9 @@ const ConnectionDialog = ({
                       className={inputCls}
                     />
                   )}
-                  <p className="text-[11px] text-zinc-500 leading-relaxed">
+                  <p className="text-[11px] text-subtle leading-relaxed">
                     Save it once on your machine — the password never leaves it:
-                    <code className="block mt-1.5 text-primary font-mono bg-white/5 px-2 py-1.5 rounded break-all">
+                    <code className="block mt-1.5 text-accent-fg font-mono bg-ink/5 px-2 py-1.5 rounded break-all">
                       synqdb-agent add {agentConnection || "my-db"}{" "}
                       {selectedDb === "sqlite"
                         ? "sqlite:///path/to/file.db"
@@ -502,7 +494,7 @@ const ConnectionDialog = ({
                     </code>
                   </p>
                   {legacyLocal && (
-                    <p className="text-[11px] text-amber-400/80 leading-relaxed">
+                    <p className="text-[11px] text-warn/80 leading-relaxed">
                       This cluster&apos;s credentials are still stored on the
                       SynqDB server. Choose a saved connection to keep them only
                       on your machine.
@@ -516,7 +508,7 @@ const ConnectionDialog = ({
                 <div>
                   <FieldLabel>File Path</FieldLabel>
                   <div className="relative">
-                    <Database className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600" />
+                    <Database className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-subtle" />
                     <input
                       type="text"
                       required={!isEdit}
@@ -526,7 +518,7 @@ const ConnectionDialog = ({
                       className={`${inputCls} pl-9`}
                     />
                   </div>
-                  <p className="text-[10px] text-zinc-600 mt-1.5 px-0.5">
+                  <p className="text-[11px] text-subtle mt-1.5 px-0.5">
                     Absolute path to the .db file on the server (or agent
                     machine).
                   </p>
@@ -536,7 +528,7 @@ const ConnectionDialog = ({
                   <div>
                     <FieldLabel>Host</FieldLabel>
                     <div className="relative">
-                      <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600" />
+                      <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-subtle" />
                       <input
                         type="text"
                         required={!isEdit}
@@ -554,7 +546,7 @@ const ConnectionDialog = ({
                       required
                       value={formData.port}
                       onChange={(e) => field("port", e.target.value)}
-                      className={`${inputCls} text-center tracking-widest`}
+                      className={`${inputCls} text-center`}
                     />
                   </div>
                 </div>
@@ -593,7 +585,7 @@ const ConnectionDialog = ({
                   <div>
                     <FieldLabel>Password</FieldLabel>
                     <div className="relative">
-                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-600" />
+                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-subtle" />
                       <input
                         type={showPassword ? "text" : "password"}
                         value={formData.password}
@@ -604,7 +596,7 @@ const ConnectionDialog = ({
                       <button
                         type="button"
                         onClick={() => setShowPassword((v) => !v)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-subtle hover:text-muted-foreground transition-colors"
                       >
                         {showPassword ? (
                           <EyeOff className="h-3.5 w-3.5" />
@@ -640,15 +632,15 @@ const ConnectionDialog = ({
 
               {/* Local agent info banner */}
               {isLocal && (
-                <div className="flex items-start gap-3 px-4 py-3 rounded-xl border border-primary/20 bg-primary/5 animate-in fade-in slide-in-from-top-1 duration-200">
-                  <Laptop className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                  <p className="text-[11px] text-zinc-400 leading-relaxed">
+                <div className="flex items-start gap-3 px-4 py-3 rounded-md border border-primary/20 bg-primary/5 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <Laptop className="h-3.5 w-3.5 text-accent-fg shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
                     Queries route through the local agent. Run{" "}
-                    <code className="text-primary font-mono bg-white/5 px-1 rounded">
+                    <code className="text-accent-fg font-mono bg-ink/5 px-1 rounded">
                       synqdb-agent login
                     </code>{" "}
                     once, then keep{" "}
-                    <code className="text-primary font-mono bg-white/5 px-1 rounded">
+                    <code className="text-accent-fg font-mono bg-ink/5 px-1 rounded">
                       synqdb-agent
                     </code>{" "}
                     running on your machine.
@@ -662,10 +654,10 @@ const ConnectionDialog = ({
               {/* Test result */}
               {testResult && (
                 <div
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-[11px] font-semibold animate-in fade-in duration-200 ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-md border text-[11px] font-semibold animate-in fade-in duration-200 ${
                     testResult.success
-                      ? "bg-emerald-500/8 border-emerald-500/20 text-emerald-400"
-                      : "bg-red-500/8 border-red-500/20 text-red-400"
+                      ? "bg-ok/8 border-ok/20 text-ok"
+                      : "bg-err/8 border-err/20 text-err"
                   }`}
                 >
                   {testResult.success ? (
@@ -680,14 +672,14 @@ const ConnectionDialog = ({
           </div>
 
           {/* ── Footer ────────────────────────────────────────────────────── */}
-          <div className="flex items-center justify-between gap-3 px-8 py-5 border-t border-white/5 bg-white/[0.01]">
+          <div className="flex items-center justify-between gap-3 px-8 py-5 border-t border-border bg-ink/[0.01]">
             <div className="flex items-center gap-2">
               {/* Live colour + env indicator */}
               <div
                 className="h-2 w-2 rounded-full"
                 style={{ backgroundColor: selectedEnv.color }}
               />
-              <span className="text-[10px] text-zinc-600 font-semibold">
+              <span className="text-[11px] text-subtle font-semibold">
                 {selectedEnv.label}
                 {isLocal && " · Local"}
               </span>
@@ -697,7 +689,7 @@ const ConnectionDialog = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-lg text-xs font-semibold text-zinc-500 hover:text-white hover:bg-white/5 transition-all"
+                className="px-4 py-2 rounded-lg text-xs font-semibold text-subtle hover:text-foreground hover:bg-ink/5 transition-all"
               >
                 Cancel
               </button>
@@ -706,7 +698,7 @@ const ConnectionDialog = ({
                   type="button"
                   disabled={isLoading}
                   onClick={handleTest}
-                  className="px-4 py-2 rounded-lg border border-white/8 bg-white/4 text-xs font-semibold text-zinc-300 hover:bg-white/8 hover:text-white transition-all disabled:opacity-40 flex items-center gap-2"
+                  className="px-4 py-2 rounded-lg border border-border bg-ink/4 text-xs font-semibold text-foreground/80 hover:bg-ink/8 hover:text-foreground transition-all disabled:opacity-40 flex items-center gap-2"
                 >
                   {isLoading ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -717,7 +709,7 @@ const ConnectionDialog = ({
               <button
                 type="submit"
                 disabled={isLoading}
-                className="px-5 py-2 rounded-lg bg-primary text-black text-xs font-bold hover:bg-primary/90 transition-all disabled:opacity-40 flex items-center gap-2"
+                className="px-5 py-2 rounded-md bg-primary text-white text-xs font-medium hover:bg-primary-hover transition-all disabled:opacity-40 flex items-center gap-2"
               >
                 {isLoading ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />

@@ -53,12 +53,12 @@ const DataContextMenu = ({
       style={{ top: contextMenu.y, left: contextMenu.x }}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] border-b border-border/50 mb-1.5 flex justify-between items-center">
+      <div className="px-3 py-2 text-[11px] font-medium text-muted-foreground border-b border-border mb-1.5 flex justify-between items-center">
         <span>
           {contextMenu.type === "cell" ? "Targeted Node" : "Batch Actions"}
         </span>
         {contextMenu.type === "row" && (
-          <span className="text-primary/50 text-[8px] font-black uppercase tracking-widest">
+          <span className="text-accent-fg/50 text-[11px] font-medium">
             {selectedRowsCount} Selected
           </span>
         )}
@@ -73,7 +73,7 @@ const DataContextMenu = ({
               onSetNull(contextMenu.rowId, contextMenu.colName);
               onClose();
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all disabled:opacity-30 disabled:hover:bg-transparent text-left"
+            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-medium text-foreground/80 hover:bg-ink/5 hover:text-foreground rounded-md transition-all disabled:opacity-30 disabled:hover:bg-transparent text-left"
           >
             <FileMinus className="h-4 w-4 text-muted-foreground" />
             Set cell as Null
@@ -83,7 +83,7 @@ const DataContextMenu = ({
               onCopyValue(contextMenu.rowId, contextMenu.colName);
               onClose();
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
+            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-medium text-foreground/80 hover:bg-ink/5 hover:text-foreground rounded-md transition-all text-left"
           >
             <Copy className="h-4 w-4 text-muted-foreground" />
             Copy Cell Value
@@ -93,7 +93,7 @@ const DataContextMenu = ({
               onFilterByValue(contextMenu.rowId, contextMenu.colName);
               onClose();
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
+            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-medium text-foreground/80 hover:bg-ink/5 hover:text-foreground rounded-md transition-all text-left"
           >
             <Filter className="h-4 w-4 text-muted-foreground" />
             Filter by this value
@@ -103,14 +103,14 @@ const DataContextMenu = ({
               onCopyColumn(contextMenu.colName);
               onClose();
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
+            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-medium text-foreground/80 hover:bg-ink/5 hover:text-foreground rounded-md transition-all text-left"
           >
             <FileType className="h-4 w-4 text-muted-foreground" />
             Copy Column Name
           </button>
 
-          <div className="h-px bg-white/5 my-1.5"></div>
-          <div className="px-3 py-1 text-[8px] font-black text-zinc-600 uppercase tracking-widest text-left">
+          <div className="h-px bg-ink/5 my-1.5"></div>
+          <div className="px-3 py-1 text-[11px] font-medium text-subtle text-left">
             Row Options
           </div>
 
@@ -119,7 +119,7 @@ const DataContextMenu = ({
               onCopyRow("JSON", contextMenu.rowId);
               onClose();
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
+            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-medium text-foreground/80 hover:bg-ink/5 hover:text-foreground rounded-md transition-all text-left"
           >
             <FileJson className="h-4 w-4 text-muted-foreground" />
             Copy Row as JSON
@@ -129,7 +129,7 @@ const DataContextMenu = ({
               onCopyRow("CSV", contextMenu.rowId);
               onClose();
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
+            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-medium text-foreground/80 hover:bg-ink/5 hover:text-foreground rounded-md transition-all text-left"
           >
             <FileType className="h-4 w-4 text-muted-foreground" />
             Copy Row as CSV
@@ -139,7 +139,7 @@ const DataContextMenu = ({
               onCopyRow("SQL", contextMenu.rowId);
               onClose();
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
+            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-medium text-foreground/80 hover:bg-ink/5 hover:text-foreground rounded-md transition-all text-left"
           >
             <Database className="h-4 w-4 text-muted-foreground" />
             Copy Row as SQL
@@ -149,20 +149,20 @@ const DataContextMenu = ({
               onCopyRow("Markdown", contextMenu.rowId);
               onClose();
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
+            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-medium text-foreground/80 hover:bg-ink/5 hover:text-foreground rounded-md transition-all text-left"
           >
             <FileType className="h-4 w-4 text-muted-foreground" />
             Copy Row as Markdown
           </button>
 
-          <div className="h-px bg-white/5 my-1.5"></div>
+          <div className="h-px bg-ink/5 my-1.5"></div>
 
           <button
             onClick={() => {
               onCloneRow(contextMenu.rowId);
               onClose();
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
+            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-medium text-foreground/80 hover:bg-ink/5 hover:text-foreground rounded-md transition-all text-left"
           >
             <Plus className="h-4 w-4 text-muted-foreground" />
             Clone Row
@@ -172,7 +172,7 @@ const DataContextMenu = ({
               onDeleteRow(contextMenu.rowId);
               onClose();
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-red-400 hover:bg-red-500/10 rounded-md transition-all text-left"
+            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-medium text-err hover:bg-err/10 rounded-md transition-all text-left"
           >
             <Trash2 className="h-4 w-4" />
             Delete Row
@@ -185,7 +185,7 @@ const DataContextMenu = ({
               onCopyRow("JSON", -1);
               onClose();
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
+            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-medium text-foreground/80 hover:bg-ink/5 hover:text-foreground rounded-md transition-all text-left"
           >
             <FileJson className="h-4 w-4 text-muted-foreground" />
             Copy Selection as JSON
@@ -195,7 +195,7 @@ const DataContextMenu = ({
               onCopyRow("CSV", -1);
               onClose();
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
+            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-medium text-foreground/80 hover:bg-ink/5 hover:text-foreground rounded-md transition-all text-left"
           >
             <FileType className="h-4 w-4 text-muted-foreground" />
             Copy Selection as CSV
@@ -205,7 +205,7 @@ const DataContextMenu = ({
               onCopyRow("SQL", -1);
               onClose();
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
+            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-medium text-foreground/80 hover:bg-ink/5 hover:text-foreground rounded-md transition-all text-left"
           >
             <Database className="h-4 w-4 text-muted-foreground" />
             Copy Selection as SQL
@@ -215,33 +215,33 @@ const DataContextMenu = ({
               onCopyRow("Markdown", -1);
               onClose();
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
+            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-medium text-foreground/80 hover:bg-ink/5 hover:text-foreground rounded-md transition-all text-left"
           >
             <FileType className="h-4 w-4 text-muted-foreground" />
             Copy Selection as Markdown
           </button>
 
-          <div className="h-px bg-white/5 my-1.5"></div>
+          <div className="h-px bg-ink/5 my-1.5"></div>
 
           <button
             onClick={() => {
               onDeleteSelected();
               onClose();
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-red-400 hover:bg-red-500/10 rounded-md transition-all text-left"
+            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-medium text-err hover:bg-err/10 rounded-md transition-all text-left"
           >
             <Trash2 className="h-4 w-4" />
             Delete {selectedRowsCount} Selected Rows
           </button>
 
-          <div className="h-px bg-white/5 my-1.5"></div>
+          <div className="h-px bg-ink/5 my-1.5"></div>
 
           <button
             onClick={() => {
               onFilterSelected();
               onClose();
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold text-zinc-300 hover:bg-white/5 hover:text-white rounded-md transition-all text-left"
+            className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-medium text-foreground/80 hover:bg-ink/5 hover:text-foreground rounded-md transition-all text-left"
           >
             <Filter className="h-4 w-4 text-muted-foreground" />
             Filter for Selected Rows

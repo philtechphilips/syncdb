@@ -7,6 +7,7 @@ import {
   Plus,
   ChevronRight,
   ChevronDown,
+  ChevronsUpDown,
   Terminal,
   History,
   LayoutGrid,
@@ -20,7 +21,7 @@ import { toast } from "sonner";
 
 interface SidebarProps {
   onOpenConnect: () => void;
-  activeTab: "query" | "er" | "table" | "logs" | "sync" | "backup";
+  activeTab: "query" | "er" | "table" | "logs" | "sync" | "backup" | "settings";
   onTabChange: (tab: "query" | "er" | "logs" | "sync" | "backup") => void;
   onTableSelect: (tableName: string) => void;
   selectedTable: string;
@@ -32,7 +33,8 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useClusterStore, Cluster } from "@/store/useClusterStore";
 import { useModalStore } from "@/store/useModalStore";
-import { SynqLogo } from "@/components/ui/SynqLogo";
+import { Logotype } from "@/components/ui/SynqLogo";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 const Sidebar = ({
@@ -153,90 +155,78 @@ const Sidebar = ({
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-50 h-screen w-64 border-r border-border bg-background flex flex-col font-sans transition-transform duration-300 transform lg:translate-x-0 ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}`}
+      className={`fixed left-0 top-0 z-50 h-screen w-[220px] bg-chrome flex flex-col font-sans transition-transform duration-300 transform lg:translate-x-0 ${isMobileOpen ? "translate-x-0 border-r border-border" : "-translate-x-full"}`}
     >
       {/* Logo Area & Mobile Close */}
-      <div className="px-6 py-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 bg-primary/10 rounded-xl border border-primary/20 flex items-center justify-center overflow-hidden text-primary">
-            <SynqLogo className="h-4 w-4" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-black text-foreground tracking-tight">
-              SynqDB
-            </span>
-            <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em] opacity-80 leading-tight">
-              Professional
-            </span>
-          </div>
+      <div className="flex items-start justify-between px-4 pt-5 pb-5">
+        <div className="flex flex-col gap-1.5">
+          <Logotype className="text-[18px]" />
+          <span className="text-[11px] text-subtle">Database workspace</span>
         </div>
         <button
           onClick={onCloseMobile}
-          className="lg:hidden p-2 hover:bg-white/5 rounded-lg transition-colors text-white"
+          aria-label="Close navigation"
+          className="lg:hidden inline-flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-ink/[0.06] hover:text-foreground"
         >
-          <X className="h-5 w-5" />
+          <X className="h-4 w-4" />
         </button>
       </div>
 
       {/* Workspace Switcher */}
-      <div className="p-4 pt-0 border-b border-border relative">
+      <div className="px-2 pb-3 relative">
         <div
           onClick={() => setIsConnectionDropdownOpen(!isConnectionDropdownOpen)}
-          className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
+          className="flex items-center gap-2.5 rounded-xl border border-border bg-panel p-2 transition-colors cursor-pointer hover:border-line-strong"
         >
           <div
-            className="h-8 w-8 rounded bg-muted border border-border flex items-center justify-center text-white font-black text-xs transition-transform group-hover:scale-105"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-xs font-medium text-white"
             style={{
-              borderLeft: `3px solid ${selectedCluster?.color || "#0dd"}`,
+              backgroundColor: selectedCluster?.color || "var(--color-subtle)",
             }}
           >
             {selectedCluster?.name?.[0].toUpperCase() || "C"}
           </div>
-          <div className="flex flex-col">
-            <span className="text-xs font-bold text-foreground truncate w-24">
-              {selectedCluster?.name || "Select Cluster"}
+          <div className="flex min-w-0 flex-col">
+            <span className="truncate text-[13px] leading-tight text-foreground">
+              {selectedCluster?.name || "Select cluster"}
             </span>
-            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter truncate w-24">
+            <span className="truncate text-[11px] leading-tight text-subtle">
               {selectedCluster?.type || "None"}
             </span>
           </div>
-          <ChevronDown
-            className={`h-4 w-4 ml-auto text-muted-foreground transition-transform duration-200 ${isConnectionDropdownOpen ? "rotate-180" : ""}`}
-          />
+          <ChevronsUpDown className="ml-auto h-3.5 w-3.5 shrink-0 text-subtle" />
         </div>
 
         {/* Connection Dropdown */}
         {isConnectionDropdownOpen && (
-          <div className="absolute left-4 top-[calc(100%-8px)] z-50 w-[calc(100%-32px)] bg-card border border-border rounded-xl shadow-2xl py-2 animate-in fade-in zoom-in-95 duration-150">
-            <div className="px-3 py-1.5 mb-1.5 border-b border-border">
-              <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
-                Switch Connection
-              </span>
+          <div className="absolute left-2 top-[calc(100%-8px)] z-50 w-[calc(100%-16px)] min-w-[240px] rounded-xl border border-line-strong bg-card p-1.5 shadow-[0_16px_48px_rgb(0_0_0/0.08)]">
+            <div className="px-2.5 py-1.5">
+              <span className="text-xs text-subtle">Switch connection</span>
             </div>
-            <div className="max-h-60 overflow-y-auto scrollbar-hide">
+            <div className="max-h-60 overflow-y-auto thin-scrollbar">
               {clusters.map((cluster) => (
                 <div
                   key={cluster.id}
-                  className="flex w-full items-center gap-3 px-3 py-2 text-xs font-semibold transition-colors hover:bg-white/5"
+                  className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors hover:bg-ink/[0.04]"
                 >
                   <div
                     onClick={() => {
                       selectCluster(cluster);
                       setIsConnectionDropdownOpen(false);
                     }}
-                    className={`flex-1 flex items-center gap-3 transition-colors cursor-pointer ${selectedCluster?.id === cluster.id ? "text-white" : "text-muted-foreground/80"}`}
+                    className={`flex-1 flex items-center gap-3 transition-colors cursor-pointer ${selectedCluster?.id === cluster.id ? "text-foreground" : "text-muted-foreground"}`}
                   >
                     <div
-                      className={`h-6 w-6 rounded flex items-center justify-center text-[10px] font-black ${selectedCluster?.id === cluster.id ? "bg-white/10 text-white" : "bg-zinc-800 text-muted-foreground"}`}
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[11px] font-medium text-white"
                       style={{
-                        borderLeft: `2px solid ${cluster.color || "#444"}`,
+                        backgroundColor: cluster.color || "var(--color-subtle)",
                       }}
                     >
                       {cluster.name[0].toUpperCase()}
                     </div>
                     <div className="flex flex-col items-start -translate-y-px">
                       <span>{cluster.name}</span>
-                      <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-tighter">
+                      <span className="text-[11px] leading-tight text-subtle">
                         {cluster.type}
                       </span>
                     </div>
@@ -245,22 +235,22 @@ const Sidebar = ({
                   <div className="flex items-center gap-2">
                     {cluster.isLocal && (
                       <div
-                        className={`h-1.5 w-1.5 rounded-full ${agentConnected ? "bg-primary" : "bg-zinc-600"}`}
+                        className={`h-1.5 w-1.5 rounded-full ${agentConnected ? "bg-ok" : "bg-ink/20"}`}
                         title={
                           agentConnected ? "Agent connected" : "Agent offline"
                         }
                       />
                     )}
                     {selectedCluster?.id === cluster.id && (
-                      <div className="h-1.5 w-1.5 rounded-full bg-primary"></div>
+                      <div className="h-1.5 w-1.5 rounded-full bg-accent-fg"></div>
                     )}
                     <button
                       type="button"
                       onClick={(e) => handleDisconnectCluster(e, cluster.id)}
                       className={`p-1.5 rounded-lg transition-all border ${
                         confirmDisconnect === cluster.id
-                          ? "bg-red-500/20 text-red-500 border-red-500/30"
-                          : "bg-white/5 text-zinc-600 hover:text-red-500 hover:bg-red-500/10 border-transparent"
+                          ? "bg-err/20 text-err border-err/30"
+                          : "text-subtle hover:text-err hover:bg-err/10 border-transparent"
                       }`}
                       title={
                         confirmDisconnect === cluster.id
@@ -278,49 +268,49 @@ const Sidebar = ({
                 </div>
               ))}
             </div>
-            <div className="h-px bg-white/10 my-2"></div>
+            <div className="h-px bg-border my-1.5"></div>
             <button
               onClick={() => {
                 onOpenConnect();
                 setIsConnectionDropdownOpen(false);
               }}
-              className="flex w-full items-center gap-3 px-3 py-2 text-[11px] font-black text-primary hover:bg-primary/5 transition-colors"
+              className="flex h-8 w-full items-center gap-2.5 rounded-md px-2.5 text-[13px] text-accent-fg hover:bg-primary/[0.06] transition-colors"
             >
               <Plus className="h-3.5 w-3.5" />
-              <span>Add New Connection</span>
+              <span>Add connection</span>
             </button>
           </div>
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto py-6 px-3 scrollbar-hide space-y-8">
+      <div className="flex-1 overflow-y-auto px-2 pt-1 pb-4 thin-scrollbar space-y-5">
         {/* Main Navigation */}
         <div>
-          <nav className="space-y-1">
+          <nav className="flex flex-col gap-0.5">
             <button
               onClick={() => onTabChange("query")}
-              className={`flex w-full items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-all ${activeTab === "query" ? "bg-primary/10 text-white" : "text-muted-foreground hover:bg-muted/50 hover:text-white"}`}
+              className={`flex h-9 w-full items-center gap-3 rounded-lg px-3 text-[13px] transition-colors ${activeTab === "query" ? "bg-panel text-foreground shadow-[0_1px_2px_rgb(0_0_0/0.06),inset_0_0_0_1px_rgb(0_0_0/0.06)]" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
             >
               <Terminal className="h-4 w-4" />
               SQL Editor
             </button>
             <button
               onClick={() => onTabChange("er")}
-              className={`flex w-full items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-all ${activeTab === "er" ? "bg-primary/10 text-white" : "text-muted-foreground hover:bg-muted/50 hover:text-white"}`}
+              className={`flex h-9 w-full items-center gap-3 rounded-lg px-3 text-[13px] transition-colors ${activeTab === "er" ? "bg-panel text-foreground shadow-[0_1px_2px_rgb(0_0_0/0.06),inset_0_0_0_1px_rgb(0_0_0/0.06)]" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
             >
               <LayoutGrid className="h-4 w-4" />
               ER Diagrams
             </button>
             <button
               onClick={() => onTabChange("sync")}
-              className={`flex w-full items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-all ${activeTab === "sync" ? "bg-primary/10 text-white" : "text-muted-foreground hover:bg-muted/50 hover:text-white"}`}
+              className={`flex h-9 w-full items-center gap-3 rounded-lg px-3 text-[13px] transition-colors ${activeTab === "sync" ? "bg-panel text-foreground shadow-[0_1px_2px_rgb(0_0_0/0.06),inset_0_0_0_1px_rgb(0_0_0/0.06)]" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
             >
               <Zap className="h-4 w-4" />
               Database Sync
             </button>
             <button
               onClick={() => onTabChange("backup")}
-              className={`flex w-full items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-all ${activeTab === "backup" ? "bg-primary/10 text-white" : "text-muted-foreground hover:bg-muted/50 hover:text-white"}`}
+              className={`flex h-9 w-full items-center gap-3 rounded-lg px-3 text-[13px] transition-colors ${activeTab === "backup" ? "bg-panel text-foreground shadow-[0_1px_2px_rgb(0_0_0/0.06),inset_0_0_0_1px_rgb(0_0_0/0.06)]" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
             >
               <HardDrive className="h-4 w-4" />
               Backup & Restore
@@ -331,12 +321,11 @@ const Sidebar = ({
         {/* Database Explorer */}
         <div className="space-y-4">
           <div className="flex items-center justify-between px-3">
-            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-              Database
-            </span>
+            <span className="text-xs text-subtle">Database</span>
             <button
               onClick={onOpenConnect}
-              className="text-primary hover:text-primary/110 transition-colors"
+              aria-label="Add connection"
+              className="text-subtle hover:text-foreground transition-colors"
             >
               <Plus className="h-3.5 w-3.5" />
             </button>
@@ -345,16 +334,16 @@ const Sidebar = ({
           <div className="space-y-0.5">
             <div
               onClick={() => setIsTablesExpanded(!isTablesExpanded)}
-              className="flex items-center gap-3 px-3 py-2 rounded-md text-xs font-medium text-foreground hover:bg-muted/50 cursor-pointer transition-colors group"
+              className="flex h-9 items-center gap-2 rounded-lg px-3 text-[13px] text-foreground hover:bg-ink/[0.04] cursor-pointer transition-colors"
             >
               {isTablesExpanded ? (
-                <ChevronDown className="h-3 w-3 text-muted-foreground group-hover:text-primary" />
+                <ChevronDown className="h-3 w-3 text-subtle" />
               ) : (
-                <ChevronRight className="h-3 w-3 text-muted-foreground group-hover:text-primary" />
+                <ChevronRight className="h-3 w-3 text-subtle" />
               )}
-              <Table className="h-4 w-4 text-primary/80" />
+              <Table className="h-4 w-4 text-subtle" />
               <span>Tables</span>
-              <span className="ml-auto text-[10px] bg-muted px-1.5 py-0.5 rounded font-mono text-muted-foreground">
+              <span className="ml-auto font-mono text-[11px] text-subtle">
                 {
                   tables.filter((t) =>
                     t.name.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -370,7 +359,7 @@ const Sidebar = ({
                   ? Array.from({ length: 8 }).map((_, i) => (
                       <div
                         key={i}
-                        className="flex items-center gap-3 ml-6 mr-1 px-3 py-2"
+                        className="flex items-center gap-3 ml-4 px-3 py-2"
                       >
                         <Skeleton className="h-1 w-1 rounded-full shrink-0" />
                         <Skeleton
@@ -394,18 +383,15 @@ const Sidebar = ({
                           onContextMenu={(e) =>
                             handleContextMenu(e, table.name)
                           }
-                          className={`flex items-center gap-3 ml-6 mr-1 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer group/item hover:bg-white/5 ${selectedTable === table.name ? "text-white bg-primary/10" : "text-muted-foreground/80 hover:text-white"}`}
+                          className={`flex h-7 items-center gap-2 ml-4 pl-3 pr-1 rounded-md font-mono text-xs transition-colors cursor-pointer group/item ${selectedTable === table.name ? "text-foreground bg-ink/[0.06]" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
                         >
-                          <div
-                            className={`h-1 w-1 rounded-full ${selectedTable === table.name ? "bg-primary" : "bg-zinc-700"}`}
-                          ></div>
                           <span className="truncate flex-1">{table.name}</span>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDropTable(table.name);
                             }}
-                            className="opacity-0 group-hover/item:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-500 rounded transition-all"
+                            className="opacity-0 group-hover/item:opacity-100 p-1 hover:bg-err/10 hover:text-err rounded transition-all"
                             title="Drop Table"
                           >
                             <Trash2 className="h-3 w-3" />
@@ -420,21 +406,19 @@ const Sidebar = ({
         {/* Management */}
         <div>
           <div className="px-3 mb-2">
-            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-              Management
-            </span>
+            <span className="text-xs text-subtle">Management</span>
           </div>
-          <nav className="space-y-1">
+          <nav className="flex flex-col gap-0.5">
             <button
               onClick={() => router.push("/dashboard/settings/project")}
-              className={`flex w-full items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-all ${pathname === "/dashboard/settings/project" ? "bg-primary/10 text-white" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"}`}
+              className={`flex h-9 w-full items-center gap-3 rounded-lg px-3 text-[13px] transition-colors ${pathname === "/dashboard/settings/project" ? "bg-panel text-foreground shadow-[0_1px_2px_rgb(0_0_0/0.06),inset_0_0_0_1px_rgb(0_0_0/0.06)]" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
             >
               <Settings className="h-4 w-4" />
               Project Settings
             </button>
             <button
               onClick={() => onTabChange("logs")}
-              className={`flex w-full items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-all ${activeTab === "logs" ? "bg-primary/10 text-white" : "text-muted-foreground hover:bg-muted/50 hover:text-white"}`}
+              className={`flex h-9 w-full items-center gap-3 rounded-lg px-3 text-[13px] transition-colors ${activeTab === "logs" ? "bg-panel text-foreground shadow-[0_1px_2px_rgb(0_0_0/0.06),inset_0_0_0_1px_rgb(0_0_0/0.06)]" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
             >
               <History className="h-4 w-4" />
               Query Logs
@@ -444,12 +428,12 @@ const Sidebar = ({
       </div>
 
       {/* User Footer with Logout */}
-      <div className="p-4 border-t border-border mt-auto bg-muted/20 relative">
+      <div className="mt-auto px-2 pb-3 pt-2 relative">
         <div
           onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-          className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
+          className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-ink/[0.04] transition-colors cursor-pointer"
         >
-          <div className="h-8 w-8 rounded-full bg-zinc-800 border border-border flex items-center justify-center overflow-hidden shrink-0">
+          <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
             {user?.profile_picture &&
             (user.profile_picture.startsWith("http") ||
               user.profile_picture.startsWith("/")) ? (
@@ -459,7 +443,7 @@ const Sidebar = ({
                 className="h-full w-full object-cover"
               />
             ) : (
-              <div className="h-full w-full bg-linear-to-tr from-primary/40 to-secondary/40 flex items-center justify-center text-[10px] font-black">
+              <div className="h-full w-full bg-primary/10 text-accent-fg flex items-center justify-center text-[11px] font-medium">
                 {user?.full_name
                   ?.split(" ")
                   .map((n) => n[0])
@@ -469,36 +453,36 @@ const Sidebar = ({
             )}
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-xs font-bold text-foreground truncate">
+            <span className="text-xs font-medium text-foreground truncate">
               {user?.full_name || "Anonymous User"}
             </span>
-            <span className="text-[9px] text-muted-foreground/80 font-black uppercase tracking-tighter truncate">
+            <span className="text-[11px] text-muted-foreground/80 font-medium truncate">
               {user?.role || "User"}
             </span>
           </div>
         </div>
 
         {isUserMenuOpen && (
-          <div className="absolute bottom-[calc(100%-8px)] left-4 right-4 z-50 bg-card border border-border rounded-xl shadow-2xl py-2 animate-in slide-in-from-bottom-2 duration-200">
-            <div className="px-3 py-1.5 border-b border-border mb-2">
-              <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
-                Account Settings
-              </span>
+          <div className="absolute bottom-[calc(100%-4px)] left-2 right-2 z-50 rounded-xl border border-line-strong bg-card p-1.5 shadow-[0_16px_48px_rgb(0_0_0/0.08)]">
+            <div className="flex items-center justify-between px-2.5 py-1.5">
+              <span className="text-xs text-subtle">Theme</span>
+              <ThemeToggle />
             </div>
+            <div className="h-px bg-border my-1.5"></div>
             <button
               onClick={() => {
                 router.push("/dashboard/settings");
                 setIsUserMenuOpen(false);
               }}
-              className="flex w-full items-center gap-3 px-3 py-2 text-xs font-bold text-muted-foreground/80 hover:text-white hover:bg-white/5 transition-colors"
+              className="flex h-8 w-full items-center gap-2.5 rounded-md px-2.5 text-[13px] text-muted-foreground hover:text-foreground hover:bg-ink/[0.04] transition-colors"
             >
               <Settings className="h-3.5 w-3.5" />
               Profile
             </button>
-            <div className="h-px bg-white/5 my-2"></div>
+            <div className="h-px bg-border my-1.5"></div>
             <button
               onClick={() => logout()}
-              className="flex w-full items-center gap-3 px-3 py-2 text-xs font-bold text-red-500 hover:text-red-400 hover:bg-red-500/5 transition-colors"
+              className="flex h-8 w-full items-center gap-2.5 rounded-md px-2.5 text-[13px] text-err hover:bg-err/[0.06] transition-colors"
             >
               <History className="h-3.5 w-3.5 rotate-180" />
               Sign Out
@@ -510,11 +494,11 @@ const Sidebar = ({
       {/* Context Menu */}
       {contextMenu && (
         <div
-          className="fixed z-100 w-48 bg-card border border-border rounded-xl shadow-2xl py-1.5 shadow-black/50 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+          className="fixed z-100 w-48 overflow-hidden rounded-xl border border-line-strong bg-card p-1.5 shadow-[0_16px_48px_rgb(0_0_0/0.08)]"
           style={{ left: contextMenu.x, top: contextMenu.y }}
         >
-          <div className="px-3 py-1.5 border-b border-border mb-1.5">
-            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+          <div className="px-2.5 py-1.5">
+            <span className="truncate font-mono text-xs text-subtle">
               {contextMenu.table}
             </span>
           </div>
@@ -522,28 +506,28 @@ const Sidebar = ({
           {[
             {
               label: "View Data",
-              color: "text-primary",
+              color: "text-foreground",
               onClick: () => onTableSelect(contextMenu.table!),
             },
             {
               label: "View Structure",
-              color: "text-muted-foreground/80",
+              color: "text-muted-foreground",
               onClick: () => {
                 onTableSelect(contextMenu.table!);
                 onTabChange("query");
               },
             },
-            { label: "Export Schema", color: "text-muted-foreground/80" },
+            { label: "Export Schema", color: "text-muted-foreground" },
             { separator: true },
-            { label: "Truncate Table", color: "text-amber-500" },
+            { label: "Truncate Table", color: "text-warn" },
             {
               label: "Drop Table",
-              color: "text-red-500",
+              color: "text-err",
               onClick: () => handleDropTable(contextMenu.table!),
             },
           ].map((item, i) =>
             item.separator ? (
-              <div key={i} className="h-px bg-white/5 my-1.5"></div>
+              <div key={i} className="h-px bg-border my-1.5"></div>
             ) : (
               <button
                 key={i}
@@ -551,7 +535,7 @@ const Sidebar = ({
                   item.onClick?.();
                   setContextMenu(null);
                 }}
-                className={`flex w-full items-center gap-3 px-3 py-2 text-[11px] font-bold transition-colors group ${item.color || "text-muted-foreground/80"} hover:text-white hover:bg-white/5`}
+                className={`flex h-8 w-full items-center gap-2.5 rounded-md px-2.5 text-[13px] transition-colors ${item.color || "text-muted-foreground"} hover:bg-ink/[0.04]`}
               >
                 <span>{item.label}</span>
               </button>

@@ -522,16 +522,13 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
 
   if (!selectedTable) {
     return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)] text-zinc-600 gap-4 animate-in fade-in duration-1000">
-        <div className="p-8 rounded-full bg-white/[0.01] border border-border/50 relative group">
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)] text-subtle gap-4 animate-in fade-in duration-1000">
+        <div className="p-8 rounded-full bg-ink/[0.01] border border-border relative group">
           <Table className="h-16 w-16 opacity-10 group-hover:scale-110 transition-transform duration-500" />
-          <div className="absolute inset-0 bg-primary/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
         <div className="text-center space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">
-            Explorer Node Ready
-          </p>
-          <p className="text-[11px] font-medium text-zinc-400 max-w-[200px] leading-relaxed mx-auto">
+          <p className="text-[11px] opacity-40">Explorer Node Ready</p>
+          <p className="text-[11px] text-muted-foreground max-w-[200px] leading-relaxed mx-auto">
             Select a system entry to begin orchestration.
           </p>
         </div>

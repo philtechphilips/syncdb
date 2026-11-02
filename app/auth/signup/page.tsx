@@ -13,7 +13,7 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import { SynqLogo } from "@/components/ui/SynqLogo";
+import { Logotype } from "@/components/ui/SynqLogo";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export default function SignupPage() {
@@ -53,20 +53,20 @@ export default function SignupPage() {
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-background flex flex-col justify-center items-center px-6 py-12 text-center">
-        <div className="glass rounded-3xl p-12 border border-white/5 shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-500">
-          <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 border border-primary/20 mb-8">
-            <CheckCircle2 className="h-10 w-10 text-primary" />
+        <div className="glass rounded-xl p-12 border border-border shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-500">
+          <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-bg-200 border border-border mb-8">
+            <CheckCircle2 className="h-10 w-10 text-subtle" />
           </div>
-          <h2 className="text-3xl font-serif text-white mb-4">
+          <h2 className="text-3xl text-foreground mb-4 tracking-tight font-semibold">
             Welcome aboard!
           </h2>
-          <p className="text-zinc-400 font-medium mb-8 leading-relaxed">
+          <p className="text-muted-foreground mb-8 leading-relaxed">
             Your account has been created successfully. We&apos;re redirecting
             you to the sign-in page to start your journey.
           </p>
 
           <div className="flex justify-center">
-            <Loader2 className="h-6 w-6 text-primary animate-spin" />
+            <Loader2 className="h-6 w-6 text-accent-fg animate-spin" />
           </div>
         </div>
       </div>
@@ -81,30 +81,26 @@ export default function SignupPage() {
     <div className="min-h-screen bg-background flex flex-col justify-center items-center px-6 py-12">
       {/* Background elements */}
       <div className="absolute inset-0 tech-grid opacity-[0.05] pointer-events-none"></div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
 
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-10">
           <Link href="/" className="inline-flex items-center group mb-8">
-            <SynqLogo className="h-8 w-8 text-primary translate-y-[1px]" />
-            <span className="text-xl font-serif tracking-tight text-white -ml-0.5 italic">
-              ynqDB
-            </span>
+            <Logotype className="text-[22px]" />
           </Link>
-          <h1 className="text-3xl font-serif text-white mb-2">
+          <h1 className="text-3xl text-foreground mb-2 tracking-tight font-semibold">
             Build faster together
           </h1>
-          <p className="text-zinc-500 font-medium">
+          <p className="text-subtle">
             Create your developer account in seconds.
           </p>
         </div>
 
-        <div className="glass rounded-3xl p-8 border border-white/5 shadow-2xl">
+        <div className="rounded-xl p-6 border border-border bg-card">
           <form onSubmit={handleSubmit} className="space-y-6">
             <button
               type="button"
               onClick={handleGoogleSignup}
-              className="w-full py-3 px-4 rounded-xl bg-white text-zinc-800 font-bold flex items-center justify-center gap-3 hover:bg-zinc-100 transition-all shadow-lg"
+              className="w-full h-10 px-4 rounded-md bg-background text-sm font-medium text-foreground border border-line-strong flex items-center justify-center gap-2.5 hover:bg-bg-300 transition-colors shadow-[0_1px_2px_rgb(0_0_0/0.04)]"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24">
                 <path
@@ -129,19 +125,19 @@ export default function SignupPage() {
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/5"></div>
+                <div className="w-full border-t border-border"></div>
               </div>
-              <div className="relative flex justify-center text-xs uppercase tracking-widest font-black text-zinc-600">
+              <div className="relative flex justify-center text-xs font-medium text-subtle">
                 <span className="bg-background px-4">Or use email</span>
               </div>
             </div>
 
             {error && (
-              <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-3 text-red-400 text-xs font-medium animate-in fade-in slide-in-from-top-2">
+              <div className="p-4 rounded-xl bg-err/10 border border-err/20 flex items-start gap-3 text-err text-xs font-medium animate-in fade-in slide-in-from-top-2">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 <div className="flex-1 flex justify-between items-center">
                   <span>{error}</span>
-                  <button onClick={clearError} className="hover:text-red-300">
+                  <button onClick={clearError} className="hover:text-err">
                     ✕
                   </button>
                 </div>
@@ -150,57 +146,57 @@ export default function SignupPage() {
 
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
+                <label className="text-[11px] font-medium text-muted-foreground ml-1">
                   Full Name
                 </label>
                 <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-subtle" />
                   <input
                     type="text"
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Alex Rivera"
-                    className="w-full bg-white/[0.02] border border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-white placeholder:text-zinc-700 focus:outline-none focus:border-primary/50 transition-all font-medium"
+                    className="w-full bg-background border border-line-strong rounded-md py-2 pl-11 pr-4 text-foreground placeholder:text-subtle/70 outline-none focus:border-primary/60 transition-all text-sm"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
+                <label className="text-[11px] font-medium text-muted-foreground ml-1">
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-subtle" />
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@company.com"
-                    className="w-full bg-white/[0.02] border border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-white placeholder:text-zinc-700 focus:outline-none focus:border-primary/50 transition-all font-medium"
+                    className="w-full bg-background border border-line-strong rounded-md py-2 pl-11 pr-4 text-foreground placeholder:text-subtle/70 outline-none focus:border-primary/60 transition-all text-sm"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
+                <label className="text-[11px] font-medium text-muted-foreground ml-1">
                   Secure Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-subtle" />
                   <input
                     type={showPassword ? "text" : "password"}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full bg-white/[0.02] border border-white/5 rounded-xl py-3.5 pl-11 pr-12 text-white placeholder:text-zinc-700 focus:outline-none focus:border-primary/50 transition-all font-medium"
+                    className="w-full bg-background border border-line-strong rounded-md py-2 pl-11 pr-12 text-foreground placeholder:text-subtle/70 outline-none focus:border-primary/60 transition-all text-sm"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-subtle hover:text-muted-foreground transition-colors"
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -214,14 +210,14 @@ export default function SignupPage() {
 
             <div className="space-y-4">
               <div className="flex gap-3">
-                <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                <p className="text-[10px] text-zinc-500 font-medium leading-relaxed uppercase tracking-[0.05em]">
+                <CheckCircle2 className="h-4 w-4 text-accent-fg shrink-0 mt-0.5" />
+                <p className="text-[11px] text-subtle leading-relaxed">
                   I agree to the{" "}
-                  <Link href="#" className="text-primary hover:underline">
+                  <Link href="#" className="text-accent-fg hover:underline">
                     Terms of Service
                   </Link>{" "}
                   and{" "}
-                  <Link href="#" className="text-primary hover:underline">
+                  <Link href="#" className="text-accent-fg hover:underline">
                     Privacy Policy
                   </Link>
                   .
@@ -231,7 +227,7 @@ export default function SignupPage() {
 
             <button
               disabled={isLoading}
-              className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-black text-lg transition-all active:scale-95 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-2 rounded-md bg-primary text-white font-medium text-sm transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -242,9 +238,9 @@ export default function SignupPage() {
           </form>
         </div>
 
-        <p className="mt-8 text-center text-zinc-600 font-medium">
+        <p className="mt-8 text-center text-subtle">
           Already have an account?{" "}
-          <Link href="/auth/login" className="text-primary hover:underline">
+          <Link href="/auth/login" className="text-accent-fg hover:underline">
             Sign in instead
           </Link>
         </p>

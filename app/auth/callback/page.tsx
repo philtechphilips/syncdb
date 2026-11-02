@@ -32,17 +32,16 @@ function AuthCallbackContent() {
       <div className="absolute inset-0 tech-grid opacity-[0.05] pointer-events-none"></div>
 
       <div className="relative">
-        <div className="h-20 w-20 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center animate-pulse">
-          <Loader2 className="h-10 w-10 text-primary animate-spin" />
+        <div className="h-20 w-20 rounded-xl bg-bg-200 border border-border flex items-center justify-center animate-pulse">
+          <Loader2 className="h-10 w-10 text-accent-fg animate-spin" />
         </div>
-        <div className="absolute -inset-4 bg-primary/20 blur-2xl -z-10 rounded-full animate-pulse"></div>
       </div>
 
       <div className="text-center space-y-2 relative z-10">
-        <h2 className="text-2xl font-serif text-white tracking-tight">
+        <h2 className="text-2xl text-foreground tracking-tight font-semibold">
           Syncing your account
         </h2>
-        <p className="text-zinc-500 font-medium">
+        <p className="text-subtle">
           Securing your session and preparing your dashboard...
         </p>
       </div>
@@ -55,7 +54,7 @@ export default function AuthCallbackPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-background flex items-center justify-center">
-          <Loader2 className="h-8 w-8 text-primary animate-spin" />
+          <Loader2 className="h-8 w-8 text-accent-fg animate-spin" />
         </div>
       }
     >

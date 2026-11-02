@@ -10,7 +10,7 @@ const REVIEWS = [
     company: "Paystack",
     text: "SynqDB is the first tool that made me forget I was working across multiple databases. Switching between PostgreSQL and MySQL has never been this seamless.",
     initials: "EO",
-    color: "#277955",
+    color: "#4338ca",
   },
   {
     name: "Tunde Adewale",
@@ -86,13 +86,13 @@ export const Testimonials = () => {
             whileInView="visible"
             viewport={{ once: true }}
           >
-            <span className="text-primary text-[10px] font-black tracking-[0.4em] uppercase block mb-3">
+            <span className="text-accent-fg text-[11px] font-medium block mb-3">
               Reviews
             </span>
-            <h2 className="text-4xl md:text-5xl font-serif text-white leading-[1.1] tracking-tighter">
+            <h2 className="text-4xl md:text-5xl text-foreground leading-[1.1] tracking-tight font-semibold">
               What engineers
               <br />
-              <span className="text-primary italic">are saying.</span>
+              <span className="text-accent-fg">are saying.</span>
             </h2>
           </motion.div>
 
@@ -102,7 +102,7 @@ export const Testimonials = () => {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="text-zinc-500 font-medium max-w-sm leading-relaxed"
+            className="text-subtle font-medium max-w-sm leading-relaxed"
           >
             Thousands of engineers trust SynqDB to manage critical database
             infrastructure every day.
@@ -119,7 +119,7 @@ export const Testimonials = () => {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
-              className="group relative rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 flex flex-col gap-5 hover:border-white/12 hover:bg-white/[0.03] transition-all duration-400 overflow-hidden"
+              className="group relative rounded-xl border border-border bg-ink/[0.02] p-6 flex flex-col gap-5 hover:border-line-strong hover:bg-ink/[0.03] transition-all duration-400 overflow-hidden"
             >
               {/* Top accent line on hover */}
               <div
@@ -144,14 +144,14 @@ export const Testimonials = () => {
               </div>
 
               {/* Text */}
-              <p className="text-sm text-zinc-400 leading-relaxed font-medium flex-1 group-hover:text-zinc-300 transition-colors duration-300">
+              <p className="text-sm text-muted-foreground leading-relaxed flex-1 group-hover:text-foreground transition-colors duration-300">
                 &ldquo;{review.text}&rdquo;
               </p>
 
               {/* Author */}
-              <div className="flex items-center gap-3 pt-3 border-t border-white/5">
+              <div className="flex items-center gap-3 pt-3 border-t border-border">
                 <div
-                  className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-xs font-black text-white"
+                  className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-xs font-medium text-foreground"
                   style={{
                     backgroundColor: `${review.color}30`,
                     border: `1px solid ${review.color}40`,
@@ -160,10 +160,10 @@ export const Testimonials = () => {
                   {review.initials}
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-white tracking-tight">
+                  <div className="text-sm font-semibold text-foreground tracking-tight">
                     {review.name}
                   </div>
-                  <div className="text-[10px] text-zinc-600 font-medium mt-0.5">
+                  <div className="text-[11px] text-subtle font-medium mt-0.5">
                     {review.role}
                   </div>
                 </div>
@@ -178,7 +178,7 @@ export const Testimonials = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="pt-12 border-t border-white/5 grid grid-cols-2 md:grid-cols-4 gap-8 text-center"
+          className="pt-12 border-t border-border grid grid-cols-2 md:grid-cols-4 gap-8 text-center"
         >
           {STATS.map((stat, i) => (
             <motion.div
@@ -190,10 +190,10 @@ export const Testimonials = () => {
               viewport={{ once: true }}
               className="group cursor-default flex flex-col items-center"
             >
-              <div className="text-3xl md:text-4xl font-serif text-white group-hover:text-primary transition-colors duration-300">
+              <div className="text-3xl md:text-4xl text-foreground group-hover:text-accent-fg transition-colors duration-300 tracking-tight font-semibold">
                 {stat.val}
               </div>
-              <div className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600 mt-1">
+              <div className="text-[11px] font-medium text-subtle mt-1">
                 {stat.label}
               </div>
             </motion.div>

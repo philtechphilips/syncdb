@@ -31,11 +31,11 @@ export const Badge = ({
   className = "",
 }: BadgeProps) => {
   const baseClasses =
-    "flex items-center gap-2 rounded-full px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all";
+    "flex items-center gap-2 rounded-full px-2.5 py-0.5 text-[11px] font-medium whitespace-nowrap transition-all";
 
   const variants = {
-    glass: "bg-white/5 border border-white/10 text-zinc-400",
-    filled: "text-white",
+    glass: "bg-ink/5 border border-border text-muted-foreground",
+    filled: "text-foreground",
     outline: "border",
   };
 

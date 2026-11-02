@@ -67,7 +67,7 @@ const DiagramConnections = ({
               d={path}
               stroke="currentColor"
               strokeWidth={isActive ? "2" : "1"}
-              className={`${isActive ? "text-primary shadow-[0_0_8px_rgba(0,237,100,0.5)]" : "text-primary/20"} transition-all`}
+              className={`${isActive ? "text-accent-fg" : "text-accent-fg/20"} transition-all`}
               fill="none"
               markerEnd="url(#arrowhead)"
             />

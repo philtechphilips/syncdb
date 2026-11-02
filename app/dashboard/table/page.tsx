@@ -11,16 +11,13 @@ export default function TablePage() {
 
   if (openTableTabs.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)] text-zinc-600 gap-4 animate-in fade-in duration-1000">
-        <div className="p-8 rounded-full bg-white/[0.01] border border-border/50 relative group">
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)] text-subtle gap-4 animate-in fade-in duration-1000">
+        <div className="p-8 rounded-full bg-ink/[0.01] border border-border relative group">
           <Table className="h-16 w-16 opacity-10 group-hover:scale-110 transition-transform duration-500" />
-          <div className="absolute inset-0 bg-primary/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
         <div className="text-center space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">
-            Explorer Node Ready
-          </p>
-          <p className="text-[11px] font-medium text-zinc-400 max-w-[200px] leading-relaxed mx-auto">
+          <p className="text-[11px] opacity-40">Explorer Node Ready</p>
+          <p className="text-[11px] text-muted-foreground max-w-[200px] leading-relaxed mx-auto">
             Select a table from the sidebar to open it.
           </p>
         </div>
@@ -31,17 +28,17 @@ export default function TablePage() {
   return (
     <div className="flex flex-col h-full min-w-0 overflow-hidden">
       {/* Tab bar */}
-      <div className="flex items-center gap-0 border-b border-white/5 bg-zinc-950 overflow-x-auto scrollbar-hide shrink-0">
+      <div className="flex items-center gap-0 border-b border-border bg-card overflow-x-auto thin-scrollbar shrink-0">
         {openTableTabs.map((tab) => {
           const isActive = tab === activeTableTab;
           return (
             <button
               key={tab}
               onClick={() => setActiveTableTab(tab)}
-              className={`group flex items-center gap-2 px-4 py-2.5 text-[11px] font-semibold border-r border-white/5 shrink-0 transition-all relative ${
+              className={`group flex items-center gap-2 px-4 py-2.5 text-[11px] font-semibold border-r border-border shrink-0 transition-all relative ${
                 isActive
-                  ? "text-white bg-background"
-                  : "text-zinc-500 hover:text-zinc-300 hover:bg-white/3"
+                  ? "text-foreground bg-background"
+                  : "text-subtle hover:text-foreground hover:bg-ink/3"
               }`}
             >
               {/* Active indicator */}
@@ -49,7 +46,7 @@ export default function TablePage() {
                 <span className="absolute top-0 left-0 right-0 h-[2px] bg-primary" />
               )}
               <Table
-                className={`h-3 w-3 shrink-0 ${isActive ? "text-primary" : "text-zinc-600"}`}
+                className={`h-3 w-3 shrink-0 ${isActive ? "text-accent-fg" : "text-subtle"}`}
               />
               <span className="max-w-[120px] truncate">{tab}</span>
               <span
@@ -57,7 +54,7 @@ export default function TablePage() {
                   e.stopPropagation();
                   closeTableTab(tab);
                 }}
-                className="h-4 w-4 rounded flex items-center justify-center text-zinc-600 hover:text-white hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100 ml-1 cursor-pointer"
+                className="h-4 w-4 rounded flex items-center justify-center text-subtle hover:text-foreground hover:bg-ink/10 transition-all opacity-0 group-hover:opacity-100 ml-1 cursor-pointer"
               >
                 <X className="h-2.5 w-2.5" />
               </span>

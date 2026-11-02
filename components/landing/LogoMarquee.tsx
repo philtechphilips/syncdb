@@ -18,9 +18,7 @@ const COMPANIES = [
   "Neon",
 ];
 
-const Dot = () => (
-  <span className="h-1 w-1 rounded-full bg-zinc-700 shrink-0" />
-);
+const Dot = () => <span className="h-1 w-1 rounded-full bg-ink/20 shrink-0" />;
 
 export const LogoMarquee = () => {
   const items = [...COMPANIES, ...COMPANIES];
@@ -28,8 +26,8 @@ export const LogoMarquee = () => {
   return (
     <section className="py-14 bg-background relative overflow-hidden">
       {/* Separators */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/[0.07] to-transparent" />
-      <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/[0.07] to-transparent" />
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-ink/[0.07] to-transparent" />
+      <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-ink/[0.07] to-transparent" />
 
       {/* Marquee track */}
       <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
@@ -39,7 +37,7 @@ export const LogoMarquee = () => {
         >
           {items.map((name, i) => (
             <React.Fragment key={i}>
-              <span className="text-[11px] font-black uppercase tracking-[0.35em] text-zinc-600 whitespace-nowrap cursor-default hover:text-zinc-300 transition-colors duration-300">
+              <span className="text-[11px] font-medium text-subtle whitespace-nowrap cursor-default hover:text-foreground transition-colors duration-300">
                 {name}
               </span>
               <Dot />

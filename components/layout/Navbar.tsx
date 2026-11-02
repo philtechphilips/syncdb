@@ -1,15 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  Search,
-  Bell,
-  ChevronRight,
-  Play,
-  Database,
-  Menu,
-  ShieldAlert,
-} from "lucide-react";
+import { Search, Bell, Play, Database, Menu, ShieldAlert } from "lucide-react";
 
 import { useClusterStore } from "@/store/useClusterStore";
 import { useQueryStore } from "@/store/useQueryStore";
@@ -40,36 +32,30 @@ const Navbar = ({ onOpenConnect, onOpenSidebar }: NavbarProps) => {
     selectedCluster?.color || getEnvColor(selectedCluster?.environment);
 
   return (
-    <nav className="fixed right-0 top-0 z-30 flex h-14 w-full lg:w-[calc(100%-16rem)] items-center justify-between border-b border-white/5 bg-background px-4 lg:px-6 font-sans overflow-hidden">
+    <nav className="flex h-14 w-full shrink-0 items-center justify-between gap-3 bg-chrome px-3 sm:px-4 font-sans overflow-hidden">
       {/* Breadcrumbs & Mobile Menu */}
       <div className="flex items-center gap-3">
         <button
           onClick={onOpenSidebar}
-          className="p-2 lg:hidden hover:bg-white/5 rounded-lg transition-colors text-white"
+          className="p-2 lg:hidden hover:bg-ink/5 rounded-lg transition-colors text-foreground"
         >
           <Menu className="h-5 w-5" />
         </button>
 
-        <div className="flex items-center gap-2 text-[11px] font-medium text-zinc-400 max-w-[150px] lg:max-w-none">
-          <span className="hover:text-white cursor-pointer transition-colors hidden sm:inline">
-            Clusters
-          </span>
-          <ChevronRight className="h-3.5 w-3.5 text-zinc-600 hidden sm:inline" />
-          <span className="text-white font-bold truncate max-w-[100px] lg:max-w-none flex items-center gap-2">
+        <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground max-w-[150px] lg:max-w-none">
+          <span className="hidden sm:inline">Clusters</span>
+          <span className="text-ink/20 select-none hidden sm:inline">/</span>
+          <span className="text-foreground truncate max-w-[100px] lg:max-w-none flex items-center gap-2">
             {selectedCluster?.name || "No Connection"}
             {selectedCluster?.environment === "production" && (
-              <ShieldAlert className="h-3 w-3 text-red-500 animate-pulse" />
+              <ShieldAlert className="h-3 w-3 text-err" />
             )}
           </span>
         </div>
         {selectedCluster && (
           <>
-            <div className="h-4 w-px bg-border mx-1 lg:mx-2 hidden sm:block"></div>
-            <Badge
-              color={themeColor}
-              dot
-              pulse={selectedCluster.environment === "production"}
-            >
+            <div className="h-4 w-px bg-ink/10 mx-1 hidden sm:block"></div>
+            <Badge color={themeColor} dot>
               {selectedCluster.environment}
             </Badge>
 
@@ -79,38 +65,38 @@ const Navbar = ({ onOpenConnect, onOpenSidebar }: NavbarProps) => {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-2 lg:gap-4">
-        <div className="flex items-center gap-2 border-r border-border pr-2 lg:pr-4 mr-1 lg:mr-2">
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-2">
           {activeTab === "query" && (
             <button
               onClick={requestRun}
-              className="flex items-center gap-2 rounded-md px-3 lg:px-4 py-1.5 text-xs font-black text-white transition-all bg-primary hover:opacity-90 active:scale-95 whitespace-nowrap shadow-lg"
+              className="flex h-8 items-center gap-1.5 rounded-md px-3 text-[13px] font-medium text-white transition-colors bg-primary hover:bg-primary-hover whitespace-nowrap shadow-[0_1px_2px_rgb(67_56_202/0.25)]"
             >
               <Play className="h-3 w-3 fill-white" />
               <span className="hidden sm:inline">Run Query</span>
             </button>
           )}
           <button
-            className="flex items-center gap-2 rounded-md border border-border bg-white/5 px-3 lg:px-4 py-1.5 text-xs font-bold text-white hover:bg-white/10 transition-all whitespace-nowrap"
+            className="flex h-8 items-center gap-1.5 rounded-md border border-line-strong bg-background px-3 text-[13px] font-medium text-foreground shadow-[0_1px_2px_rgb(0_0_0/0.04)] hover:bg-bg-300 transition-colors whitespace-nowrap"
             onClick={onOpenConnect}
           >
-            <Database className="h-3 w-3 text-white" />
+            <Database className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Connect</span>
           </button>
         </div>
 
-        <div className="flex items-center gap-1.5 lg:gap-2">
+        <div className="flex items-center gap-2">
           <div className="relative group hidden md:block">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-white transition-colors" />
+            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-subtle" />
             <input
               type="text"
-              placeholder="Search Workspace..."
+              placeholder="Search tables…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 w-32 lg:w-48 rounded-md border border-border bg-muted/20 pl-9 pr-3 text-[10px] font-black text-white focus:outline-none focus:ring-1 focus:ring-white/20 transition-all uppercase tracking-widest"
+              className="h-8 w-32 lg:w-48 rounded-md border border-line-strong bg-background pl-8 pr-3 text-[13px] text-foreground placeholder:text-subtle outline-none focus:border-primary/60 transition-colors"
             />
           </div>
-          <div className="h-8 w-8 rounded-full overflow-hidden bg-primary/20 border border-primary/40 flex items-center justify-center text-[10px] font-black text-primary cursor-pointer hover:scale-105 transition-transform ml-2">
+          <div className="h-7 w-7 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center text-[11px] font-medium text-accent-fg">
             {user?.profile_picture ? (
               <img
                 src={user.profile_picture}

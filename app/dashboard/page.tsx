@@ -35,8 +35,8 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-      <Loader2 className="h-8 w-8 text-primary animate-spin" />
-      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 animate-pulse">
+      <Loader2 className="h-8 w-8 text-accent-fg animate-spin" />
+      <p className="text-[11px] text-muted-foreground animate-pulse">
         Redirecting to workspace...
       </p>
     </div>

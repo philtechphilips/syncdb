@@ -24,6 +24,7 @@ import QueryResultsArea from "./QueryEditor/QueryResultsArea";
 import SavedQueriesSidebar from "./QueryEditor/SavedQueriesSidebar";
 import SaveQueryDialog from "./QueryEditor/SaveQueryDialog";
 import { analyzeSql } from "@/lib/sqlSafety";
+import { useTheme } from "@/lib/theme";
 
 const QueryEditor = () => {
   const { selectedCluster, executeQuery, fetchSchema, fetchQueryLogs } =
@@ -33,6 +34,16 @@ const QueryEditor = () => {
   const monaco = useMonaco();
 
   const settings = user?.settings || {};
+  const theme = useTheme();
+  // "synq-dark" was the old default; anyone on it follows the app theme now.
+  const editorTheme =
+    !settings.monacoTheme ||
+    settings.monacoTheme === "auto" ||
+    settings.monacoTheme === "synq-dark"
+      ? theme === "dark"
+        ? "synq-dark"
+        : "synq-light"
+      : settings.monacoTheme;
 
   const {
     queries,
@@ -124,21 +135,39 @@ const QueryEditor = () => {
   }, [selectedCluster, fetchSchema]);
 
   const defineThemes = (monaco: Monaco) => {
+    monaco.editor.defineTheme("synq-light", {
+      base: "vs",
+      inherit: true,
+      rules: [
+        { token: "keyword", foreground: "cf222e" },
+        { token: "string", foreground: "0a3069" },
+        { token: "comment", foreground: "6e7781" },
+        { token: "number", foreground: "0550ae" },
+      ],
+      colors: {
+        "editor.background": "#ffffff",
+        "editor.foreground": "#24292f",
+        "editorCursor.foreground": "#4338ca",
+        "editor.lineHighlightBackground": "#f7f7f8",
+        "editorLineNumber.foreground": "#a1a1aa",
+      },
+    });
+
     monaco.editor.defineTheme("synq-dark", {
       base: "vs-dark",
       inherit: true,
       rules: [
-        { token: "keyword", foreground: "277955" },
+        { token: "keyword", foreground: "ff7b72" },
         { token: "string", foreground: "a5d6ff" },
         { token: "comment", foreground: "8b949e" },
-        { token: "number", foreground: "d2a8ff" },
+        { token: "number", foreground: "79c0ff" },
       ],
       colors: {
-        "editor.background": "#040d12",
-        "editor.foreground": "#f8fafc",
-        "editorCursor.foreground": "#277955",
-        "editor.lineHighlightBackground": "#0d1e25",
-        "editorLineNumber.foreground": "#1e3a44",
+        "editor.background": "#0f0f11",
+        "editor.foreground": "#e6edf3",
+        "editorCursor.foreground": "#818cf8",
+        "editor.lineHighlightBackground": "#151517",
+        "editorLineNumber.foreground": "#52525b",
       },
     });
 
@@ -600,7 +629,7 @@ const QueryEditor = () => {
           <Editor
             height="100%"
             defaultLanguage="sql"
-            theme={settings.monacoTheme || "synq-dark"}
+            theme={editorTheme}
             value={activeQuery.code}
             onChange={(val) => handleUpdateCode(val || "")}
             beforeMount={defineThemes}
@@ -614,16 +643,16 @@ const QueryEditor = () => {
               automaticLayout: true,
               padding: { top: 20 },
               fontFamily:
-                "JetBrains Mono, Menlo, Monaco, Courier New, monospace",
+                "var(--font-geist-mono), Menlo, Monaco, Courier New, monospace",
               bracketPairColorization: {
                 enabled: settings.bracketPairColorization ?? true,
               },
             }}
           />
 
-          <div className="absolute top-6 right-8 flex items-center gap-3 px-4 py-1.5 rounded-lg border border-white/5 bg-black/40 text-[9px] font-black text-zinc-500 uppercase tracking-widest backdrop-blur-md opacity-40 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+          <div className="absolute top-6 right-8 flex items-center gap-3 px-4 py-1.5 rounded-lg border border-border bg-card text-[11px] font-medium text-subtle opacity-40 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
             <div
-              className={`h-1.5 w-1.5 rounded-full ${selectedCluster ? "bg-primary" : "bg-red-500"}`}
+              className={`h-1.5 w-1.5 rounded-full ${selectedCluster ? "bg-primary" : "bg-err"}`}
             ></div>
             {selectedCluster
               ? `${selectedCluster.type === "postgres" ? "PostgreSQL" : "MySQL"} - ${selectedCluster.name}`
@@ -647,7 +676,7 @@ const QueryEditor = () => {
         {queryResults && (
           <div
             onMouseDown={startResizing}
-            className="h-1.5 w-full cursor-row-resize bg-border/20 hover:bg-primary/50 transition-colors z-30"
+            className="h-1.5 w-full cursor-row-resize bg-border hover:bg-primary/50 transition-colors z-30"
           />
         )}
 

@@ -15,7 +15,7 @@ export const TableSkeleton = ({
   return (
     <div className="flex flex-col h-full w-full bg-background overflow-hidden">
       {/* Header Skeleton */}
-      <div className="flex items-center border-b border-border/50 bg-muted/20 px-4 py-3 shrink-0">
+      <div className="flex items-center border-b border-border bg-muted/20 px-4 py-3 shrink-0">
         {showCheckbox && (
           <div className="w-10 shrink-0">
             <Skeleton className="h-4 w-4 rounded" />
@@ -62,7 +62,7 @@ export const TableSkeleton = ({
       </div>
 
       {/* Footer Skeleton */}
-      <div className="border-t border-border/50 bg-muted/10 px-6 py-4 flex items-center justify-between shrink-0">
+      <div className="border-t border-border bg-muted/10 px-6 py-4 flex items-center justify-between shrink-0">
         <Skeleton className="h-4 w-32" />
         <div className="flex gap-2">
           <Skeleton className="h-8 w-24" />

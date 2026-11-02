@@ -205,21 +205,16 @@ export default function SyncPage() {
   const targetCluster = clusters.find((c) => c.id === targetId);
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#040d12]">
+    <div className="flex-1 flex flex-col h-full bg-background">
       {/* Workbench Header */}
-      <div className="px-4 lg:px-10 py-6 lg:py-8 border-b border-[#1e3a44] bg-[#040d12]">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-6">
+      <div className="px-4 sm:px-6 py-6 border-b border-border bg-background">
+        <div className="flex flex-col lg:flex-row lg:items-start justify-between mb-5 gap-4">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
-                <Zap className="h-6 w-6" />
-              </div>
-              <h1 className="text-xl lg:text-2xl font-black text-white tracking-tight">
-                SYNC WORKBENCH
-              </h1>
-            </div>
-            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.2em]">
-              Automated Schema & Data Alignment
+            <h1 className="text-[22px] leading-tight font-semibold tracking-tight text-foreground">
+              Database sync
+            </h1>
+            <p className="mt-1 text-[13px] text-muted-foreground">
+              Compare two clusters, then copy the differences across.
             </p>
           </div>
 
@@ -227,7 +222,7 @@ export default function SyncPage() {
             <button
               onClick={handleCompare}
               disabled={isComparing || !sourceId || !targetId}
-              className={`w-full lg:w-auto flex items-center justify-center gap-3 px-8 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${isComparing || !sourceId || !targetId ? "bg-zinc-800 text-zinc-500 cursor-not-allowed" : "bg-primary text-white hover:bg-primary/90"}`}
+              className={`w-full lg:w-auto flex h-8 items-center justify-center gap-1.5 px-3 rounded-md text-[13px] font-medium transition-colors ${isComparing || !sourceId || !targetId ? "bg-muted text-subtle cursor-not-allowed" : "bg-primary text-white hover:bg-primary/90"}`}
             >
               {isComparing ? (
                 <RefreshCw className="h-4 w-4 animate-spin" />
@@ -239,24 +234,24 @@ export default function SyncPage() {
           </div>
         </div>
 
-        <div className="flex flex-col lg:grid lg:grid-cols-[1fr,auto,1fr] items-center gap-4 lg:gap-8 bg-black/40 p-4 lg:p-6 rounded-2xl border border-white/5 shadow-inner">
+        <div className="flex flex-col lg:grid lg:grid-cols-[1fr_auto_1fr] items-center gap-4 lg:gap-6 bg-bg-200 p-4 rounded-xl border border-border">
           <div className="space-y-2 w-full">
             <div className="flex items-center justify-between px-1">
-              <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+              <span className="text-[11px] font-medium text-subtle">
                 Source Instance
               </span>
               {sourceCluster && (
-                <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase">
+                <span className="text-[11px] font-medium text-accent-fg bg-primary/10 px-2 py-0.5 rounded">
                   {sourceCluster.type}
                 </span>
               )}
             </div>
             <div className="relative group">
-              <Database className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 group-hover:text-primary transition-colors" />
+              <Database className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-subtle group-hover:text-accent-fg transition-colors" />
               <select
                 value={sourceId}
                 onChange={(e) => setSourceId(e.target.value)}
-                className="w-full bg-[#0b1215] border border-[#1e3a44] rounded-xl pl-12 pr-10 py-3.5 text-xs font-bold text-white focus:outline-none focus:ring-1 focus:ring-primary/40 appearance-none cursor-pointer transition-all hover:border-primary/30 shadow-sm"
+                className="w-full bg-background border border-line-strong rounded-md pl-12 pr-10 py-2 text-xs text-foreground outline-none appearance-none cursor-pointer transition-all hover:border-primary/30 shadow-sm focus:border-primary/60"
               >
                 <option value="">Select source...</option>
                 {clusters.map((c) => (
@@ -265,31 +260,31 @@ export default function SyncPage() {
                   </option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 pointer-events-none" />
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-subtle pointer-events-none" />
             </div>
           </div>
 
-          <div className="h-10 w-10 rounded-full bg-[#1e3a44]/20 border border-[#1e3a44]/30 flex items-center justify-center rotate-90 lg:rotate-0">
-            <ArrowRight className="h-5 w-5 text-zinc-500" />
+          <div className="h-10 w-10 rounded-full bg-border border border-border flex items-center justify-center rotate-90 lg:rotate-0">
+            <ArrowRight className="h-5 w-5 text-subtle" />
           </div>
 
           <div className="space-y-2 w-full">
             <div className="flex items-center justify-between px-1">
-              <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+              <span className="text-[11px] font-medium text-subtle">
                 Target Instance
               </span>
               {targetCluster && (
-                <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase">
+                <span className="text-[11px] font-medium text-accent-fg bg-primary/10 px-2 py-0.5 rounded">
                   {targetCluster.type}
                 </span>
               )}
             </div>
             <div className="relative group">
-              <Database className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 group-hover:text-primary transition-colors" />
+              <Database className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-subtle group-hover:text-accent-fg transition-colors" />
               <select
                 value={targetId}
                 onChange={(e) => setTargetId(e.target.value)}
-                className="w-full bg-[#0b1215] border border-[#1e3a44] rounded-xl pl-12 pr-10 py-3.5 text-xs font-bold text-white focus:outline-none focus:ring-1 focus:ring-primary/40 appearance-none cursor-pointer transition-all hover:border-primary/30 shadow-sm"
+                className="w-full bg-background border border-line-strong rounded-md pl-12 pr-10 py-2 text-xs text-foreground outline-none appearance-none cursor-pointer transition-all hover:border-primary/30 shadow-sm focus:border-primary/60"
               >
                 <option value="">Select target...</option>
                 {clusters.map((c) => (
@@ -298,45 +293,45 @@ export default function SyncPage() {
                   </option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 pointer-events-none" />
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-subtle pointer-events-none" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-hidden flex flex-col bg-[#040d12]">
+      <div className="flex-1 overflow-hidden flex flex-col bg-background">
         {!diff && !isComparing && (
           <div className="flex-1 flex flex-col items-center justify-center p-20 text-center">
             <div className="relative mb-10">
               <div className="absolute inset-0 bg-primary/5 rounded-full scale-150"></div>
-              <div className="relative h-24 w-24 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-sm">
-                <Zap className="h-12 w-12 text-zinc-700" />
+              <div className="relative h-24 w-24 rounded-xl bg-ink/5 border border-border flex items-center justify-center">
+                <Zap className="h-12 w-12 text-subtle/70" />
               </div>
             </div>
-            <h3 className="text-xl font-black text-white uppercase tracking-[0.2em] mb-4">
+            <h3 className="text-xl font-semibold text-foreground mb-4">
               Initialize Comparison
             </h3>
-            <p className="max-w-md text-sm text-zinc-500 font-bold leading-relaxed mb-10">
+            <p className="max-w-md text-sm text-subtle leading-relaxed mb-10">
               Select both source and target database instances above to start a
               deep schema comparison and alignment.
             </p>
-            <div className="flex items-center gap-8 border-t border-white/5 pt-10">
+            <div className="flex items-center gap-8 border-t border-border pt-10">
               <div className="flex flex-col items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                <span className="text-[10px] font-black text-zinc-600 uppercase">
+                <div className="h-2 w-2 rounded-full bg-primary"></div>
+                <span className="text-[11px] font-medium text-subtle">
                   Mismatches
                 </span>
               </div>
               <div className="flex flex-col items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-rose-500"></div>
-                <span className="text-[10px] font-black text-zinc-600 uppercase">
+                <div className="h-2 w-2 rounded-full bg-err"></div>
+                <span className="text-[11px] font-medium text-subtle">
                   Missing
                 </span>
               </div>
               <div className="flex flex-col items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
-                <span className="text-[10px] font-black text-zinc-600 uppercase">
+                <div className="h-2 w-2 rounded-full bg-ok"></div>
+                <span className="text-[11px] font-medium text-subtle">
                   In Sync
                 </span>
               </div>
@@ -347,10 +342,10 @@ export default function SyncPage() {
         {isComparing && (
           <div className="flex-1 flex flex-col items-center justify-center">
             <div className="relative mb-8">
-              <RefreshCw className="h-16 w-16 text-primary animate-spin" />
+              <RefreshCw className="h-16 w-16 text-accent-fg animate-spin" />
               <div className="absolute inset-0 bg-primary/5 rounded-full"></div>
             </div>
-            <p className="text-[10px] font-black text-primary uppercase tracking-[0.5em]">
+            <p className="text-[11px] text-accent-fg">
               Analyzing Schema Structures
             </p>
           </div>
@@ -359,7 +354,7 @@ export default function SyncPage() {
         {diff && (
           <div className="flex-1 flex flex-col h-full overflow-hidden">
             {/* Status Tabs */}
-            <div className="flex flex-col lg:flex-row lg:items-center gap-4 px-4 lg:px-10 py-6 border-b border-[#1e3a44] bg-[#0b1215]/30">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-4 px-4 lg:px-10 py-6 border-b border-border bg-bg-200">
               <div className="flex flex-wrap items-center gap-2">
                 {[
                   {
@@ -367,32 +362,32 @@ export default function SyncPage() {
                     label: "Mismatches",
                     fullLabel: "Structural Mismatches",
                     count: diff.tableMismatches.length,
-                    color: "text-blue-500",
-                    bg: "bg-blue-500/10",
+                    color: "text-accent-fg",
+                    bg: "bg-primary/10",
                   },
                   {
                     id: "missing",
                     label: "Missing",
                     fullLabel: "Missing in Target",
                     count: diff.missingInTarget.length,
-                    color: "text-rose-500",
-                    bg: "bg-rose-500/10",
+                    color: "text-err",
+                    bg: "bg-err/10",
                   },
                   {
                     id: "all",
                     label: "Matching",
                     fullLabel: "Matching Perfectly",
                     count: diff.matchingTables.length,
-                    color: "text-emerald-500",
-                    bg: "bg-emerald-500/10",
+                    color: "text-ok",
+                    bg: "bg-ok/10",
                   },
                   {
                     id: "extra",
                     label: "Extra",
                     fullLabel: "Extra in Target",
                     count: diff.missingInSource.length,
-                    color: "text-zinc-400",
-                    bg: "bg-white/5",
+                    color: "text-muted-foreground",
+                    bg: "bg-ink/5",
                   },
                 ].map((tab) => (
                   <button
@@ -402,18 +397,18 @@ export default function SyncPage() {
                         tab.id as "all" | "missing" | "extra" | "mismatch",
                       )
                     }
-                    className={`flex items-center gap-2 lg:gap-3 px-3 lg:px-6 py-2.5 lg:py-3 rounded-xl border transition-all ${
+                    className={`flex items-center gap-2 lg:gap-3 px-3 lg:px-6 py-2.5 lg:py-3 rounded-md border transition-all ${
                       activeCategory === tab.id
                         ? `border-${tab.color.split("-")[1]}-500/50 ${tab.bg} ${tab.color}`
-                        : "border-white/5 bg-white/[0.02] text-zinc-500 hover:text-zinc-300 hover:border-white/10"
+                        : "border-border bg-ink/[0.02] text-subtle hover:text-foreground hover:border-line-strong"
                     }`}
                   >
-                    <span className="text-[10px] lg:text-[11px] font-black uppercase tracking-widest leading-none">
+                    <span className="text-[11px] lg:text-[11px] font-medium leading-none">
                       <span className="hidden sm:inline">{tab.fullLabel}</span>
                       <span className="sm:hidden">{tab.label}</span>
                     </span>
                     <span
-                      className={`px-2 py-0.5 rounded-lg text-[10px] font-black bg-black/40 border border-white/10`}
+                      className={`px-2 py-0.5 rounded-lg text-[11px] font-medium bg-muted border border-border`}
                     >
                       {tab.count}
                     </span>
@@ -421,8 +416,8 @@ export default function SyncPage() {
                 ))}
               </div>
 
-              <div className="lg:ml-auto flex items-center gap-4 lg:pl-8 lg:border-l border-white/5">
-                <div className="flex items-center gap-2 bg-[#0b1215] border border-white/5 px-4 py-2.5 rounded-xl">
+              <div className="lg:ml-auto flex items-center gap-4 lg:pl-8 lg:border-l border-border">
+                <div className="flex items-center gap-2 bg-card border border-border px-4 py-2.5 rounded-md">
                   <input
                     type="checkbox"
                     id="withDataMain"
@@ -433,7 +428,7 @@ export default function SyncPage() {
                   <label
                     htmlFor="withDataMain"
                     title="Copy source rows too. Rows whose primary key already exists in the target are left unchanged."
-                    className="text-[10px] font-black text-zinc-400 uppercase tracking-widest cursor-pointer hover:text-white transition-colors"
+                    className="text-[11px] font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
                   >
                     Data
                   </label>
@@ -442,10 +437,10 @@ export default function SyncPage() {
                 <button
                   onClick={handleSync}
                   disabled={isSyncing || selectedTables.length === 0}
-                  className={`flex-1 lg:flex-none flex items-center justify-center gap-3 px-8 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${isSyncing || selectedTables.length === 0 ? "bg-zinc-800 text-zinc-500 cursor-not-allowed" : "bg-emerald-500 text-white hover:bg-emerald-400"}`}
+                  className={`flex-1 lg:flex-none flex items-center justify-center gap-3 px-8 py-2.5 rounded-md text-[11px] font-medium transition-all ${isSyncing || selectedTables.length === 0 ? "bg-muted text-subtle cursor-not-allowed" : "bg-ok text-white hover:bg-ok/90"}`}
                 >
                   {isSyncing ? (
-                    <RefreshCw className="h-4 w-4 animate-spin text-white" />
+                    <RefreshCw className="h-4 w-4 animate-spin text-foreground" />
                   ) : (
                     <ShieldCheck className="h-4 w-4" />
                   )}
@@ -459,12 +454,12 @@ export default function SyncPage() {
             </div>
 
             {/* Detailed View */}
-            <div className="flex-1 overflow-y-auto p-4 lg:p-10 scrollbar-hide">
+            <div className="flex-1 overflow-y-auto p-4 lg:p-10 thin-scrollbar">
               <div className="max-w-5xl mx-auto space-y-6">
                 {/* Bulk Action Bar */}
-                <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
+                <div className="flex items-center justify-between mb-8 pb-4 border-b border-border">
                   <div className="flex flex-col">
-                    <h3 className="text-sm font-black text-white uppercase tracking-widest mb-1">
+                    <h3 className="text-sm font-semibold text-foreground mb-1">
                       {activeCategory === "mismatch"
                         ? "Structural Repair"
                         : activeCategory === "missing"
@@ -473,14 +468,14 @@ export default function SyncPage() {
                             ? "Cleanup Required"
                             : "Environment Parity"}
                     </h3>
-                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-tight">
+                    <p className="text-[11px] text-subtle tracking-tight">
                       Review and select partitions for synchronization
                     </p>
                   </div>
                   {activeCategory !== "extra" && (
                     <button
                       onClick={selectAllFromActive}
-                      className="text-[10px] font-black text-primary uppercase tracking-[0.15em] hover:text-primary/110 flex items-center gap-2 group"
+                      className="text-[11px] font-medium text-accent-fg hover:text-accent-fg flex items-center gap-2 group"
                     >
                       <Plus className="h-3 w-3 transition-transform group-hover:rotate-90" />
                       Select All In Category
@@ -494,23 +489,23 @@ export default function SyncPage() {
                     {diff.tableMismatches.map((item) => (
                       <div
                         key={item.tableName}
-                        className="group overflow-hidden rounded-2xl border border-white/5 bg-[#0b1215]/40 hover:border-blue-500/30 transition-all duration-300"
+                        className="group overflow-hidden rounded-xl border border-border bg-bg-200 hover:border-primary/30 transition-all duration-300"
                       >
-                        <div className="flex items-center justify-between p-5 border-b border-white/5">
+                        <div className="flex items-center justify-between p-5 border-b border-border">
                           <div className="flex items-center gap-4">
-                            <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20">
+                            <div className="h-10 w-10 rounded-xl bg-bg-200 flex items-center justify-center text-muted-foreground border border-border">
                               <AlertCircle className="h-5 w-5" />
                             </div>
                             <div>
-                              <h4 className="text-sm font-black text-white">
+                              <h4 className="text-sm font-semibold text-foreground">
                                 {item.tableName}
                               </h4>
                               <div className="flex items-center gap-4 mt-1">
-                                <span className="text-[10px] text-blue-500/70 font-black uppercase tracking-widest flex items-center gap-1.5 shadow-none">
-                                  <div className="h-1 w-1 rounded-full bg-blue-500"></div>
+                                <span className="text-[11px] text-accent-fg/70 font-medium flex items-center gap-1.5 shadow-none">
+                                  <div className="h-1 w-1 rounded-full bg-primary"></div>
                                   Diff Found
                                 </span>
-                                <span className="text-[9px] text-zinc-600 font-bold">
+                                <span className="text-[11px] text-subtle font-medium">
                                   {item.missingColumns.length +
                                     item.typeMismatches.length}{" "}
                                   conflicts
@@ -520,10 +515,10 @@ export default function SyncPage() {
                           </div>
                           <button
                             onClick={() => toggleTableSelection(item.tableName)}
-                            className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                            className={`px-6 py-2 rounded-lg text-[11px] font-medium transition-all ${
                               selectedTables.includes(item.tableName)
-                                ? "bg-blue-500 text-blue-950"
-                                : "bg-white/5 text-zinc-500 hover:text-white border border-transparent hover:bg-white/10"
+                                ? "bg-primary text-white"
+                                : "bg-ink/5 text-subtle hover:text-foreground border border-transparent hover:bg-ink/10"
                             }`}
                           >
                             {selectedTables.includes(item.tableName)
@@ -531,22 +526,22 @@ export default function SyncPage() {
                               : "Add to Sync"}
                           </button>
                         </div>
-                        <div className="p-5 grid grid-cols-2 gap-4 bg-black/20">
+                        <div className="p-5 grid grid-cols-2 gap-4 bg-bg-200">
                           {item.missingColumns.map((col) => (
                             <div
                               key={col.name}
-                              className="flex items-center gap-3 p-3 bg-[#040d12] rounded-xl border border-white/[0.03]"
+                              className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border"
                             >
                               <div
-                                className={`h-1.5 w-1.5 rounded-full ${col.status === "missing_in_target" ? "bg-rose-500" : "bg-amber-500"}`}
+                                className={`h-1.5 w-1.5 rounded-full ${col.status === "missing_in_target" ? "bg-err" : "bg-warn"}`}
                               ></div>
-                              <span className="text-[11px] font-bold text-zinc-200">
+                              <span className="text-[11px] font-medium text-foreground">
                                 {col.name}
                               </span>
-                              <span className="text-[9px] text-zinc-600 font-black uppercase font-mono">
+                              <span className="text-[11px] text-subtle font-medium uppercase font-mono">
                                 {col.type}
                               </span>
-                              <span className="ml-auto text-[8px] font-black uppercase tracking-tighter opacity-40">
+                              <span className="ml-auto text-[11px] font-medium opacity-40">
                                 {col.status === "missing_in_target"
                                   ? "Drop"
                                   : "Create"}
@@ -556,18 +551,18 @@ export default function SyncPage() {
                           {item.typeMismatches.map((col) => (
                             <div
                               key={col.name}
-                              className="flex items-center gap-3 p-3 bg-[#040d12] rounded-xl border border-white/[0.03]"
+                              className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border"
                             >
-                              <div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div>
-                              <span className="text-[11px] font-bold text-zinc-200">
+                              <div className="h-1.5 w-1.5 rounded-full bg-primary"></div>
+                              <span className="text-[11px] font-medium text-foreground">
                                 {col.name}
                               </span>
                               <div className="flex items-center gap-2 ml-auto">
-                                <span className="text-[9px] text-rose-500 font-bold uppercase">
+                                <span className="text-[11px] text-err font-medium">
                                   {col.targetType}
                                 </span>
-                                <ArrowRight className="h-3 w-3 text-zinc-700" />
-                                <span className="text-[9px] text-emerald-500 font-bold uppercase">
+                                <ArrowRight className="h-3 w-3 text-subtle/70" />
+                                <span className="text-[11px] text-ok font-medium">
                                   {col.sourceType}
                                 </span>
                               </div>
@@ -584,27 +579,27 @@ export default function SyncPage() {
                     {diff.missingInTarget.map((item) => (
                       <div
                         key={item.tableName}
-                        className="flex items-center justify-between p-5 bg-[#0b1215]/40 border border-white/5 hover:border-rose-500/30 rounded-2xl group transition-all duration-300"
+                        className="flex items-center justify-between p-5 bg-bg-200 border border-border hover:border-err/30 rounded-xl group transition-all duration-300"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500 border border-rose-500/20">
+                          <div className="h-10 w-10 rounded-xl bg-err/10 flex items-center justify-center text-err border border-err/20">
                             <Minus className="h-5 w-5" />
                           </div>
                           <div>
-                            <h4 className="text-sm font-black text-white">
+                            <h4 className="text-sm font-semibold text-foreground">
                               {item.tableName}
                             </h4>
-                            <p className="text-[10px] text-rose-500/70 font-black uppercase tracking-widest mt-0.5">
+                            <p className="text-[11px] text-err/70 mt-0.5">
                               Not present in target database
                             </p>
                           </div>
                         </div>
                         <button
                           onClick={() => toggleTableSelection(item.tableName)}
-                          className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                          className={`px-6 py-2 rounded-lg text-[11px] font-medium transition-all ${
                             selectedTables.includes(item.tableName)
-                              ? "bg-rose-500 text-rose-950"
-                              : "bg-white/5 text-zinc-500 hover:text-white border border-transparent hover:bg-white/10"
+                              ? "bg-err text-white"
+                              : "bg-ink/5 text-subtle hover:text-foreground border border-transparent hover:bg-ink/10"
                           }`}
                         >
                           {selectedTables.includes(item.tableName)
@@ -621,27 +616,27 @@ export default function SyncPage() {
                     {diff.matchingTables.map((item) => (
                       <div
                         key={item.tableName}
-                        className="flex items-center justify-between p-5 bg-[#0b1215]/40 border border-white/5 hover:border-emerald-500/30 rounded-2xl group transition-all duration-300"
+                        className="flex items-center justify-between p-5 bg-bg-200 border border-border hover:border-ok/30 rounded-xl group transition-all duration-300"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
+                          <div className="h-10 w-10 rounded-xl bg-ok/10 flex items-center justify-center text-ok border border-ok/20">
                             <CheckCircle2 className="h-5 w-5" />
                           </div>
                           <div>
-                            <h4 className="text-sm font-black text-white">
+                            <h4 className="text-sm font-semibold text-foreground">
                               {item.tableName}
                             </h4>
-                            <p className="text-[10px] text-emerald-500/70 font-black uppercase tracking-widest mt-0.5">
+                            <p className="text-[11px] text-ok/70 mt-0.5">
                               Structural parity confirmed
                             </p>
                           </div>
                         </div>
                         <button
                           onClick={() => toggleTableSelection(item.tableName)}
-                          className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                          className={`px-6 py-2 rounded-lg text-[11px] font-medium transition-all ${
                             selectedTables.includes(item.tableName)
-                              ? "bg-emerald-500 text-emerald-950"
-                              : "bg-white/5 text-zinc-500 hover:text-white border border-transparent hover:bg-white/10"
+                              ? "bg-ok text-white"
+                              : "bg-ink/5 text-subtle hover:text-foreground border border-transparent hover:bg-ink/10"
                           }`}
                         >
                           {selectedTables.includes(item.tableName)
@@ -657,17 +652,17 @@ export default function SyncPage() {
                   diff.missingInSource.map((item) => (
                     <div
                       key={item.tableName}
-                      className="flex items-center justify-between p-5 bg-[#0b1215]/40 border border-white/5 hover:border-zinc-500/30 rounded-2xl group transition-all duration-300"
+                      className="flex items-center justify-between p-5 bg-bg-200 border border-border hover:border-line-strong rounded-xl group transition-all duration-300"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center text-zinc-500 border border-white/10">
+                        <div className="h-10 w-10 rounded-xl bg-ink/5 flex items-center justify-center text-subtle border border-border">
                           <AlertCircle className="h-5 w-5" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-black text-white">
+                          <h4 className="text-sm font-semibold text-foreground">
                             {item.tableName}
                           </h4>
-                          <p className="text-[10px] text-zinc-500/70 font-black uppercase tracking-widest mt-0.5">
+                          <p className="text-[11px] text-subtle/70 mt-0.5">
                             This table only exists in Target. Environment is
                             polluted.
                           </p>
@@ -675,7 +670,7 @@ export default function SyncPage() {
                       </div>
                       <button
                         onClick={() => handleDropTable(item.tableName)}
-                        className="px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500 hover:text-rose-950"
+                        className="px-6 py-2 rounded-lg text-[11px] font-medium transition-all bg-err/10 text-err border border-err/20 hover:bg-err hover:text-white"
                       >
                         Drop Table
                       </button>
@@ -692,13 +687,13 @@ export default function SyncPage() {
                         : "matchingTables"
                 ].length === 0 && (
                   <div className="py-20 flex flex-col items-center justify-center text-center opacity-40">
-                    <div className="h-16 w-16 rounded-full border border-dashed border-zinc-700 flex items-center justify-center mb-6">
-                      <Search className="h-8 w-8 text-zinc-700" />
+                    <div className="h-16 w-16 rounded-full border border-dashed border-line-strong flex items-center justify-center mb-6">
+                      <Search className="h-8 w-8 text-subtle/70" />
                     </div>
-                    <h4 className="text-sm font-black text-zinc-500 uppercase tracking-widest">
+                    <h4 className="text-sm font-semibold text-subtle">
                       No entries found
                     </h4>
-                    <p className="text-[10px] text-zinc-600 font-bold uppercase mt-2">
+                    <p className="text-[11px] text-subtle mt-2">
                       All records for this category are in order
                     </p>
                   </div>

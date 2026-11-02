@@ -69,34 +69,40 @@ export default function LogsPage() {
 
   if (!selectedCluster) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center text-zinc-600 gap-4">
-        <div className="h-16 w-16 rounded-full bg-white/[0.02] border border-white/5 flex items-center justify-center">
+      <div className="flex flex-1 flex-col items-center justify-center text-subtle gap-4">
+        <div className="h-16 w-16 rounded-full bg-ink/[0.02] border border-border flex items-center justify-center">
           <History className="h-8 w-8 opacity-20" />
         </div>
-        <p className="text-[10px] font-black uppercase tracking-widest opacity-40">
-          Select a cluster to view logs
-        </p>
+        <p className="text-[11px] opacity-40">Select a cluster to view logs</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-1 flex-col overflow-y-auto scrollbar-hide bg-[#021016]/20 h-full">
-      <div className="p-4 lg:p-8 space-y-6 lg:space-y-10 max-w-5xl mx-auto w-full min-h-full">
+    <div className="flex flex-1 flex-col overflow-y-auto thin-scrollbar bg-background/20 h-full">
+      <div className="px-4 py-6 sm:px-6 space-y-6 max-w-5xl w-full min-h-full">
+        <div>
+          <h1 className="text-[22px] leading-tight font-semibold tracking-tight text-foreground">
+            Query logs
+          </h1>
+          <p className="mt-1 text-[13px] text-muted-foreground">
+            Every query run against this cluster.
+          </p>
+        </div>
         {isLoading && selectedCluster ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <Loader2 className="h-8 w-8 text-primary animate-spin" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+            <Loader2 className="h-8 w-8 text-accent-fg animate-spin" />
+            <span className="text-[11px] font-medium text-subtle">
               Retrieving system logs...
             </span>
           </div>
         ) : logs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center gap-4">
-            <History className="h-12 w-12 text-zinc-800" />
-            <h3 className="text-zinc-400 font-bold text-sm uppercase tracking-widest">
+            <History className="h-12 w-12 text-subtle/50" />
+            <h3 className="text-muted-foreground font-semibold text-sm">
               No Activity Yet
             </h3>
-            <p className="text-[10px] text-zinc-600 uppercase tracking-wider max-w-xs leading-relaxed">
+            <p className="text-[11px] text-subtle max-w-xs leading-relaxed">
               Every query you run in the SQL editor will be safely recorded here
               for auditing and history.
             </p>
@@ -105,21 +111,21 @@ export default function LogsPage() {
           Object.entries(groupedLogs).map(([group, dayLogs]) => (
             <div key={group} className="space-y-4">
               <div className="flex items-center gap-4 mb-2 px-2">
-                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                <span className="text-[11px] font-medium text-subtle">
                   {group}
                 </span>
-                <div className="h-px flex-1 bg-white/5"></div>
+                <div className="h-px flex-1 bg-ink/5"></div>
               </div>
 
-              <div className="divide-y divide-white/[0.02] bg-black/20 rounded-2xl border border-white/5 overflow-hidden backdrop-blur-sm">
+              <div className="divide-y divide-border bg-bg-200 rounded-xl border border-border overflow-hidden">
                 {dayLogs.map((log) => (
                   <div
                     key={log.id}
-                    className="group flex flex-col sm:flex-row sm:items-center gap-4 lg:gap-6 py-4 px-4 lg:px-6 hover:bg-white/[0.03] transition-all duration-300"
+                    className="group flex flex-col sm:flex-row sm:items-center gap-4 lg:gap-6 py-4 px-4 lg:px-6 hover:bg-ink/[0.03] transition-all duration-300"
                   >
                     <div className="flex items-center gap-4 lg:gap-6 shrink-0 lg:min-w-[160px]">
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-[9px] font-mono text-zinc-500 tabular-nums">
+                        <span className="text-[11px] font-mono text-subtle tabular-nums">
                           {new Date(log.createdAt).toLocaleTimeString([], {
                             hour12: false,
                             hour: "2-digit",
@@ -129,10 +135,10 @@ export default function LogsPage() {
                         </span>
                         <div className="flex items-center gap-2">
                           <div
-                            className={`h-1.5 w-1.5 rounded-full ${log.success ? "bg-primary shadow-[0_0_8px_rgba(0,237,100,0.5)]" : "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"}`}
+                            className={`h-1.5 w-1.5 rounded-full ${log.success ? "bg-primary" : "bg-err"}`}
                           ></div>
                           <span
-                            className={`text-[8px] font-black uppercase tracking-widest ${log.success ? "text-primary/70" : "text-red-500/70"}`}
+                            className={`text-[11px] font-medium ${log.success ? "text-accent-fg/70" : "text-err/70"}`}
                           >
                             {log.success ? "Success" : "Error"}
                           </span>
@@ -142,11 +148,11 @@ export default function LogsPage() {
 
                     <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 lg:gap-8">
                       <div className="flex flex-col min-w-0">
-                        <code className="font-mono text-[11px] text-zinc-300 truncate group-hover:text-white transition-colors block leading-relaxed">
+                        <code className="font-mono text-[11px] text-foreground/80 truncate group-hover:text-foreground transition-colors block leading-relaxed">
                           {log.query}
                         </code>
                         {!log.success && log.errorMessage && (
-                          <span className="text-[9px] text-red-500/80 mt-1 font-mono truncate max-w-lg italic">
+                          <span className="text-[11px] text-err/80 mt-1 font-mono truncate max-w-lg italic">
                             {log.errorMessage}
                           </span>
                         )}
@@ -154,10 +160,10 @@ export default function LogsPage() {
 
                       <div className="flex items-center justify-between sm:justify-end gap-6 shrink-0">
                         <div className="flex flex-col items-end gap-1 opacity-60 sm:opacity-40 group-hover:opacity-100 transition-opacity">
-                          <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest tabular-nums">
+                          <span className="text-[11px] font-medium text-muted-foreground tabular-nums">
                             {log.executionTimeMs}ms
                           </span>
-                          <span className="text-[7px] font-medium text-zinc-600 uppercase tracking-tighter">
+                          <span className="text-[11px] font-medium text-subtle">
                             By{" "}
                             {currentUser?.id === log.userId
                               ? "You"
@@ -169,7 +175,7 @@ export default function LogsPage() {
                             navigator.clipboard.writeText(log.query);
                             toast.success("Query copied to clipboard");
                           }}
-                          className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 text-zinc-500 hover:text-white hover:bg-white/[0.05] transition-all sm:opacity-0 group-hover:opacity-100"
+                          className="p-2.5 rounded-xl bg-ink/[0.02] border border-border text-subtle hover:text-foreground hover:bg-ink/[0.05] transition-all sm:opacity-0 group-hover:opacity-100"
                           title="Copy SQL Query"
                         >
                           <Copy className="h-3.5 w-3.5" />

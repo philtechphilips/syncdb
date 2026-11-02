@@ -59,24 +59,24 @@ const CustomSelect = <T extends string | number | boolean | null>({
         type="button"
         disabled={disabled || isNull}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 text-sm font-medium text-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all disabled:opacity-30 hover:bg-white/[0.04]"
+        className="w-full bg-background border border-line-strong rounded-md px-4 py-2 text-sm text-foreground flex items-center justify-between outline-none focus:border-primary/60 transition-all disabled:opacity-30 hover:bg-ink/[0.04]"
       >
         <span
           className={
             selectedOption !== undefined && selectedOption !== null
-              ? "text-white"
-              : "text-zinc-500"
+              ? "text-foreground"
+              : "text-subtle"
           }
         >
           {displayValue}
         </span>
         <ChevronDown
-          className={`h-4 w-4 text-zinc-500 transition-transform duration-200 ${isOpen ? "rotate-180 text-primary" : ""}`}
+          className={`h-4 w-4 text-subtle transition-transform duration-200 ${isOpen ? "rotate-180 text-accent-fg" : ""}`}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full mt-2 left-0 right-0 z-[210] bg-zinc-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 py-1 max-h-60 overflow-y-auto scrollbar-hide">
+        <div className="absolute top-full mt-2 left-0 right-0 z-[210] bg-card border border-border rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 py-1 max-h-60 overflow-y-auto thin-scrollbar">
           {Array.isArray(options) &&
             options.map((opt, i) => {
               const optVal =
@@ -92,11 +92,11 @@ const CustomSelect = <T extends string | number | boolean | null>({
                     onChange(optVal);
                     setIsOpen(false);
                   }}
-                  className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-all hover:bg-white/5 flex items-center justify-between ${isSelected ? "text-primary bg-primary/5" : "text-zinc-400 hover:text-white"}`}
+                  className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-all hover:bg-ink/5 flex items-center justify-between ${isSelected ? "text-accent-fg bg-primary/5" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   {optLabel}
                   {isSelected && (
-                    <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                    <CheckCircle2 className="h-3.5 w-3.5 text-subtle" />
                   )}
                 </button>
               );

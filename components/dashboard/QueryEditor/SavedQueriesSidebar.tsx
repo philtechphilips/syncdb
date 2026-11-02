@@ -140,16 +140,16 @@ const SavedQueriesSidebar: React.FC<SavedQueriesSidebarProps> = ({
       <div key={collection.id} className="select-none">
         <div
           onClick={() => toggleFolder(collection.id)}
-          className="flex items-center gap-2 px-3 py-1.5 hover:bg-white/5 cursor-pointer rounded-md transition-colors group"
+          className="flex items-center gap-2 px-3 py-1.5 hover:bg-ink/5 cursor-pointer rounded-md transition-colors group"
           style={{ paddingLeft: `${depth * 12 + 12}px` }}
         >
           {isExpanded ? (
-            <ChevronDown size={14} className="text-zinc-500" />
+            <ChevronDown size={14} className="text-subtle" />
           ) : (
-            <ChevronRight size={14} className="text-zinc-500" />
+            <ChevronRight size={14} className="text-subtle" />
           )}
-          <Folder size={14} className="text-primary/70" />
-          <span className="text-xs font-medium text-zinc-300 flex-1 truncate">
+          <Folder size={14} className="text-accent-fg/70" />
+          <span className="text-xs font-medium text-foreground/80 flex-1 truncate">
             {collection.name}
           </span>
 
@@ -162,13 +162,13 @@ const SavedQueriesSidebar: React.FC<SavedQueriesSidebarProps> = ({
                 setNewFolderName("");
                 if (!isExpanded) toggleFolder(collection.id);
               }}
-              className="p-1 hover:bg-white/10 rounded text-zinc-500 hover:text-white"
+              className="p-1 hover:bg-ink/10 rounded text-subtle hover:text-foreground"
             >
               <Plus size={12} />
             </button>
             <button
               onClick={(e) => handleDeleteCollection(e, collection.id)}
-              className="p-1 hover:bg-white/10 rounded text-zinc-600 hover:text-red-400"
+              className="p-1 hover:bg-ink/10 rounded text-subtle hover:text-err"
             >
               <Trash2 size={12} />
             </button>
@@ -188,7 +188,10 @@ const SavedQueriesSidebar: React.FC<SavedQueriesSidebarProps> = ({
                   className="flex items-center gap-2 px-3 py-1.5"
                   style={{ paddingLeft: `${(depth + 1) * 12 + 12}px` }}
                 >
-                  <Folder size={14} className="text-primary/70 animate-pulse" />
+                  <Folder
+                    size={14}
+                    className="text-accent-fg/70 animate-pulse"
+                  />
                   <input
                     autoFocus
                     value={newFolderName}
@@ -199,7 +202,7 @@ const SavedQueriesSidebar: React.FC<SavedQueriesSidebarProps> = ({
                     }}
                     onBlur={() => submitFolder(collection.id)}
                     placeholder="Folder name..."
-                    className="bg-transparent border-none text-xs text-white outline-none w-full placeholder:text-zinc-600"
+                    className="bg-transparent border-none text-xs text-foreground outline-none w-full placeholder:text-subtle"
                   />
                 </div>
               )}
@@ -225,18 +228,20 @@ const SavedQueriesSidebar: React.FC<SavedQueriesSidebarProps> = ({
           // Also set the query name if possible
           toast.info(`Loaded: ${query.name}`);
         }}
-        className="flex items-center gap-2 px-3 py-1.5 hover:bg-white/5 cursor-pointer rounded-md transition-colors group"
+        className="flex items-center gap-2 px-3 py-1.5 hover:bg-ink/5 cursor-pointer rounded-md transition-colors group"
         style={{ paddingLeft: `${depth * 12 + 28}px` }}
       >
-        <FileText size={14} className="text-zinc-500" />
+        <FileText size={14} className="text-subtle" />
         <div className="flex flex-col flex-1 min-w-0">
-          <span className="text-xs text-zinc-400 truncate">{query.name}</span>
+          <span className="text-xs text-muted-foreground truncate">
+            {query.name}
+          </span>
           {query.tags && query.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-0.5">
               {query.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="px-1 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-[2px] text-[8px] uppercase tracking-tighter"
+                  className="px-1 py-0.5 bg-primary/10 text-accent-fg border border-primary/20 rounded-[2px] text-[11px]"
                 >
                   {tag}
                 </span>
@@ -247,7 +252,7 @@ const SavedQueriesSidebar: React.FC<SavedQueriesSidebarProps> = ({
 
         <button
           onClick={(e) => handleDeleteQuery(e, query.id)}
-          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded text-zinc-600 hover:text-red-400"
+          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-ink/10 rounded text-subtle hover:text-err"
         >
           <Trash2 size={12} />
         </button>
@@ -262,16 +267,14 @@ const SavedQueriesSidebar: React.FC<SavedQueriesSidebarProps> = ({
       initial={{ x: -300 }}
       animate={{ x: 0 }}
       exit={{ x: -300 }}
-      className="w-64 border-r border-white/5 bg-zinc-950 flex flex-col h-full z-20"
+      className="w-64 border-r border-border bg-card flex flex-col h-full z-20"
     >
-      <div className="p-4 border-bottom border-white/5 flex items-center justify-between">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
-          Collections
-        </h3>
+      <div className="p-4 border-bottom border-border flex items-center justify-between">
+        <h3 className="text-[11px] font-medium text-subtle">Collections</h3>
         <div className="flex items-center gap-2">
           <button
             onClick={handleCreateRootFolder}
-            className="p-1 px-1.5 bg-white/5 hover:bg-white/10 border border-white/5 rounded flex items-center gap-1.5 text-[9px] font-bold text-zinc-400 hover:text-white transition-all"
+            className="p-1 px-1.5 bg-ink/5 hover:bg-ink/10 border border-border rounded flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all"
           >
             <FolderPlus size={10} />
             Folder
@@ -283,14 +286,14 @@ const SavedQueriesSidebar: React.FC<SavedQueriesSidebarProps> = ({
         <div className="relative">
           <Search
             size={12}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-subtle"
           />
           <input
             type="text"
             placeholder="Search queries..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white/5 border border-white/5 rounded-md py-1.5 pl-9 pr-4 text-xs text-zinc-300 focus:outline-none focus:border-primary/50 transition-colors"
+            className="w-full bg-background border border-line-strong rounded-md py-1.5 pl-9 pr-4 text-xs text-foreground/80 outline-none focus:border-primary/60 transition-colors"
           />
         </div>
       </div>
@@ -299,7 +302,7 @@ const SavedQueriesSidebar: React.FC<SavedQueriesSidebarProps> = ({
         {isLoading && collectionTree.length === 0 ? (
           <div className="p-4 text-center">
             <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full mx-auto mb-2" />
-            <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">
+            <span className="text-[11px] text-subtle font-medium">
               Loading...
             </span>
           </div>
@@ -307,10 +310,8 @@ const SavedQueriesSidebar: React.FC<SavedQueriesSidebarProps> = ({
           <>
             {collectionTree.length === 0 && (
               <div className="p-4 text-center py-10 opacity-30">
-                <Folder size={32} className="mx-auto mb-2 text-zinc-500" />
-                <p className="text-[10px] uppercase font-bold tracking-widest">
-                  No saved queries
-                </p>
+                <Folder size={32} className="mx-auto mb-2 text-subtle" />
+                <p className="text-[11px]">No saved queries</p>
               </div>
             )}
             {isAddingRootFolder && (
@@ -318,7 +319,7 @@ const SavedQueriesSidebar: React.FC<SavedQueriesSidebarProps> = ({
                 className="flex items-center gap-2 px-3 py-1.5"
                 style={{ paddingLeft: `12px` }}
               >
-                <Folder size={14} className="text-primary/70 animate-pulse" />
+                <Folder size={14} className="text-accent-fg/70 animate-pulse" />
                 <input
                   autoFocus
                   value={newFolderName}
@@ -329,7 +330,7 @@ const SavedQueriesSidebar: React.FC<SavedQueriesSidebarProps> = ({
                   }}
                   onBlur={() => submitFolder(null)}
                   placeholder="Root folder name..."
-                  className="bg-transparent border-none text-xs text-white outline-none w-full placeholder:text-zinc-600"
+                  className="bg-transparent border-none text-xs text-foreground outline-none w-full placeholder:text-subtle"
                 />
               </div>
             )}
@@ -345,8 +346,8 @@ const SavedQueriesSidebar: React.FC<SavedQueriesSidebarProps> = ({
               );
               return matchesName || matchesTags;
             }).length > 0 && (
-              <div className="mt-4 border-t border-white/5 pt-4">
-                <h4 className="px-3 text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-2">
+              <div className="mt-4 border-t border-border pt-4">
+                <h4 className="px-3 text-[11px] font-medium text-subtle mb-2">
                   Uncategorized
                 </h4>
                 {savedQueries
@@ -368,10 +369,10 @@ const SavedQueriesSidebar: React.FC<SavedQueriesSidebarProps> = ({
         )}
       </div>
 
-      <div className="p-4 border-t border-white/5 flex items-center justify-between">
+      <div className="p-4 border-t border-border flex items-center justify-between">
         <button
           onClick={onClose}
-          className="text-[9px] font-bold text-zinc-500 hover:text-white uppercase tracking-widest"
+          className="text-[11px] font-medium text-subtle hover:text-foreground"
         >
           Close Sidebar
         </button>
