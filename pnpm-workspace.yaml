@@ -1,3 +1,11 @@
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
+
+# Security fixes for packages pinned by their parents: monaco-editor pins
+# dompurify 3.2.7 and @tailwindcss/postcss pins postcss 8.5.6, both with
+# known advisories fixed in the same major version. Drop these once the
+# parents depend on the fixed releases.
+overrides:
+  dompurify: ^3.4.17
+  postcss: ^8.5.23
