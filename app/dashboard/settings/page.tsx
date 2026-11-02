@@ -50,7 +50,7 @@ const ProfileSection = () => {
       <div className="space-y-4">
         {/* Avatar preview */}
         <div className="flex items-center gap-4">
-          <div className="h-14 w-14 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+          <div className="h-14 w-14 rounded-full bg-muted border border-border flex items-center justify-center overflow-hidden shrink-0">
             {avatar && (avatar.startsWith("http") || avatar.startsWith("/")) ? (
               <img
                 src={avatar}
@@ -58,7 +58,7 @@ const ProfileSection = () => {
                 className="h-full w-full object-cover"
               />
             ) : (
-              <div className="h-full w-full bg-linear-to-tr from-primary/40 to-primary/10 flex items-center justify-center text-sm font-black text-white">
+              <div className="h-full w-full bg-linear-to-tr from-primary/40 to-primary/10 flex items-center justify-center text-sm font-semibold text-foreground">
                 {fullName
                   ?.split(" ")
                   .map((n) => n[0])
@@ -179,7 +179,7 @@ const PasswordSection = () => {
             <button
               type="button"
               onClick={() => setShow((s) => ({ ...s, current: !s.current }))}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-subtle hover:text-muted-foreground transition-colors"
             >
               {show.current ? (
                 <EyeOff className="h-4 w-4" />
@@ -204,7 +204,7 @@ const PasswordSection = () => {
               <button
                 type="button"
                 onClick={() => setShow((s) => ({ ...s, next: !s.next }))}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-subtle hover:text-muted-foreground transition-colors"
               >
                 {show.next ? (
                   <EyeOff className="h-4 w-4" />
@@ -227,7 +227,7 @@ const PasswordSection = () => {
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-err/10 border border-err/20 text-xs text-err">
             <AlertCircle className="h-3.5 w-3.5 shrink-0" />
             {error}
           </div>
@@ -271,14 +271,14 @@ const DangerSection = () => {
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-white">Sign out</p>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-sm text-foreground">Sign out</p>
+          <p className="text-xs text-subtle mt-0.5">
             End your current session on this device
           </p>
         </div>
         <button
           onClick={logout}
-          className="flex items-center gap-2 px-5 py-2 rounded-full border border-red-500/30 text-red-400 text-sm font-semibold hover:bg-red-500/10 hover:border-red-500/50 transition-all"
+          className="flex items-center gap-2 px-5 py-2 rounded-full border border-err/30 text-err text-sm font-semibold hover:bg-err/10 hover:border-err/50 transition-all"
         >
           <LogOut className="h-3.5 w-3.5" />
           Sign Out
@@ -298,10 +298,10 @@ export default function SettingsPage() {
       <div className="max-w-2xl mx-auto px-6 py-8 space-y-5">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-xl font-bold text-white tracking-tight">
+          <h1 className="text-xl font-semibold text-foreground tracking-tight">
             Account Settings
           </h1>
-          <p className="text-sm text-zinc-500 mt-1">{user?.email}</p>
+          <p className="text-sm text-subtle mt-1">{user?.email}</p>
         </div>
 
         <ProfileSection />

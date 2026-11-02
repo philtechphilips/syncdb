@@ -42,42 +42,34 @@ const FKTablePickerModal = ({
   const [totalRows, setTotalRows] = useState(0);
   const limit = 100;
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      // Fetch columns first if not loaded
-      if (columns.length === 0) {
-        const colRes = await api.get(
-          `/v1/clusters/${clusterId}/tables/${referencedTable}/columns`,
-        );
-        setColumns(colRes.data || []);
-      }
-
-      // Fetch table data
-      const dataRes = await api.get(
-        `/v1/clusters/${clusterId}/tables/${referencedTable}`,
-        {
+  // Loading starts true and is set again by the page buttons, so the
+  // effect below only does async work.
+  const fetchData = useCallback(() => {
+    // Fetch columns first if not loaded, then the page of rows.
+    const columnsRequest =
+      columns.length === 0
+        ? api
+            .get(`/v1/clusters/${clusterId}/tables/${referencedTable}/columns`)
+            .then((colRes) => setColumns(colRes.data || []))
+        : Promise.resolve();
+    return columnsRequest
+      .then(() =>
+        api.get(`/v1/clusters/${clusterId}/tables/${referencedTable}`, {
           params: { page, limit },
-        },
-      );
-
-      // Handle paginated response format { data, total, page, limit }
-      const records = dataRes.data?.data || dataRes.data || [];
-      const total = dataRes.data?.total || records.length || 0;
-
-      setData(records);
-      setTotalRows(total);
-    } catch (error) {
-      console.error("Failed to fetch FK table data:", error);
-    } finally {
-      setIsLoading(false);
-    }
+        }),
+      )
+      .then((dataRes) => {
+        // Paginated response format { data, total, page, limit }
+        const records = dataRes.data?.data || dataRes.data || [];
+        setData(records);
+        setTotalRows(dataRes.data?.total || records.length || 0);
+      })
+      .catch((error) => console.error("Failed to fetch FK table data:", error))
+      .finally(() => setIsLoading(false));
   }, [clusterId, columns.length, page, referencedTable]);
 
   useEffect(() => {
-    if (isOpen) {
-      fetchData();
-    }
+    if (isOpen) void fetchData();
   }, [isOpen, fetchData]);
 
   const filteredData = data.filter((row) =>
@@ -93,22 +85,22 @@ const FKTablePickerModal = ({
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-zinc-950/80 backdrop-blur-md"
+        className="absolute inset-0 bg-black/25 backdrop-blur-[2px]"
         onClick={onClose}
       />
 
-      <div className="relative w-full max-w-6xl h-[85vh] bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-6xl h-[85vh] bg-card border border-border rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-ink/[0.02]">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
-              <Database className="h-5 w-5 text-primary" />
+            <div className="h-10 w-10 rounded-xl bg-bg-200 flex items-center justify-center border border-border">
+              <Database className="h-5 w-5 text-subtle" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white uppercase tracking-tight">
+              <h3 className="text-lg font-semibold text-foreground tracking-tight">
                 Select from {referencedTable}
               </h3>
-              <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">
+              <p className="text-[11px] text-subtle">
                 Target Column: {referencedColumn}
               </p>
             </div>
@@ -116,17 +108,17 @@ const FKTablePickerModal = ({
 
           <div className="flex items-center gap-4">
             <div className="relative hidden md:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-subtle" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={`Search in ${referencedTable}...`}
-                className="w-64 bg-zinc-950 border border-white/5 rounded-xl pl-10 pr-4 py-2 text-sm font-medium text-white placeholder:text-zinc-600 focus:outline-none focus:border-primary/50 transition-all"
+                className="w-64 bg-background border border-line-strong rounded-md pl-10 pr-4 py-2 text-sm text-foreground placeholder:text-subtle outline-none focus:border-primary/60 transition-all"
               />
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-white/5 text-zinc-500 hover:text-white transition-all"
+              className="p-2 rounded-lg hover:bg-ink/5 text-subtle hover:text-foreground transition-all"
             >
               <X className="h-6 w-6" />
             </button>
@@ -136,32 +128,32 @@ const FKTablePickerModal = ({
         {/* Content */}
         <div className="flex-1 overflow-hidden relative flex flex-col">
           {isLoading ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-zinc-900/50 backdrop-blur-sm z-10">
-              <Loader2 className="h-8 w-8 text-primary animate-spin" />
-              <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background/50 backdrop-blur-[2px] z-10">
+              <Loader2 className="h-8 w-8 text-accent-fg animate-spin" />
+              <span className="text-xs font-medium text-subtle">
                 Loading Records...
               </span>
             </div>
           ) : null}
 
-          <div className="flex-1 overflow-auto scrollbar-hide">
+          <div className="flex-1 overflow-auto thin-scrollbar">
             <table className="w-full text-left border-collapse min-w-max">
-              <thead className="sticky top-0 z-20 bg-zinc-900/90 backdrop-blur-md shadow-sm">
+              <thead className="sticky top-0 z-20 bg-card/95 backdrop-blur-md shadow-sm">
                 <tr>
-                  <th className="px-6 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest border-b border-white/5">
+                  <th className="px-6 py-4 text-[11px] font-medium text-subtle border-b border-border">
                     Selection
                   </th>
                   {columns.map((col) => (
                     <th
                       key={col.name}
-                      className="px-6 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest border-b border-white/5"
+                      className="px-6 py-4 text-[11px] font-medium text-subtle border-b border-border"
                     >
                       {col.name}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.02]">
+              <tbody className="divide-y divide-border">
                 {filteredData.map((row, i) => {
                   const isSelected =
                     row[referencedColumn] === (selectedValue as unknown);
@@ -177,11 +169,11 @@ const FKTablePickerModal = ({
                             | null,
                         )
                       }
-                      className={`group cursor-pointer transition-colors ${isSelected ? "bg-primary/10 hover:bg-primary/20" : "hover:bg-white/[0.03]"}`}
+                      className={`group cursor-pointer transition-colors ${isSelected ? "bg-primary/10 hover:bg-primary/20" : "hover:bg-ink/[0.03]"}`}
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div
-                          className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? "bg-primary border-primary" : "border-white/10 group-hover:border-white/30"}`}
+                          className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? "bg-primary border-primary" : "border-border group-hover:border-line-strong"}`}
                         >
                           {isSelected && (
                             <Check className="h-3 w-3 text-primary-foreground stroke-[4]" />
@@ -194,10 +186,10 @@ const FKTablePickerModal = ({
                           className="px-6 py-4 whitespace-nowrap"
                         >
                           <span
-                            className={`text-sm font-medium ${isSelected ? "text-white" : "text-zinc-400 group-hover:text-zinc-200"}`}
+                            className={`text-sm font-medium ${isSelected ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"}`}
                           >
                             {row[col.name] === null ? (
-                              <span className="text-[10px] font-black text-zinc-700 uppercase italic">
+                              <span className="text-[11px] font-medium text-subtle/70 italic">
                                 NULL
                               </span>
                             ) : (
@@ -214,12 +206,12 @@ const FKTablePickerModal = ({
 
             {filteredData.length === 0 && !isLoading && (
               <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Search className="h-12 w-12 text-zinc-800" />
+                <Search className="h-12 w-12 text-subtle/50" />
                 <div className="text-center">
-                  <p className="text-sm font-medium text-zinc-400">
+                  <p className="text-sm text-muted-foreground">
                     No records found matching your search
                   </p>
-                  <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mt-1">
+                  <p className="text-[11px] text-subtle mt-1">
                     Try adjusting your filters
                   </p>
                 </div>
@@ -229,8 +221,8 @@ const FKTablePickerModal = ({
         </div>
 
         {/* Footer / Pagination */}
-        <div className="px-6 py-4 border-t border-white/5 bg-white/[0.01] flex items-center justify-between">
-          <p className="text-[10px] text-zinc-600 font-black uppercase tracking-widest">
+        <div className="px-6 py-4 border-t border-border bg-ink/[0.01] flex items-center justify-between">
+          <p className="text-[11px] text-subtle">
             Showing page {page} of {Math.ceil(totalRows / limit) || 1} (
             {totalRows} records)
           </p>
@@ -242,14 +234,17 @@ const FKTablePickerModal = ({
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                setIsLoading(true);
                 setPage(page - 1);
               }}
-              className="p-2 rounded-lg bg-white/5 border border-white/5 text-zinc-400 hover:text-white hover:bg-white/10 disabled:opacity-20 transition-all font-black"
+              className="p-2 rounded-lg bg-ink/5 border border-border text-muted-foreground hover:text-foreground hover:bg-ink/10 disabled:opacity-20 transition-all font-semibold"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/5 min-w-[40px] text-center">
-              <span className="text-xs font-bold text-white">{page}</span>
+            <div className="px-4 py-2 bg-ink/5 rounded-lg border border-border min-w-[40px] text-center">
+              <span className="text-xs font-medium text-foreground">
+                {page}
+              </span>
             </div>
             <button
               type="button"
@@ -257,9 +252,10 @@ const FKTablePickerModal = ({
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                setIsLoading(true);
                 setPage(page + 1);
               }}
-              className="p-2 rounded-lg bg-white/5 border border-white/5 text-zinc-400 hover:text-white hover:bg-white/10 disabled:opacity-20 transition-all"
+              className="p-2 rounded-lg bg-ink/5 border border-border text-muted-foreground hover:text-foreground hover:bg-ink/10 disabled:opacity-20 transition-all"
             >
               <ChevronRight className="h-4 w-4" />
             </button>

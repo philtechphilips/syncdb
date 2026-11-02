@@ -2,6 +2,31 @@
 import React from "react";
 import { motion } from "framer-motion";
 
+/** Text logotype used in the UI. The chevron mark below is for icons and small spaces. */
+export function Logotype({
+  className = "text-[17px]",
+}: {
+  className?: string;
+}) {
+  return (
+    <span
+      role="img"
+      aria-label="SynqDB"
+      className={`inline-flex items-center leading-none whitespace-nowrap uppercase select-none text-foreground ${className}`}
+    >
+      <span aria-hidden="true" className="font-semibold tracking-[-0.055em]">
+        Synq
+      </span>
+      <span
+        aria-hidden="true"
+        className="ml-[0.08em] font-light tracking-[0.02em]"
+      >
+        DB
+      </span>
+    </span>
+  );
+}
+
 export const SynqLogo = ({
   className = "h-8 w-8",
   animate = true,

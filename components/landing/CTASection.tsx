@@ -21,12 +21,9 @@ export const CTASection = ({ onLaunch }: { onLaunch: () => void }) => {
   return (
     <section className="py-8 px-6 bg-background relative overflow-hidden">
       <div className="max-w-7xl mx-auto">
-        <div className="relative rounded-3xl overflow-hidden border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/[0.04] to-transparent px-8 md:px-16 py-20 text-center">
+        <div className="relative rounded-xl overflow-hidden border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/[0.04] to-transparent px-8 md:px-16 py-20 text-center">
           {/* Background glows */}
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary/10 blur-[80px] rounded-full" />
-            <div className="absolute bottom-0 right-1/4 w-[300px] h-[200px] bg-primary/8 blur-[60px] rounded-full" />
-          </div>
+          <div className="absolute inset-0 pointer-events-none"></div>
 
           {/* Grid overlay */}
           <div className="absolute inset-0 tech-grid opacity-[0.04] pointer-events-none" />
@@ -42,9 +39,9 @@ export const CTASection = ({ onLaunch }: { onLaunch: () => void }) => {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
-              className="h-14 w-14 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center mb-8"
+              className="h-14 w-14 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center mb-8"
             >
-              <Database className="h-6 w-6 text-primary" />
+              <Database className="h-6 w-6 text-subtle" />
             </motion.div>
 
             {/* Headline */}
@@ -54,11 +51,11 @@ export const CTASection = ({ onLaunch }: { onLaunch: () => void }) => {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
-              className="text-4xl md:text-6xl font-serif text-white leading-[1.1] tracking-tighter mb-6"
+              className="text-4xl md:text-6xl text-foreground leading-[1.1] tracking-tight mb-6 font-semibold"
             >
               Your databases.
               <br />
-              <span className="text-primary italic">One workspace.</span>
+              <span className="text-accent-fg">One workspace.</span>
             </motion.h2>
 
             {/* Subtext */}
@@ -68,7 +65,7 @@ export const CTASection = ({ onLaunch }: { onLaunch: () => void }) => {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
-              className="text-lg text-zinc-400 font-medium max-w-lg leading-relaxed mb-10"
+              className="text-lg text-muted-foreground font-medium max-w-lg leading-relaxed mb-10"
             >
               Stop juggling tools. SynqDB brings PostgreSQL, MySQL, MSSQL, and
               SQLite into a single, fast, developer-first workspace.
@@ -85,12 +82,12 @@ export const CTASection = ({ onLaunch }: { onLaunch: () => void }) => {
             >
               <button
                 onClick={onLaunch}
-                className="group flex items-center gap-2 px-8 py-4 rounded-full bg-primary text-white font-semibold text-sm transition-all hover:bg-primary/90 hover:scale-105 active:scale-95 shadow-xl shadow-primary/25 w-full sm:w-auto justify-center"
+                className="group flex items-center gap-2 px-8 py-4 rounded-full bg-primary text-white font-medium text-sm transition-all hover:bg-primary-hover shadow-[0_1px_2px_rgb(67_56_202/0.25)] w-full sm:w-auto justify-center"
               >
                 Start for free — no card needed
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
               </button>
-              <button className="px-8 py-4 rounded-full border border-white/15 text-white text-sm font-medium hover:bg-white/[0.05] hover:border-white/25 transition-all w-full sm:w-auto">
+              <button className="px-8 py-4 rounded-full border border-line-strong text-foreground text-sm font-medium hover:bg-ink/[0.05] hover:border-line-strong transition-all w-full sm:w-auto">
                 Talk to sales
               </button>
             </motion.div>
@@ -112,7 +109,7 @@ export const CTASection = ({ onLaunch }: { onLaunch: () => void }) => {
               ].map((e) => (
                 <span
                   key={e.name}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/8 bg-white/[0.03] text-[10px] font-bold text-zinc-400 uppercase tracking-widest"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-ink/[0.03] text-[11px] font-medium text-muted-foreground"
                 >
                   <span
                     className="h-1.5 w-1.5 rounded-full"

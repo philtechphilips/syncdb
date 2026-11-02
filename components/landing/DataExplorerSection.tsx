@@ -71,12 +71,12 @@ const CHIPS = [
 ];
 
 const STATUS_CLS: Record<string, string> = {
-  active: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
-  inactive: "bg-zinc-500/10 border-zinc-600/20 text-zinc-500",
+  active: "bg-ok/10 border-ok/20 text-ok",
+  inactive: "bg-ink/[0.05] border-border text-subtle",
 };
 const PLAN_CLS: Record<string, string> = {
-  Pro: "bg-primary/10 border-primary/20 text-primary",
-  Community: "bg-white/5 border-white/10 text-zinc-500",
+  Pro: "bg-primary/10 border-primary/20 text-accent-fg",
+  Community: "bg-ink/5 border-border text-subtle",
 };
 
 // ── Table mockup ─────────────────────────────────────────────────────────────
@@ -95,12 +95,12 @@ const DataTableMockup = () => {
   };
 
   return (
-    <div className="rounded-2xl border border-white/8 bg-[#061018] overflow-hidden">
+    <div className="rounded-xl border border-border bg-background overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 bg-[#040c14] flex-wrap">
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/8 w-36 shrink-0">
-          <Search className="h-3 w-3 text-zinc-600" />
-          <span className="text-[10px] font-mono text-zinc-600">Search…</span>
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-background flex-wrap">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ink/[0.03] border border-border w-36 shrink-0">
+          <Search className="h-3 w-3 text-subtle" />
+          <span className="text-[11px] font-mono text-subtle">Search…</span>
         </div>
 
         <div className="flex items-center gap-1.5 flex-wrap flex-1">
@@ -111,16 +111,16 @@ const DataTableMockup = () => {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary/8 border border-primary/18 text-[9px] font-mono whitespace-nowrap"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary/8 border border-primary/18 text-[11px] font-mono whitespace-nowrap"
               >
-                <span className="text-zinc-400">{c.field}</span>
-                <span className="text-primary/60 mx-0.5">{c.op}</span>
-                <span className="text-white">&quot;{c.value}&quot;</span>
+                <span className="text-muted-foreground">{c.field}</span>
+                <span className="text-accent-fg/60 mx-0.5">{c.op}</span>
+                <span className="text-foreground">&quot;{c.value}&quot;</span>
                 <button
                   onClick={() =>
                     setChips((prev) => prev.filter((_, j) => j !== i))
                   }
-                  className="ml-0.5 text-zinc-600 hover:text-zinc-300 transition-colors"
+                  className="ml-0.5 text-subtle hover:text-foreground transition-colors"
                 >
                   <X className="h-2.5 w-2.5" />
                 </button>
@@ -132,12 +132,12 @@ const DataTableMockup = () => {
         <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={() => setChips(CHIPS)}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-white/8 text-[9px] font-bold uppercase tracking-widest text-zinc-500 hover:text-white hover:border-white/15 transition-colors"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border text-[11px] font-medium text-subtle hover:text-foreground hover:border-line-strong transition-colors"
           >
             <SlidersHorizontal className="h-3 w-3" />
             Filter
           </button>
-          <button className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-white/8 text-[9px] font-bold uppercase tracking-widest text-zinc-500 hover:text-white hover:border-white/15 transition-colors">
+          <button className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border text-[11px] font-medium text-subtle hover:text-foreground hover:border-line-strong transition-colors">
             <Download className="h-3 w-3" />
             Export
           </button>
@@ -148,7 +148,7 @@ const DataTableMockup = () => {
       <div className="overflow-x-auto">
         <table className="w-full text-xs min-w-[560px]">
           <thead>
-            <tr className="border-b border-white/5">
+            <tr className="border-b border-border">
               {COLUMNS.map((col, i) => (
                 <th
                   key={col.key}
@@ -157,18 +157,18 @@ const DataTableMockup = () => {
                 >
                   <div className="flex items-center gap-1">
                     <span
-                      className={`text-[9px] font-black uppercase tracking-[0.3em] transition-colors ${sortCol === i ? "text-white" : "text-zinc-600 group-hover:text-zinc-400"}`}
+                      className={`text-[11px] font-medium transition-colors ${sortCol === i ? "text-foreground" : "text-subtle group-hover:text-muted-foreground"}`}
                     >
                       {col.label}
                     </span>
                     {sortCol === i ? (
                       sortDir === "asc" ? (
-                        <ChevronUp className="h-3 w-3 text-primary" />
+                        <ChevronUp className="h-3 w-3 text-subtle" />
                       ) : (
-                        <ChevronDown className="h-3 w-3 text-primary" />
+                        <ChevronDown className="h-3 w-3 text-subtle" />
                       )
                     ) : (
-                      <ChevronDown className="h-3 w-3 text-zinc-700 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ChevronDown className="h-3 w-3 text-subtle/70 opacity-0 group-hover:opacity-100 transition-opacity" />
                     )}
                   </div>
                 </th>
@@ -183,32 +183,32 @@ const DataTableMockup = () => {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.05 }}
-                className="border-b border-white/[0.03] hover:bg-primary/[0.025] transition-colors cursor-default"
+                className="border-b border-border hover:bg-primary/[0.025] transition-colors cursor-default"
               >
-                <td className="px-4 py-2.5 font-medium text-white whitespace-nowrap">
+                <td className="px-4 py-2.5 font-medium text-foreground whitespace-nowrap">
                   {row.name}
                 </td>
-                <td className="px-4 py-2.5 text-zinc-500 font-mono text-[10px] whitespace-nowrap">
+                <td className="px-4 py-2.5 text-subtle font-mono text-[11px] whitespace-nowrap">
                   {row.email}
                 </td>
                 <td className="px-4 py-2.5">
                   <span
-                    className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${STATUS_CLS[row.status]}`}
+                    className={`px-2 py-0.5 rounded-full text-[11px] font-medium border ${STATUS_CLS[row.status]}`}
                   >
                     {row.status}
                   </span>
                 </td>
                 <td className="px-4 py-2.5">
                   <span
-                    className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${PLAN_CLS[row.plan]}`}
+                    className={`px-2 py-0.5 rounded-full text-[11px] font-medium border ${PLAN_CLS[row.plan]}`}
                   >
                     {row.plan}
                   </span>
                 </td>
-                <td className="px-4 py-2.5 font-mono text-zinc-400 whitespace-nowrap">
+                <td className="px-4 py-2.5 font-mono text-muted-foreground whitespace-nowrap">
                   {row.arr}
                 </td>
-                <td className="px-4 py-2.5 text-zinc-600 font-mono text-[10px] whitespace-nowrap">
+                <td className="px-4 py-2.5 text-subtle font-mono text-[11px] whitespace-nowrap">
                   {row.joined}
                 </td>
               </motion.tr>
@@ -218,13 +218,13 @@ const DataTableMockup = () => {
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-t border-white/5 bg-[#040c14]">
+      <div className="flex items-center justify-between px-4 py-2.5 border-t border-border bg-background">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
-            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            <span className="text-[9px] font-mono text-zinc-500">
-              <span className="text-white">5</span> of{" "}
-              <span className="text-white">2,847</span> rows · 14ms
+            <div className="h-1.5 w-1.5 rounded-full bg-ok" />
+            <span className="text-[11px] font-mono text-subtle">
+              <span className="text-foreground">5</span> of{" "}
+              <span className="text-foreground">2,847</span> rows · 14ms
             </span>
           </div>
         </div>
@@ -232,12 +232,12 @@ const DataTableMockup = () => {
           {[1, 2, 3].map((p) => (
             <div
               key={p}
-              className={`h-5 w-5 rounded flex items-center justify-center text-[9px] font-bold cursor-pointer transition-colors ${p === 1 ? "bg-primary/15 border border-primary/25 text-primary" : "text-zinc-600 hover:text-zinc-300"}`}
+              className={`h-5 w-5 rounded flex items-center justify-center text-[11px] font-medium cursor-pointer transition-colors ${p === 1 ? "bg-primary/15 border border-primary/25 text-accent-fg" : "text-subtle hover:text-foreground"}`}
             >
               {p}
             </div>
           ))}
-          <span className="text-zinc-700 text-[9px] ml-1">…</span>
+          <span className="text-subtle/70 text-[11px] ml-1">…</span>
         </div>
       </div>
     </div>
@@ -248,8 +248,6 @@ const DataTableMockup = () => {
 
 export const DataExplorerSection = () => (
   <section className="py-32 bg-background relative overflow-hidden">
-    <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[500px] h-[500px] bg-primary/[0.04] blur-[120px] rounded-full pointer-events-none" />
-
     <div className="max-w-7xl mx-auto px-6 relative z-10">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
         {/* Visual */}
@@ -263,7 +261,7 @@ export const DataExplorerSection = () => (
           }}
           className="lg:col-span-7 order-2 lg:order-1"
         >
-          <div className="rounded-2xl p-[1px] bg-gradient-to-b from-white/10 via-white/[0.04] to-transparent">
+          <div className="rounded-xl p-[1px] bg-gradient-to-b from-ink/10 via-ink/[0.04] to-transparent">
             <DataTableMockup />
           </div>
         </motion.div>
@@ -276,15 +274,15 @@ export const DataExplorerSection = () => (
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <span className="text-primary text-[10px] font-black tracking-[0.4em] uppercase block mb-3">
+            <span className="text-accent-fg text-[11px] font-medium block mb-3">
               Data Explorer
             </span>
-            <h2 className="text-5xl md:text-6xl font-serif text-white leading-[1.1] tracking-tighter">
+            <h2 className="text-5xl md:text-6xl text-foreground leading-[1.1] tracking-tight font-semibold">
               Inspect.
               <br />
-              <span className="text-primary italic">Without limits.</span>
+              <span className="text-accent-fg">Without limits.</span>
             </h2>
-            <p className="text-lg text-zinc-500 font-medium leading-relaxed mt-6">
+            <p className="text-lg text-subtle leading-relaxed mt-6">
               Go beyond query results. The Data Explorer gives you a live,
               filterable, sortable view of any table — with no SQL required.
               Click the filter chips above to see it in action.
@@ -306,10 +304,10 @@ export const DataExplorerSection = () => (
             ].map((item) => (
               <div
                 key={item.label}
-                className="p-4 rounded-xl border border-white/[0.06] bg-white/[0.02] space-y-1"
+                className="p-4 rounded-xl border border-border bg-ink/[0.02] space-y-1"
               >
-                <div className="text-xl font-serif text-white">{item.stat}</div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">
+                <div className="text-xl text-foreground">{item.stat}</div>
+                <div className="text-[11px] font-medium text-subtle">
                   {item.label}
                 </div>
               </div>

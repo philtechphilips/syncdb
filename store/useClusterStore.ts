@@ -3,6 +3,11 @@ import { persist } from "zustand/middleware";
 import api from "@/lib/api";
 import { getErrorMessage } from "@/lib/errorUtils";
 
+/** One query result: its rows, or a summary for statements that change data. */
+export type QueryResultSet =
+  | Record<string, unknown>[]
+  | { affectedRows?: number; rowCount?: number };
+
 export interface Cluster {
   id: string;
   name: string;
@@ -10,6 +15,9 @@ export interface Cluster {
   environment: "development" | "staging" | "production";
   color?: string;
   isLocal?: boolean;
+  sslMode?: "disable" | "prefer" | "require" | "verify";
+  /** Connection saved on the local agent; credentials live only there. */
+  agentConnection?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -63,10 +71,11 @@ interface ClusterState {
     tableName: string,
     where: Record<string, unknown>,
   ) => Promise<void>;
+  /** Deletes rows identified by `wheres` (e.g. lib/cellValue whereForRow). */
   deleteRowsBulk: (
     clusterId: string,
     tableName: string,
-    rows: Record<string, unknown>[],
+    wheres: Record<string, unknown>[],
   ) => Promise<void>;
   selectCluster: (cluster: Cluster | null) => void;
   createCluster: (data: Record<string, unknown>) => Promise<Cluster>;
@@ -87,7 +96,11 @@ interface ClusterState {
     query: string,
     page?: number,
     limit?: number,
-  ) => Promise<{ results: any[]; totals: number[]; executionTimeMs: number }>;
+  ) => Promise<{
+    results: QueryResultSet[];
+    totals: number[];
+    executionTimeMs: number;
+  }>;
   fetchQueryLogs: (clusterId: string) => Promise<unknown[]>;
   dropTable: (clusterId: string, tableName: string) => Promise<void>;
   backup: (
@@ -260,7 +273,9 @@ export const useClusterStore = create<ClusterState>()(
           const updatedTableData = tableData.map((row) => {
             // Simple match logic, assuming where is {id: val} or multiple keys
             const match = Object.keys(where).every(
-              (key) => row[key] === where[key],
+              (key) =>
+                JSON.stringify(row[key] ?? null) ===
+                JSON.stringify(where[key] ?? null),
             );
             return match ? { ...row, ...data } : row;
           });
@@ -301,7 +316,9 @@ export const useClusterStore = create<ClusterState>()(
           const { tableData } = get();
           const filteredData = tableData.filter((row) => {
             const match = Object.keys(where).every(
-              (key) => row[key] === where[key],
+              (key) =>
+                JSON.stringify(row[key] ?? null) ===
+                JSON.stringify(where[key] ?? null),
             );
             return !match;
           });
@@ -320,30 +337,31 @@ export const useClusterStore = create<ClusterState>()(
       deleteRowsBulk: async (
         clusterId: string,
         tableName: string,
-        selectedRows: Record<string, unknown>[],
+        wheres: Record<string, unknown>[],
       ) => {
-        if (selectedRows.length === 0) return;
+        if (wheres.length === 0) return;
         set({ isDataLoading: true, error: null });
         try {
-          // Send all deletes in parallel
-          // In a real production app, we would have a dedicated bulk DELETE endpoint
-          await Promise.all(
-            selectedRows.map((row: Record<string, unknown>) =>
-              api.delete(`/v1/clusters/${clusterId}/tables/${tableName}/rows`, {
-                data: { where: { id: row.id } },
-              }),
-            ),
+          // One request, one transaction: all rows are deleted or none.
+          const res = await api.delete(
+            `/v1/clusters/${clusterId}/tables/${encodeURIComponent(tableName)}/rows`,
+            { data: { wheres } },
           );
-
-          const idsToDelete = selectedRows.map((r) => r.id);
           const { tableData } = get();
-          const filteredData = tableData.filter(
-            (row) => !idsToDelete.includes(row.id),
-          );
-
+          const matches = (row: Record<string, unknown>) =>
+            wheres.some((w) =>
+              Object.keys(w).every(
+                (k) =>
+                  JSON.stringify(row[k] ?? null) ===
+                  JSON.stringify(w[k] ?? null),
+              ),
+            );
           set((state) => ({
-            tableData: filteredData,
-            totalRows: Math.max(0, state.totalRows - idsToDelete.length),
+            tableData: tableData.filter((row) => !matches(row)),
+            totalRows: Math.max(
+              0,
+              state.totalRows - (res.data?.affectedRows ?? wheres.length),
+            ),
             isDataLoading: false,
           }));
         } catch (error) {
@@ -415,7 +433,7 @@ export const useClusterStore = create<ClusterState>()(
         try {
           const response = await api.post("/v1/clusters/test", data, {
             _skipToast: true,
-          } as any);
+          });
           set({ isLoading: false });
           return response.data;
         } catch (error: unknown) {
@@ -468,7 +486,7 @@ export const useClusterStore = create<ClusterState>()(
               page,
               limit,
             },
-            { _skipToast: true } as any,
+            { _skipToast: true },
           );
           return response.data;
         } catch (error: unknown) {
@@ -514,7 +532,7 @@ export const useClusterStore = create<ClusterState>()(
           const response = await api.get(`/v1/clusters/${clusterId}/backup`, {
             params: { format },
             _skipToast: true,
-          } as any);
+          });
           set({ isDataLoading: false });
           return response.data;
         } catch (error: unknown) {
@@ -534,7 +552,7 @@ export const useClusterStore = create<ClusterState>()(
           await api.post(
             `/v1/clusters/${clusterId}/restore`,
             { format, data },
-            { _skipToast: true } as any,
+            { _skipToast: true },
           );
           await get().fetchTables(clusterId);
           set({ isDataLoading: false });

@@ -3,18 +3,9 @@ import { X, ArrowUpDown, Plus, FileMinus, Loader2 } from "lucide-react";
 import CustomSelect from "@/components/ui/CustomSelect";
 import CustomDatePicker from "@/components/ui/CustomDatePicker";
 import CustomFKSelect from "@/components/ui/CustomFKSelect";
+import { kindOf, TableColumn, toBoolean } from "@/lib/cellValue";
 
-export interface TableColumn {
-  name: string;
-  type: string;
-  nullable: string;
-  columnKey: string;
-  defaultValue: string | null;
-  fullType?: string;
-  enumValues?: string;
-  referencedTable?: string;
-  referencedColumn?: string;
-}
+export type { TableColumn } from "@/lib/cellValue";
 
 interface DataRowModalProps {
   isOpen: boolean;
@@ -24,9 +15,10 @@ interface DataRowModalProps {
   isSaving: boolean;
   selectedTable: string;
   tableColumns: TableColumn[];
-  formData: Record<string, unknown>;
+  /** Editor text per column (see lib/cellValue toEditText/fromEditText). */
+  formData: Record<string, string>;
   nullFields: Set<string>;
-  onInputChange: (col: string, val: unknown) => void;
+  onInputChange: (col: string, val: string) => void;
   onToggleNull: (col: string) => void;
   selectedClusterId?: string;
 }
@@ -48,38 +40,38 @@ const DataRowModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-end bg-muted/40 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="w-full max-w-xl h-full bg-[#021016] border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-500 ease-out">
-        <div className="px-8 py-6 border-b border-border/50 flex items-center justify-between bg-white/[0.01]">
+    <div className="fixed inset-0 z-[200] flex items-center justify-end bg-muted/40 backdrop-blur-[2px] animate-in fade-in duration-300">
+      <div className="w-full max-w-xl h-full bg-background border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-500 ease-out">
+        <div className="px-8 py-6 border-b border-border flex items-center justify-between bg-ink/[0.01]">
           <div>
-            <h3 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-3">
+            <h3 className="text-lg font-semibold text-foreground flex items-center gap-3">
               {isEditMode ? (
-                <ArrowUpDown className="h-5 w-5 text-primary rotate-45" />
+                <ArrowUpDown className="h-5 w-5 text-accent-fg rotate-45" />
               ) : (
-                <Plus className="h-5 w-5 text-primary" />
+                <Plus className="h-5 w-5 text-subtle" />
               )}
               {isEditMode ? "Update Row" : "Insert New Row"}
             </h3>
-            <p className="text-[10px] text-muted-foreground font-bold tracking-widest mt-1">
+            <p className="text-[11px] text-muted-foreground mt-1">
               {isEditMode ? "Modifying existing data in " : "Adding to "}
-              <span className="text-white">{selectedTable}</span>
+              <span className="text-foreground">{selectedTable}</span>
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2.5 hover:bg-white/5 rounded-xl text-muted-foreground hover:text-white transition-all group"
+            className="p-2.5 hover:bg-ink/5 rounded-xl text-muted-foreground hover:text-foreground transition-all group"
           >
             <X className="h-5 w-5 group-hover:rotate-90 transition-transform duration-300" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-8 py-8 space-y-8 scrollbar-hide">
+        <div className="flex-1 overflow-y-auto px-8 py-8 space-y-8 thin-scrollbar">
           {tableColumns.length === 0 ? (
             <div className="space-y-4">
               {[1, 2, 3, 4, 5].map((i) => (
                 <div
                   key={i}
-                  className="h-16 bg-white/[0.02] rounded-xl animate-pulse"
+                  className="h-16 bg-ink/[0.02] rounded-xl animate-pulse"
                 ></div>
               ))}
             </div>
@@ -94,20 +86,15 @@ const DataRowModal = ({
             >
               {tableColumns.map((col) => {
                 const isNull = nullFields.has(col.name);
-                const isDisabled =
-                  (col.columnKey === "PRI" &&
-                    col.defaultValue?.includes("nextval")) ||
-                  col.name === "id";
+                const kind = kindOf(col);
+                const isDisabled = !!col.isAutoIncrement || !!col.isGenerated;
+                const text = formData[col.name] ?? "";
                 const lowerType = col.type.toLowerCase();
 
-                const isBoolean =
-                  lowerType === "boolean" ||
-                  lowerType === "bool" ||
-                  (lowerType === "tinyint" && col.fullType?.includes("(1)"));
-                const isDateTime =
-                  lowerType.includes("timestamp") ||
-                  lowerType.includes("datetime");
-                const isDate = lowerType === "date" && !isDateTime;
+                const isBoolean = kind === "boolean";
+                const isDateTime = kind === "datetime" || kind === "datetimetz";
+                const isDate = kind === "date";
+                const isJson = kind === "json" || kind === "array";
 
                 let enumOptions: string[] | null = null;
                 if (lowerType === "enum" && col.fullType) {
@@ -123,10 +110,10 @@ const DataRowModal = ({
                 return (
                   <div key={col.name} className="space-y-2 group">
                     <div className="flex items-center justify-between">
-                      <label className="text-[10px] font-black text-zinc-400 tracking-widest flex items-center gap-2 group-focus-within:text-primary transition-colors">
+                      <label className="text-[11px] font-medium text-muted-foreground flex items-center gap-2 group-focus-within:text-accent-fg transition-colors">
                         {col.name}
                         {col.nullable === "NO" && col.columnKey !== "PRI" && (
-                          <span className="text-red-500">*</span>
+                          <span className="text-err">*</span>
                         )}
                       </label>
                       <div className="flex items-center gap-2">
@@ -134,15 +121,15 @@ const DataRowModal = ({
                           <button
                             type="button"
                             onClick={() => onToggleNull(col.name)}
-                            className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-widest transition-all ${isNull ? "bg-amber-500/20 text-amber-500 border border-amber-500/30" : "bg-white/5 text-muted-foreground border border-transparent hover:bg-white/10 hover:text-zinc-300"}`}
+                            className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium transition-all ${isNull ? "bg-warn/20 text-warn border border-warn/30" : "bg-ink/5 text-muted-foreground border border-transparent hover:bg-ink/10 hover:text-foreground"}`}
                           >
                             <FileMinus
-                              className={`h-2.5 w-2.5 ${isNull ? "text-amber-500" : "text-zinc-600"}`}
+                              className={`h-2.5 w-2.5 ${isNull ? "text-warn" : "text-subtle"}`}
                             />
                             {isNull ? "NULL SET" : "SET NULL"}
                           </button>
                         )}
-                        <span className="text-[8px] font-black text-zinc-600 tracking-tighter bg-white/5 px-1.5 py-0.5 rounded">
+                        <span className="text-[11px] font-medium text-subtle bg-ink/5 px-1.5 py-0.5 rounded">
                           {col.type}
                         </span>
                       </div>
@@ -153,16 +140,13 @@ const DataRowModal = ({
                     >
                       {col.referencedTable && col.referencedColumn ? (
                         <CustomFKSelect
-                          value={
-                            isNull
-                              ? "NULL"
-                              : ((formData[col.name] as
-                                  | string
-                                  | number
-                                  | boolean
-                                  | null) ?? "")
+                          value={isNull ? "NULL" : text}
+                          onChange={(val) =>
+                            onInputChange(
+                              col.name,
+                              val == null ? "" : String(val),
+                            )
                           }
-                          onChange={(val) => onInputChange(col.name, val)}
                           referencedTable={col.referencedTable}
                           referencedColumn={col.referencedColumn}
                           clusterId={selectedClusterId || ""}
@@ -170,39 +154,37 @@ const DataRowModal = ({
                           isNull={isNull}
                         />
                       ) : isBoolean ? (
-                        <CustomSelect
+                        <CustomSelect<string>
                           value={
                             isNull
                               ? "NULL"
-                              : ((formData[col.name] as
-                                  | string
-                                  | number
-                                  | boolean
-                                  | null) ?? true)
+                              : toBoolean(text) === null
+                                ? ""
+                                : String(toBoolean(text))
                           }
-                          onChange={(val) => onInputChange(col.name, val)}
+                          onChange={(val) =>
+                            val === "NULL"
+                              ? onToggleNull(col.name)
+                              : onInputChange(col.name, val)
+                          }
                           options={[
                             ...(col.nullable === "YES"
                               ? [{ label: "NULL (Unset)", value: "NULL" }]
                               : []),
-                            { label: "True", value: true },
-                            { label: "False", value: false },
+                            { label: "True", value: "true" },
+                            { label: "False", value: "false" },
                           ]}
                           placeholder={`Set ${col.name}...`}
                           disabled={isDisabled}
                         />
                       ) : enumOptions ? (
-                        <CustomSelect
-                          value={
-                            isNull
-                              ? "NULL"
-                              : ((formData[col.name] as
-                                  | string
-                                  | number
-                                  | boolean
-                                  | null) ?? "")
+                        <CustomSelect<string>
+                          value={isNull ? "NULL" : text}
+                          onChange={(val) =>
+                            val === "NULL"
+                              ? onToggleNull(col.name)
+                              : onInputChange(col.name, val)
                           }
-                          onChange={(val) => onInputChange(col.name, val)}
                           options={[
                             ...(col.nullable === "YES"
                               ? [{ label: "NULL (Unset)", value: "NULL" }]
@@ -217,67 +199,81 @@ const DataRowModal = ({
                         />
                       ) : isDate || isDateTime ? (
                         <CustomDatePicker
-                          value={
-                            isNull ? "" : ((formData[col.name] as string) ?? "")
-                          }
+                          value={isNull ? "" : text}
                           onChange={(val) => onInputChange(col.name, val)}
                           isDateTime={isDateTime}
                           disabled={isDisabled}
                           isNull={isNull}
+                        />
+                      ) : isJson && !isNull ? (
+                        <textarea
+                          name={col.name}
+                          rows={6}
+                          spellCheck={false}
+                          value={text}
+                          placeholder={
+                            kind === "array" ? '["a", "b"]' : '{"key": "value"}'
+                          }
+                          onChange={(e) =>
+                            onInputChange(col.name, e.target.value)
+                          }
+                          disabled={isDisabled}
+                          className="w-full border rounded-md px-4 py-2 text-xs font-mono bg-background border-line-strong text-foreground placeholder:text-subtle outline-none focus:border-primary/60 resize-y"
                         />
                       ) : (
                         <div className="relative group/input">
                           <input
                             name={col.name}
                             type={
-                              isNull
-                                ? "text"
-                                : lowerType.includes("int") ||
-                                    lowerType === "decimal"
-                                  ? "number"
-                                  : "text"
+                              !isNull &&
+                              (kind === "integer" || kind === "float")
+                                ? "number"
+                                : "text"
+                            }
+                            inputMode={
+                              kind === "bigint" || kind === "decimal"
+                                ? "decimal"
+                                : undefined
                             }
                             placeholder={
-                              col.defaultValue ||
-                              (col.nullable === "YES"
-                                ? "NULL"
-                                : `Enter ${col.name}...`)
+                              kind === "binary"
+                                ? "0x…"
+                                : col.defaultValue ||
+                                  (col.nullable === "YES"
+                                    ? "NULL"
+                                    : `Enter ${col.name}...`)
                             }
-                            value={
-                              isNull
-                                ? "NULL"
-                                : ((formData[col.name] as
-                                    | string
-                                    | number
-                                    | readonly string[]
-                                    | undefined) ?? "")
-                            }
+                            value={isNull ? "NULL" : text}
                             readOnly={isNull}
                             onChange={(e) =>
                               onInputChange(col.name, e.target.value)
                             }
-                            className={`w-full border rounded-xl px-4 py-3 text-sm font-medium transition-all ${
+                            className={`w-full border rounded-md px-4 py-3 text-sm font-medium transition-all ${
                               isNull
-                                ? "bg-amber-500/[0.03] border-amber-500/20 text-amber-500/50 italic cursor-default"
-                                : "bg-white/[0.02] border-border/50 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 hover:bg-white/[0.04]"
+                                ? "bg-warn/[0.03] border-warn/20 text-warn/50 italic cursor-default"
+                                : "bg-background border-line-strong text-foreground placeholder:text-subtle outline-none focus:border-primary/60 hover:bg-ink/[0.04] text-sm"
                             }`}
                             disabled={isDisabled}
                           />
                           {isNull && (
                             <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 animate-in fade-in slide-in-from-right-2">
-                              <span className="text-[10px] font-black text-amber-500/40 uppercase tracking-widest">
+                              <span className="text-[11px] font-medium text-warn/40">
                                 Unset
                               </span>
-                              <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
+                              <div className="h-1.5 w-1.5 rounded-full bg-warn animate-pulse"></div>
                             </div>
                           )}
                         </div>
                       )}
                     </div>
 
-                    {col.columnKey === "PRI" && (
-                      <p className="text-[8px] text-primary/50 font-black uppercase tracking-widest pt-1">
-                        Primary Key (Auto-generated)
+                    {(col.columnKey === "PRI" || col.isGenerated) && (
+                      <p className="text-[11px] text-accent-fg/50 pt-1">
+                        {col.isGenerated
+                          ? "Generated column (read-only)"
+                          : col.isAutoIncrement
+                            ? "Primary Key (Auto-generated)"
+                            : "Primary Key"}
                       </p>
                     )}
                   </div>
@@ -287,10 +283,10 @@ const DataRowModal = ({
           )}
         </div>
 
-        <div className="px-8 py-6 bg-white/[0.01] border-t border-border/50 flex items-center justify-end gap-4">
+        <div className="px-8 py-6 bg-ink/[0.01] border-t border-border flex items-center justify-end gap-4">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 rounded-xl text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all"
+            className="px-6 py-2.5 rounded-md text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-ink/5 transition-all"
           >
             Cancel
           </button>
@@ -298,7 +294,7 @@ const DataRowModal = ({
             form="row-form"
             type="submit"
             disabled={isSaving}
-            className="flex items-center gap-3 px-8 py-2.5 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:shadow-[0_0_20px_rgba(0,237,100,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100"
+            className="flex items-center gap-3 px-8 py-2.5 bg-primary text-white rounded-md text-[11px] font-medium transition-all disabled:opacity-50 disabled:hover:scale-100"
           >
             {isSaving ? (
               <>

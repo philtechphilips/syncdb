@@ -1,13 +1,21 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { Table } from "lucide-react";
 
 import { useClusterStore } from "@/store/useClusterStore";
 import api from "@/lib/api";
-import { applyFilters, cloneTableRow, deleteTableRow } from "@/lib/tableUtils";
 import { calculateContextMenuPosition, copyToClipboard } from "@/lib/uiUtils";
+import { getErrorMessage } from "@/lib/errorUtils";
+import {
+  changedFields,
+  fromEditText,
+  primaryKeyColumns,
+  rowKey,
+  toEditText,
+  whereForRow,
+} from "@/lib/cellValue";
 import { downloadFile, formatData } from "@/lib/exportUtils";
 
 import { TableSkeleton } from "./DataTable/TableSkeleton";
@@ -30,27 +38,26 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(100);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // ── Selection / editing ────────────────────────────────────────────────────
-  const [selectedRows, setSelectedRows] = useState<Set<string | number>>(
-    new Set(),
-  );
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [activeCell, setActiveCell] = useState<{
-    rowId: string | number;
+    rowKey: string;
     colName: string;
   } | null>(null);
   const [editingCell, setEditingCell] = useState<{
-    rowId: string | number;
+    rowKey: string;
     colName: string;
     value: string;
+    original: string;
   } | null>(null);
 
   // ── UI ─────────────────────────────────────────────────────────────────────
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
-    rowId: string | number;
+    rowId: string;
     colName: string;
     type: "cell" | "row";
   } | null>(null);
@@ -71,7 +78,8 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
   );
   const [tableColumns, setTableColumns] = useState<TableColumn[]>([]);
   const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState<Record<string, unknown>>({});
+  // Editor text per column; parsed by column type on submit.
+  const [formData, setFormData] = useState<Record<string, string>>({});
   const [nullFields, setNullFields] = useState<Set<string>>(new Set());
 
   // ── Filters ────────────────────────────────────────────────────────────────
@@ -83,30 +91,57 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
   >([]);
   const [showFilterPopover, setShowFilterPopover] = useState(false);
 
+  // ── Row identity ───────────────────────────────────────────────────────────
+  const pkColumns = useMemo(
+    () => primaryKeyColumns(tableColumns),
+    [tableColumns],
+  );
+  const columnByName = useMemo(
+    () => new Map(tableColumns.map((c) => [c.name, c])),
+    [tableColumns],
+  );
+  const rowKeys = useMemo(() => {
+    const map = new Map<Record<string, unknown>, string>();
+    rows.forEach((row, i) => map.set(row, rowKey(row, pkColumns, i)));
+    return map;
+  }, [rows, pkColumns]);
+  const getRowKey = useCallback(
+    (row: Record<string, unknown>) => rowKeys.get(row) ?? "",
+    [rowKeys],
+  );
+  const findRow = (key: string | number) =>
+    rows.find((r) => rowKeys.get(r) === String(key));
+  const selectedRowList = () =>
+    rows.filter((r) => selectedRows.has(getRowKey(r)));
+  const rowsUrl = () =>
+    `/v1/clusters/${selectedCluster!.id}/tables/${encodeURIComponent(selectedTable!)}/rows`;
+
   // ── Data fetching (self-contained, not via store) ─────────────────────────
 
+  // isLoading starts true; event handlers set it before asking for another
+  // page, so the effect below never updates state synchronously.
   const fetchPage = useCallback(
-    async (page: number, filters: typeof activeFilters) => {
-      if (!selectedTable || !selectedCluster) return;
-      setIsLoading(true);
-      try {
-        const filterParam =
-          filters.length > 0
-            ? `&filters=${encodeURIComponent(JSON.stringify(filters))}`
-            : "";
-        const res = await api.get(
-          `/v1/clusters/${selectedCluster.id}/tables/${selectedTable}?page=${page}&limit=${rowsPerPage}${filterParam}`,
-        );
-        const { data, total, page: resPage } = res.data;
-        setRows(data);
-        setTotalRows(total);
-        setCurrentPage(resPage);
-        setSelectedRows(new Set());
-      } catch {
-        // toast shown by api interceptor
-      } finally {
-        setIsLoading(false);
-      }
+    (page: number, filters: typeof activeFilters) => {
+      if (!selectedTable || !selectedCluster) return Promise.resolve();
+      const filterParam =
+        filters.length > 0
+          ? `&filters=${encodeURIComponent(JSON.stringify(filters))}`
+          : "";
+      return api
+        .get(
+          `/v1/clusters/${selectedCluster.id}/tables/${encodeURIComponent(selectedTable)}?page=${page}&limit=${rowsPerPage}${filterParam}`,
+        )
+        .then((res) => {
+          const { data, total, page: resPage } = res.data;
+          setRows(data);
+          setTotalRows(total);
+          setCurrentPage(resPage);
+          setSelectedRows(new Set());
+        })
+        .catch(() => {
+          // toast shown by api interceptor
+        })
+        .finally(() => setIsLoading(false));
     },
     [selectedTable, selectedCluster, rowsPerPage],
   );
@@ -115,14 +150,16 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
   useEffect(() => {
     if (!selectedTable || !selectedCluster) return;
     api
-      .get(`/v1/clusters/${selectedCluster.id}/tables/${selectedTable}/columns`)
+      .get(
+        `/v1/clusters/${selectedCluster.id}/tables/${encodeURIComponent(selectedTable)}/columns`,
+      )
       .then((res) => setTableColumns(res.data as TableColumn[]))
       .catch(() => {});
   }, [selectedTable, selectedCluster]);
 
   // Fetch data when table/filters change
   useEffect(() => {
-    fetchPage(1, activeFilters);
+    void fetchPage(1, activeFilters);
   }, [selectedTable, selectedCluster, activeFilters]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Close context menu on outside click ───────────────────────────────────
@@ -138,9 +175,19 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
+  const loadPage = (page: number, filters = activeFilters) => {
+    setIsLoading(true);
+    return fetchPage(page, filters);
+  };
+  const applyFilters = (filters: typeof activeFilters) => {
+    setIsLoading(true);
+    setActiveFilters(filters);
+  };
+  const refresh = () => loadPage(currentPage);
+
   const handleContextMenu = (
     e: React.MouseEvent,
-    rowId: string | number,
+    rowId: string,
     colName: string,
   ) => {
     e.preventDefault();
@@ -155,84 +202,107 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
       setActiveCell(null);
     } else {
       setContextMenu({ x, y, rowId, colName, type: "cell" });
-      setActiveCell({ rowId, colName });
+      setActiveCell({ rowKey: rowId, colName });
     }
   };
 
-  const toggleRow = (id: string | number) => {
+  const toggleRow = (key: string) => {
     const next = new Set(selectedRows);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
     setSelectedRows(next);
   };
 
   const toggleAll = () => {
     if (selectedRows.size === rows.length) setSelectedRows(new Set());
-    else setSelectedRows(new Set(rows.map((r) => r.id as string | number)));
+    else setSelectedRows(new Set(rows.map(getRowKey)));
   };
 
-  const setAsNull = (rowId: string | number, colName: string) => {
-    if (colName === "id") return;
-    setRows(
-      rows.map((r) =>
-        (r.id as string | number) === rowId ? { ...r, [colName]: "NULL" } : r,
-      ),
-    );
+  const updateRowValues = async (
+    row: Record<string, unknown>,
+    data: Record<string, unknown>,
+  ) => {
+    await api.patch(rowsUrl(), { data, where: whereForRow(row, tableColumns) });
+    await refresh();
   };
 
-  const deleteRow = async (id: string | number) => {
-    if (!selectedCluster || !selectedTable) return;
+  const setAsNull = async (key: string | number, colName: string) => {
+    const row = findRow(key);
+    if (!row || !selectedCluster || !selectedTable) return;
+    if (columnByName.get(colName)?.isGenerated) {
+      toast.error("Generated columns can't be changed");
+      return;
+    }
     try {
-      await api.delete(
-        `/v1/clusters/${selectedCluster.id}/tables/${selectedTable}/rows`,
-        { data: { where: { id } } },
-      );
-      setRows((prev) => deleteTableRow(prev, id));
-      const next = new Set(selectedRows);
-      next.delete(id);
-      setSelectedRows(next);
-      setTotalRows((t) => Math.max(0, t - 1));
-      toast.success("Row deleted successfully");
+      await updateRowValues(row, { [colName]: null });
+      toast.success(`${colName} set to NULL`);
     } catch {
-      toast.error("Failed to delete row");
+      // toast shown by api interceptor
+    }
+  };
+
+  const deleteRow = async (key: string | number) => {
+    const row = findRow(key);
+    if (!row || !selectedCluster || !selectedTable) return;
+    try {
+      await api.delete(rowsUrl(), {
+        data: { where: whereForRow(row, tableColumns) },
+      });
+      toast.success("Row deleted successfully");
+      await refresh();
+    } catch {
+      // toast shown by api interceptor
     }
   };
 
   const handleDeleteSelected = async () => {
     if (!selectedCluster || !selectedTable || selectedRows.size === 0) return;
-    const count = selectedRows.size;
-    const rowsToDelete = rows.filter((r) =>
-      selectedRows.has(r.id as string | number),
-    );
+    const targets = selectedRowList();
     try {
-      await Promise.all(
-        rowsToDelete.map((row) =>
-          api.delete(
-            `/v1/clusters/${selectedCluster.id}/tables/${selectedTable}/rows`,
-            { data: { where: { id: row.id } } },
-          ),
-        ),
+      // One request, one transaction: either every row is deleted or none.
+      const res = await api.delete(rowsUrl(), {
+        data: { wheres: targets.map((row) => whereForRow(row, tableColumns)) },
+      });
+      const count = res.data?.affectedRows ?? targets.length;
+      toast.success(
+        `${count} row${count === 1 ? "" : "s"} deleted successfully`,
       );
-      setRows((prev) =>
-        prev.filter((r) => !selectedRows.has(r.id as string | number)),
-      );
-      setTotalRows((t) => Math.max(0, t - count));
       setSelectedRows(new Set());
-      toast.success(`${count} row${count > 1 ? "s" : ""} deleted successfully`);
+      await refresh();
     } catch {
-      toast.error("Failed to delete selected rows");
+      // toast shown by api interceptor
     }
   };
 
-  const cloneRow = (rowId: string | number) => {
-    setRows(cloneTableRow(rows, rowId) as Record<string, unknown>[]);
+  const textFor = (row: Record<string, unknown>) => {
+    const text: Record<string, string> = {};
+    const nulls = new Set<string>();
+    for (const key of Object.keys(row)) {
+      if (row[key] === null || row[key] === undefined) nulls.add(key);
+      else text[key] = toEditText(row[key], columnByName.get(key));
+    }
+    return { text, nulls };
+  };
+
+  /** Opens the insert form prefilled with a copy of the row. */
+  const cloneRow = (key: string | number) => {
+    const row = findRow(key);
+    if (!row) return;
+    const copy = { ...row };
+    for (const col of tableColumns) {
+      if (col.isAutoIncrement || col.isGenerated) delete copy[col.name];
+    }
+    const { text, nulls } = textFor(copy);
+    setIsEditMode(false);
+    setEditingRow(null);
+    setFormData(text);
+    setNullFields(nulls);
+    setShowRowModal(true);
   };
 
   const handleCopy = (
     format: string,
-    dataToProcess: Record<string, unknown>[] = rows.filter((r) =>
-      selectedRows.has(r.id as string | number),
-    ),
+    dataToProcess: Record<string, unknown>[] = selectedRowList(),
   ) => {
     const content = formatData(format, dataToProcess, selectedTable || "table");
     if (typeof content === "string") {
@@ -243,6 +313,23 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
       toast.error("Format not supported for clipboard");
     }
     setShowCopyDropdown(false);
+  };
+
+  /** Fetches every row matching the filters, in pages the API accepts. */
+  const fetchAllRows = async () => {
+    const filterParam =
+      activeFilters.length > 0
+        ? `&filters=${encodeURIComponent(JSON.stringify(activeFilters))}`
+        : "";
+    const pageSize = 5000;
+    const all: Record<string, unknown>[] = [];
+    for (let page = 1; ; page++) {
+      const res = await api.get(
+        `/v1/clusters/${selectedCluster!.id}/tables/${encodeURIComponent(selectedTable!)}?page=${page}&limit=${pageSize}${filterParam}`,
+      );
+      all.push(...(res.data.data as Record<string, unknown>[]));
+      if (res.data.data.length < pageSize) return all;
+    }
   };
 
   const handleExport = async (
@@ -257,20 +344,13 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
     let data = dataToProcess;
     if (!data) {
       if (showSelectedOnly && selectedRows.size > 0) {
-        data = rows.filter((r) => selectedRows.has(r.id as string | number));
+        data = selectedRowList();
       } else {
         const toastId = toast.loading(
           `Preparing ${totalRows.toLocaleString()} rows for export...`,
         );
         try {
-          const filterParam =
-            activeFilters.length > 0
-              ? `&filters=${encodeURIComponent(JSON.stringify(activeFilters))}`
-              : "";
-          const res = await api.get(
-            `/v1/clusters/${selectedCluster!.id}/tables/${selectedTable}?page=1&limit=${totalRows}${filterParam}`,
-          );
-          data = res.data.data;
+          data = await fetchAllRows();
           toast.dismiss(toastId);
         } catch {
           toast.error("Failed to fetch full dataset for export", {
@@ -299,7 +379,7 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
     setShowExportModal(false);
   };
 
-  const handleInputChange = (colName: string, value: unknown) => {
+  const handleInputChange = (colName: string, value: string) => {
     setFormData((prev) => ({ ...prev, [colName]: value }));
     if (nullFields.has(colName)) {
       const next = new Set(nullFields);
@@ -311,39 +391,43 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
   const toggleNullField = (colName: string) => {
     const next = new Set(nullFields);
     if (next.has(colName)) next.delete(colName);
-    else {
-      next.add(colName);
-      const nextData = { ...formData };
-      delete nextData[colName];
-      setFormData(nextData);
-    }
+    else next.add(colName);
     setNullFields(next);
+  };
+
+  const startEdit = (key: string, colName: string) => {
+    const row = findRow(key);
+    const column = columnByName.get(colName);
+    if (!row) return;
+    if (column?.isGenerated) {
+      toast.error("Generated columns can't be edited");
+      return;
+    }
+    const text = toEditText(row[colName], column);
+    setEditingCell({ rowKey: key, colName, value: text, original: text });
   };
 
   const handleSaveCell = async () => {
     if (!editingCell || !selectedCluster || !selectedTable) return;
-    const { rowId, colName, value } = editingCell;
-    const original = rows.find((r) => (r.id as string | number) === rowId)?.[
-      colName
-    ];
-    if (String(original ?? "") === value) {
+    const { rowKey: key, colName, value, original } = editingCell;
+    const row = findRow(key);
+    if (!row || value === original) {
       setEditingCell(null);
       return;
     }
+    let parsed: unknown;
     try {
-      await api.patch(
-        `/v1/clusters/${selectedCluster.id}/tables/${selectedTable}/rows`,
-        { data: { [colName]: value }, where: { id: rowId } },
-      );
-      setRows((prev) =>
-        prev.map((r) =>
-          (r.id as string | number) === rowId ? { ...r, [colName]: value } : r,
-        ),
-      );
+      parsed = fromEditText(value, columnByName.get(colName));
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+      return; // keep the editor open so the value can be fixed
+    }
+    try {
+      await updateRowValues(row, { [colName]: parsed });
       setEditingCell(null);
       toast.success("Cell updated");
     } catch {
-      toast.error("Failed to update cell");
+      // toast shown by api interceptor
     }
   };
 
@@ -352,8 +436,10 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
     try {
       await dropTable(selectedCluster.id, selectedTable);
       toast.success("Table dropped successfully");
-    } catch {
-      toast.error("Failed to drop table");
+    } catch (error) {
+      toast.error("Failed to drop table", {
+        description: getErrorMessage(error),
+      });
     }
   };
 
@@ -366,48 +452,63 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
   };
 
   const handleOpenUpdateModal = (row: Record<string, unknown>) => {
+    const { text, nulls } = textFor(row);
     setIsEditMode(true);
     setEditingRow(row);
-    setFormData({ ...row });
-    const nextNulls = new Set<string>();
-    Object.keys(row).forEach((key) => {
-      if (row[key] === null || row[key] === "NULL") nextNulls.add(key);
-    });
-    setNullFields(nextNulls);
+    setFormData(text);
+    setNullFields(nulls);
     setShowRowModal(true);
+  };
+
+  /** Parses the form; for updates only the changed columns are returned. */
+  const collectFormValues = () => {
+    const names = new Set([...Object.keys(formData), ...nullFields]);
+    const values: Record<string, unknown> = {};
+    for (const name of names) {
+      const column = columnByName.get(name);
+      if (column?.isGenerated) continue;
+      if (nullFields.has(name)) {
+        values[name] = null;
+      } else if (isEditMode || formData[name] !== "") {
+        values[name] = fromEditText(formData[name] ?? "", column);
+      }
+    }
+    if (!isEditMode || !editingRow) return values;
+    const original = textFor(editingRow);
+    const originalValues: Record<string, unknown> = {};
+    for (const name of names) {
+      originalValues[name] = original.nulls.has(name)
+        ? null
+        : fromEditText(original.text[name] ?? "", columnByName.get(name));
+    }
+    return changedFields(originalValues, values);
   };
 
   const handleSubmitRow = async () => {
     if (!selectedCluster || !selectedTable) return;
+    let values: Record<string, unknown>;
+    try {
+      values = collectFormValues();
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+      return;
+    }
     setIsSaving(true);
-    const finalData: Record<string, unknown> = { ...formData };
-    nullFields.forEach((col) => {
-      finalData[col] = null;
-    });
     try {
       if (isEditMode && editingRow) {
-        const where = editingRow.id ? { id: editingRow.id } : { ...editingRow };
-        await api.patch(
-          `/v1/clusters/${selectedCluster.id}/tables/${selectedTable}/rows`,
-          { data: finalData, where },
-        );
-        setRows((prev) =>
-          prev.map((r) => {
-            const matches = Object.keys(where).every(
-              (k) => r[k] === (where as Record<string, unknown>)[k],
-            );
-            return matches ? { ...r, ...finalData } : r;
-          }),
-        );
+        if (Object.keys(values).length === 0) {
+          setShowRowModal(false);
+          return;
+        }
+        await updateRowValues(editingRow, values);
         toast.success("Row updated");
       } else {
-        const res = await api.post(
-          `/v1/clusters/${selectedCluster.id}/tables/${selectedTable}`,
-          finalData,
+        await api.post(
+          `/v1/clusters/${selectedCluster.id}/tables/${encodeURIComponent(selectedTable)}`,
+          values,
         );
-        setRows((prev) => [res.data, ...prev]);
-        setTotalRows((t) => t + 1);
         toast.success("Row inserted");
+        await refresh();
       }
       setShowRowModal(false);
     } catch {
@@ -421,16 +522,13 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
 
   if (!selectedTable) {
     return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)] text-zinc-600 gap-4 animate-in fade-in duration-1000">
-        <div className="p-8 rounded-full bg-white/[0.01] border border-border/50 relative group">
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)] text-subtle gap-4 animate-in fade-in duration-1000">
+        <div className="p-8 rounded-full bg-ink/[0.01] border border-border relative group">
           <Table className="h-16 w-16 opacity-10 group-hover:scale-110 transition-transform duration-500" />
-          <div className="absolute inset-0 bg-primary/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
         <div className="text-center space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">
-            Explorer Node Ready
-          </p>
-          <p className="text-[11px] font-medium text-zinc-400 max-w-[200px] leading-relaxed mx-auto">
+          <p className="text-[11px] opacity-40">Explorer Node Ready</p>
+          <p className="text-[11px] text-muted-foreground max-w-[200px] leading-relaxed mx-auto">
             Select a system entry to begin orchestration.
           </p>
         </div>
@@ -454,20 +552,20 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
         onSetNull={setAsNull}
         onCopyValue={(rid, col) =>
           copyToClipboard(
-            rows
-              .find((r) => (r.id as string | number) === rid)
-              ?.[col]?.toString() || "",
+            toEditText(findRow(rid)?.[col], columnByName.get(col)),
           )
         }
         onFilterByValue={(rid, col) => {
-          const val =
-            rows
-              .find((r) => (r.id as string | number) === rid)
-              ?.[col]?.toString() || "";
-          setActiveFilters([
-            ...activeFilters,
-            { column: col, operator: "is", value: val },
-          ]);
+          const raw = findRow(rid)?.[col];
+          const filter =
+            raw === null || raw === undefined
+              ? { column: col, operator: "is_null", value: "" }
+              : {
+                  column: col,
+                  operator: "is",
+                  value: toEditText(raw, columnByName.get(col)),
+                };
+          applyFilters([...activeFilters, filter]);
           setShowFilterPopover(true);
         }}
         onCopyColumn={copyToClipboard}
@@ -475,10 +573,8 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
           handleCopy(
             format,
             rid === -1
-              ? rows.filter((r) => selectedRows.has(r.id as string | number))
-              : (rows.filter(
-                  (r) => (r.id as string | number) === rid,
-                ) as Record<string, unknown>[]),
+              ? selectedRowList()
+              : rows.filter((r) => getRowKey(r) === String(rid)),
           )
         }
         onCloneRow={cloneRow}
@@ -510,18 +606,13 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
         onCopy={handleCopy}
         showExportDropdown={showExportDropdown}
         setShowExportDropdown={setShowExportDropdown}
-        onExportSelection={(fmt) =>
-          handleExport(
-            fmt,
-            rows.filter((r) => selectedRows.has(r.id as string | number)),
-          )
-        }
+        onExportSelection={(fmt) => handleExport(fmt, selectedRowList())}
         onExportAll={(fmt) => handleExport(fmt, rows)}
         showFilterPopover={showFilterPopover}
         setShowFilterPopover={setShowFilterPopover}
         activeFiltersCount={activeFilters.length}
         stagedFilters={stagedFilters}
-        onClearAllFilters={() => setActiveFilters([])}
+        onClearAllFilters={() => applyFilters([])}
         onAddFilter={() => {
           const columns = tableColumns.map((c) => c.name);
           if (columns.length > 0)
@@ -539,7 +630,7 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
           )
         }
         onApplyFilters={() => {
-          setActiveFilters(stagedFilters);
+          applyFilters(stagedFilters);
           setShowFilterPopover(false);
         }}
         tableColumns={tableColumns}
@@ -552,16 +643,19 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
 
       <DataTableBody
         rows={rows}
-        filteredRows={applyFilters(rows, [], showSelectedOnly, selectedRows)}
+        filteredRows={
+          showSelectedOnly
+            ? rows.filter((r) => selectedRows.has(getRowKey(r)))
+            : rows
+        }
+        getRowKey={getRowKey}
         selectedRows={selectedRows}
         onToggleRow={toggleRow}
         onToggleAll={toggleAll}
         onOpenUpdateModal={handleOpenUpdateModal}
         onContextMenu={handleContextMenu}
         editingCell={editingCell}
-        onStartEdit={(rid, col, val) =>
-          setEditingCell({ rowId: rid, colName: col, value: val })
-        }
+        onStartEdit={startEdit}
         onEditValueChange={(val) =>
           setEditingCell((prev) => (prev ? { ...prev, value: val } : null))
         }
@@ -591,11 +685,11 @@ const DataTable = ({ selectedTable }: DataTableProps) => {
         totalRows={totalRows}
         isLoading={isLoading}
         onPrevPage={() => {
-          if (currentPage > 1) fetchPage(currentPage - 1, activeFilters);
+          if (currentPage > 1) void loadPage(currentPage - 1);
         }}
         onNextPage={() => {
           if (currentPage * rowsPerPage < totalRows)
-            fetchPage(currentPage + 1, activeFilters);
+            void loadPage(currentPage + 1);
         }}
       />
     </div>

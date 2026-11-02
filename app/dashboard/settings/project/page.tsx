@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Zap,
@@ -72,18 +72,16 @@ const LocalAgentSection = () => {
         {/* Status */}
         <div className="flex items-center gap-2">
           <div
-            className={`h-1.5 w-1.5 rounded-full ${connected ? "bg-primary" : "bg-zinc-600"}`}
+            className={`h-1.5 w-1.5 rounded-full ${connected ? "bg-primary" : "bg-ink/20"}`}
           />
-          <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
+          <span className="text-[11px] text-subtle font-medium">
             {connected ? "Agent Connected" : "Agent Offline"}
           </span>
         </div>
 
         {/* Install & login steps */}
-        <div className="rounded-xl border border-border/50 bg-black/20 p-3 space-y-3">
-          <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
-            Quick Start
-          </p>
+        <div className="rounded-xl border border-border bg-bg-200 p-3 space-y-3">
+          <p className="text-[11px] text-subtle">Quick Start</p>
 
           <div className="space-y-2">
             {[
@@ -96,14 +94,14 @@ const LocalAgentSection = () => {
               { step: "3", label: "Run", cmd: "synqdb-agent" },
             ].map(({ step, label, cmd }) => (
               <div key={step} className="flex items-center gap-3">
-                <span className="h-5 w-5 rounded-full bg-primary/10 border border-primary/20 text-[9px] font-black text-primary flex items-center justify-center shrink-0">
+                <span className="h-5 w-5 rounded-full bg-bg-200 border border-border text-[11px] font-medium text-muted-foreground flex items-center justify-center shrink-0">
                   {step}
                 </span>
                 <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <span className="text-[9px] text-zinc-600 uppercase font-bold tracking-wider w-8 shrink-0">
+                  <span className="text-[11px] text-subtle font-medium w-8 shrink-0">
                     {label}
                   </span>
-                  <code className="font-mono text-[10px] text-primary truncate">
+                  <code className="font-mono text-[11px] text-accent-fg truncate">
                     {cmd}
                   </code>
                 </div>
@@ -111,7 +109,7 @@ const LocalAgentSection = () => {
             ))}
           </div>
 
-          <p className="text-[9px] text-zinc-600 leading-relaxed pt-1 border-t border-white/5">
+          <p className="text-[11px] text-subtle leading-relaxed pt-1 border-t border-border">
             <Terminal className="h-2.5 w-2.5 inline mr-1 -mt-px" />
             <code>synqdb-agent login</code> opens your browser — log in and
             click Authorize. No keys to copy.
@@ -121,18 +119,18 @@ const LocalAgentSection = () => {
         {/* Rotate key */}
         <div className="flex items-center justify-between pt-1">
           <div>
-            <p className="text-[10px] font-bold text-zinc-400">Revoke Access</p>
-            <p className="text-[9px] text-zinc-600 mt-0.5">
+            <p className="text-[11px] text-muted-foreground">Revoke Access</p>
+            <p className="text-[11px] text-subtle mt-0.5">
               Rotates the underlying key and disconnects any running agents.
             </p>
           </div>
           <button
             onClick={handleRotate}
             disabled={rotating}
-            className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider transition-all px-2.5 py-1 rounded-lg ${
+            className={`flex items-center gap-1.5 text-[11px] font-medium transition-all px-2.5 py-1 rounded-lg ${
               confirmRotate
-                ? "text-red-400 border border-red-500/30 bg-red-500/10"
-                : "text-zinc-600 hover:text-red-400 border border-transparent hover:border-red-500/20"
+                ? "text-err border border-err/30 bg-err/10"
+                : "text-subtle hover:text-err border border-transparent hover:border-err/20"
             }`}
           >
             {rotating ? (
@@ -159,16 +157,20 @@ export default function ProjectSettingsPage() {
     editorFontSize: 13,
     safetyLimit: 500,
     autoSaveQueries: true,
-    monacoTheme: "synq-dark",
+    monacoTheme: "auto",
     bracketPairColorization: true,
   });
   const [isSaved, setIsSaved] = useState(false);
 
-  useEffect(() => {
-    if (user?.settings) {
-      setSettings((prev) => ({ ...prev, ...user.settings }));
-    }
-  }, [user?.settings]);
+  // Pick up saved settings when they arrive (adjusting state during render
+  // instead of in an effect avoids an extra render pass).
+  const [loadedFrom, setLoadedFrom] = useState<
+    Record<string, unknown> | undefined
+  >(undefined);
+  if (user?.settings !== loadedFrom) {
+    setLoadedFrom(user?.settings);
+    if (user?.settings) setSettings((prev) => ({ ...prev, ...user.settings }));
+  }
 
   const handleSave = async () => {
     try {
@@ -181,7 +183,7 @@ export default function ProjectSettingsPage() {
     }
   };
 
-  const update = (key: string, value: any) => {
+  const update = (key: string, value: string | number | boolean) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -191,10 +193,10 @@ export default function ProjectSettingsPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-10">
           <div>
-            <h1 className="text-2xl font-serif text-white tracking-tight">
+            <h1 className="text-2xl text-foreground tracking-tight font-semibold">
               Project Settings
             </h1>
-            <p className="text-sm text-zinc-500 mt-1.5 font-medium leading-relaxed">
+            <p className="text-sm text-subtle mt-1.5 leading-relaxed">
               Global configurations for your workspace, safety, and AI
               assistance.
             </p>
@@ -202,7 +204,7 @@ export default function ProjectSettingsPage() {
           <button
             onClick={handleSave}
             disabled={isLoading}
-            className="flex items-center gap-3 px-6 py-2.5 rounded-full bg-primary text-primary-foreground text-xs font-black uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(0,237,100,0.2)]"
+            className="flex items-center gap-3 px-6 py-2.5 rounded-md bg-primary text-white text-xs font-medium hover:bg-primary-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -272,27 +274,27 @@ export default function ProjectSettingsPage() {
                 enabled={settings.destructiveActionLock}
                 onChange={(v) => update("destructiveActionLock", v)}
               />
-              <div className="h-px bg-white/5"></div>
+              <div className="h-px bg-ink/5"></div>
               <SettingsToggle
                 label="Enhanced Production Confirmation"
                 description="Require a secondary confirmation dialog for all write operations on Production clusters."
                 enabled={settings.productionConfirmations}
                 onChange={(v) => update("productionConfirmations", v)}
               />
-              <div className="h-px bg-white/5"></div>
+              <div className="h-px bg-ink/5"></div>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[11px] font-bold text-zinc-300">
+                  <p className="text-[11px] text-foreground/80">
                     Safety Result Limit
                   </p>
-                  <p className="text-[10px] text-zinc-600 mt-0.5">
+                  <p className="text-[11px] text-subtle mt-0.5">
                     Protect memory by capping maximum ad-hoc query results.
                   </p>
                 </div>
                 <div className="w-24">
                   <input
                     type="number"
-                    className={`${UI_CLASSES.input} text-center font-bold`}
+                    className={`${UI_CLASSES.input} text-center font-semibold`}
                     value={settings.safetyLimit}
                     onChange={(e) =>
                       update("safetyLimit", parseInt(e.target.value))
@@ -327,10 +329,14 @@ export default function ProjectSettingsPage() {
                   <SettingsLabel>Monaco Theme</SettingsLabel>
                   <select
                     className={UI_CLASSES.select}
-                    value={settings.monacoTheme}
+                    value={
+                      settings.monacoTheme === "synq-dark"
+                        ? "auto"
+                        : settings.monacoTheme
+                    }
                     onChange={(e) => update("monacoTheme", e.target.value)}
                   >
-                    <option value="synq-dark">Synq Dark (Pro)</option>
+                    <option value="auto">Match app theme</option>
                     <option value="monokai">Monokai Legend</option>
                     <option value="github-dark">GitHub Dark</option>
                   </select>
@@ -342,7 +348,7 @@ export default function ProjectSettingsPage() {
                 enabled={settings.autoSaveQueries}
                 onChange={(v) => update("autoSaveQueries", v)}
               />
-              <div className="h-px bg-white/5"></div>
+              <div className="h-px bg-ink/5"></div>
               <SettingsToggle
                 label="Bracket Pair Colorization"
                 description="Highlight matching brackets to navigate complex SQL statements faster."
@@ -355,13 +361,13 @@ export default function ProjectSettingsPage() {
           <LocalAgentSection />
 
           {/* Bottom Alert */}
-          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex gap-4 animate-in fade-in slide-in-from-bottom-2 duration-700 delay-300">
-            <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0" />
+          <div className="p-4 rounded-xl bg-warn/10 border border-warn/20 flex gap-4 animate-in fade-in slide-in-from-bottom-2 duration-700 delay-300">
+            <AlertTriangle className="h-5 w-5 text-warn shrink-0" />
             <div className="flex-1">
-              <h4 className="text-[11px] font-black uppercase tracking-widest text-amber-500">
+              <h4 className="text-[11px] font-medium text-warn">
                 Workspace Impact
               </h4>
-              <p className="text-[10px] text-zinc-500 mt-1 leading-relaxed">
+              <p className="text-[11px] text-subtle mt-1 leading-relaxed">
                 Changes to AI context and safety limits will affect all future
                 query executions. Destructive locks apply to both the SQL Editor
                 and the Table Explorer.

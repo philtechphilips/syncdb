@@ -95,25 +95,19 @@ const CustomFKSelect = ({
     [clusterId, hasMore, isLoading, referencedTable],
   );
 
+  // Loads the first page when opened, and again (debounced) when searching.
   useEffect(() => {
-    if (isOpen) {
-      setPage(1);
-      setHasMore(true);
-      fetchOptions(1);
-    }
-  }, [isOpen, referencedTable, fetchOptions]);
-
-  // Handle searching with a delay to avoid too many requests
-  useEffect(() => {
-    if (isOpen && search !== undefined) {
-      const timer = setTimeout(() => {
+    if (!isOpen) return;
+    const timer = setTimeout(
+      () => {
         setPage(1);
         setHasMore(true);
-        fetchOptions(1, true);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [search, isOpen, fetchOptions]);
+        void fetchOptions(1, true);
+      },
+      search ? 300 : 0,
+    );
+    return () => clearTimeout(timer);
+  }, [search, isOpen, referencedTable, fetchOptions]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
@@ -158,32 +152,32 @@ const CustomFKSelect = ({
         type="button"
         disabled={disabled || isNull}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 text-sm font-medium text-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all disabled:opacity-30 hover:bg-white/[0.04]"
+        className="w-full bg-background border border-line-strong rounded-md px-4 py-2 text-sm text-foreground flex items-center justify-between outline-none focus:border-primary/60 transition-all disabled:opacity-30 hover:bg-ink/[0.04]"
       >
         <div className="flex items-center gap-2 overflow-hidden">
-          <Database className="h-3.5 w-3.5 text-primary/50 shrink-0" />
+          <Database className="h-3.5 w-3.5 text-accent-fg/50 shrink-0" />
           <span
-            className={`truncate ${value !== undefined && value !== null ? "text-white" : "text-zinc-500"}`}
+            className={`truncate ${value !== undefined && value !== null ? "text-foreground" : "text-subtle"}`}
           >
             {displayValue}
           </span>
         </div>
         <ChevronDown
-          className={`h-4 w-4 text-zinc-500 transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180 text-primary" : ""}`}
+          className={`h-4 w-4 text-subtle transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180 text-accent-fg" : ""}`}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full mt-2 left-0 right-0 z-[210] bg-zinc-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col min-w-[320px]">
-          <div className="p-2 border-b border-white/5 bg-white/[0.02] flex items-center gap-2">
+        <div className="absolute top-full mt-2 left-0 right-0 z-[210] bg-card border border-border rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col min-w-[320px]">
+          <div className="p-2 border-b border-border bg-ink/[0.02] flex items-center gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-subtle" />
               <input
                 autoFocus
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={`Search ${referencedTable}...`}
-                className="w-full bg-zinc-950 border border-white/5 rounded-lg pl-9 pr-4 py-2 text-xs font-medium text-white placeholder:text-zinc-600 focus:outline-none focus:border-primary/50 transition-all"
+                className="w-full bg-background border border-line-strong rounded-md pl-9 pr-4 py-2 text-xs text-foreground placeholder:text-subtle outline-none focus:border-primary/60 transition-all"
               />
             </div>
             <button
@@ -192,7 +186,7 @@ const CustomFKSelect = ({
                 setShowModal(true);
                 setIsOpen(false);
               }}
-              className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-500 hover:text-white transition-all border border-white/5 group"
+              className="p-2 rounded-lg bg-ink/5 hover:bg-ink/10 text-subtle hover:text-foreground transition-all border border-border group"
               title="Open Large Table Browser"
             >
               <Maximize2 className="h-3.5 w-3.5 group-hover:scale-110 transition-transform" />
@@ -202,21 +196,21 @@ const CustomFKSelect = ({
           <div
             ref={scrollRef}
             onScroll={handleScroll}
-            className="max-h-72 overflow-y-auto scrollbar-hide py-1"
+            className="max-h-72 overflow-y-auto thin-scrollbar py-1"
           >
             {isLoading && options.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 gap-3">
-                <Loader2 className="h-5 w-5 text-primary animate-spin" />
-                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                <Loader2 className="h-5 w-5 text-accent-fg animate-spin" />
+                <span className="text-[11px] font-medium text-subtle">
                   Loading records...
                 </span>
               </div>
             ) : error ? (
               <div className="py-8 px-4 text-center flex flex-col items-center gap-2">
-                <div className="h-8 w-8 rounded-full bg-red-500/10 flex items-center justify-center">
-                  <X className="h-4 w-4 text-red-500" />
+                <div className="h-8 w-8 rounded-full bg-err/10 flex items-center justify-center">
+                  <X className="h-4 w-4 text-err" />
                 </div>
-                <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">
+                <span className="text-[11px] font-medium text-err">
                   {error}
                 </span>
                 <button
@@ -226,14 +220,14 @@ const CustomFKSelect = ({
                     e.stopPropagation();
                     fetchOptions(1);
                   }}
-                  className="mt-1 text-[9px] font-black text-zinc-500 hover:text-white uppercase tracking-wider underline underline-offset-4"
+                  className="mt-1 text-[11px] font-medium text-subtle hover:text-foreground underline underline-offset-4"
                 >
                   Try again
                 </button>
               </div>
             ) : options.length === 0 ? (
               <div className="py-8 text-center px-4">
-                <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest block mb-2">
+                <span className="text-[11px] font-medium text-subtle block mb-2">
                   No quick results found
                 </span>
                 <button
@@ -242,7 +236,7 @@ const CustomFKSelect = ({
                     setShowModal(true);
                     setIsOpen(false);
                   }}
-                  className="flex items-center gap-2 mx-auto px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-[9px] font-bold uppercase tracking-widest hover:bg-primary/20 transition-all border border-primary/20"
+                  className="flex items-center gap-2 mx-auto px-3 py-1.5 rounded-lg bg-primary/10 text-accent-fg text-[11px] font-medium hover:bg-primary/20 transition-all border border-primary/20"
                 >
                   <Maximize2 className="h-3 w-3" />
                   Browse Full Table
@@ -284,12 +278,12 @@ const CustomFKSelect = ({
                         onChange(optVal);
                         setIsOpen(false);
                       }}
-                      className={`w-full text-left px-4 py-3 text-sm font-medium transition-all hover:bg-white/5 border-b border-white/[0.02] last:border-0 flex items-center justify-between group ${isSelected ? "bg-primary/5" : "text-zinc-400 hover:text-white"}`}
+                      className={`w-full text-left px-4 py-3 text-sm font-medium transition-all hover:bg-ink/5 border-b border-border last:border-0 flex items-center justify-between group ${isSelected ? "bg-primary/5" : "text-muted-foreground hover:text-foreground"}`}
                     >
                       <div className="flex flex-col gap-1 overflow-hidden">
                         <div className="flex items-center gap-2">
                           <span
-                            className={`font-bold truncate ${isSelected ? "text-primary" : "text-white"}`}
+                            className={`font-semibold truncate ${isSelected ? "text-accent-fg" : "text-foreground"}`}
                           >
                             {optLabel}
                           </span>
@@ -301,10 +295,10 @@ const CustomFKSelect = ({
                                 key={k}
                                 className="flex items-center gap-1.5 shrink-0"
                               >
-                                <span className="text-[9px] font-black text-zinc-600 uppercase tracking-tighter">
+                                <span className="text-[11px] font-medium text-subtle">
                                   {k}:
                                 </span>
-                                <span className="text-[10px] text-zinc-500 truncate max-w-[120px]">
+                                <span className="text-[11px] text-subtle truncate max-w-[120px]">
                                   {String(v || "NULL")}
                                 </span>
                               </div>
@@ -313,31 +307,31 @@ const CustomFKSelect = ({
                         )}
                       </div>
                       {isSelected && (
-                        <CheckCircle2 className="h-4 w-4 text-primary shrink-0 ml-4" />
+                        <CheckCircle2 className="h-4 w-4 text-accent-fg shrink-0 ml-4" />
                       )}
                       {!isSelected && (
                         <div className="h-4 w-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <CheckCircle2 className="h-4 w-4 text-white/10" />
+                          <CheckCircle2 className="h-4 w-4 text-foreground/10" />
                         </div>
                       )}
                     </button>
                   );
                 })}
                 {isLoading && (
-                  <div className="flex items-center justify-center py-4 border-t border-white/[0.02] bg-white/[0.01]">
-                    <Loader2 className="h-4 w-4 text-primary/50 animate-spin" />
+                  <div className="flex items-center justify-center py-4 border-t border-border bg-ink/[0.01]">
+                    <Loader2 className="h-4 w-4 text-accent-fg/50 animate-spin" />
                   </div>
                 )}
               </>
             )}
           </div>
 
-          <div className="p-2 border-t border-white/5 bg-white/[0.02] flex items-center justify-between px-4">
-            <span className="text-[8px] text-zinc-600 font-black uppercase tracking-widest">
+          <div className="p-2 border-t border-border bg-ink/[0.02] flex items-center justify-between px-4">
+            <span className="text-[11px] text-subtle font-medium">
               {options.length} records loaded
             </span>
             {hasMore && (
-              <span className="text-[8px] text-primary font-black uppercase tracking-widest animate-pulse">
+              <span className="text-[11px] text-accent-fg font-medium animate-pulse">
                 Scroll for more
               </span>
             )}

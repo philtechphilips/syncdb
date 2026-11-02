@@ -1,11 +1,15 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import Editor, { useMonaco } from "@monaco-editor/react";
+import Editor, {
+  useMonaco,
+  type Monaco,
+  type OnMount,
+} from "@monaco-editor/react";
 import { format } from "sql-formatter";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/errorUtils";
-import { useClusterStore } from "@/store/useClusterStore";
+import { useClusterStore, type QueryResultSet } from "@/store/useClusterStore";
 import api from "@/lib/api";
 import { useModalStore } from "@/store/useModalStore";
 import { useQueryStore } from "@/store/useQueryStore";
@@ -19,6 +23,8 @@ import EditorActions from "./QueryEditor/EditorActions";
 import QueryResultsArea from "./QueryEditor/QueryResultsArea";
 import SavedQueriesSidebar from "./QueryEditor/SavedQueriesSidebar";
 import SaveQueryDialog from "./QueryEditor/SaveQueryDialog";
+import { analyzeSql } from "@/lib/sqlSafety";
+import { useTheme } from "@/lib/theme";
 
 const QueryEditor = () => {
   const { selectedCluster, executeQuery, fetchSchema, fetchQueryLogs } =
@@ -28,6 +34,16 @@ const QueryEditor = () => {
   const monaco = useMonaco();
 
   const settings = user?.settings || {};
+  const theme = useTheme();
+  // "synq-dark" was the old default; anyone on it follows the app theme now.
+  const editorTheme =
+    !settings.monacoTheme ||
+    settings.monacoTheme === "auto" ||
+    settings.monacoTheme === "synq-dark"
+      ? theme === "dark"
+        ? "synq-dark"
+        : "synq-light"
+      : settings.monacoTheme;
 
   const {
     queries,
@@ -40,7 +56,9 @@ const QueryEditor = () => {
     removeQuery,
     runRequested,
   } = useQueryStore();
-  const [queryResults, setQueryResults] = useState<any[] | null>(null);
+  const [queryResults, setQueryResults] = useState<QueryResultSet[] | null>(
+    null,
+  );
   const [queryTotals, setQueryTotals] = useState<number[]>([]);
   const [isPagingEnabled, setIsPagingEnabled] = useState(true);
   const [resultsHeight, setResultsHeight] = useState(350);
@@ -75,7 +93,7 @@ const QueryEditor = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const handledRunId = React.useRef(runRequested);
-  const editorRef = React.useRef<any>(null);
+  const editorRef = React.useRef<Parameters<OnMount>[0] | null>(null);
 
   const startResizing = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -116,22 +134,40 @@ const QueryEditor = () => {
       );
   }, [selectedCluster, fetchSchema]);
 
-  const defineThemes = (monaco: any) => {
+  const defineThemes = (monaco: Monaco) => {
+    monaco.editor.defineTheme("synq-light", {
+      base: "vs",
+      inherit: true,
+      rules: [
+        { token: "keyword", foreground: "cf222e" },
+        { token: "string", foreground: "0a3069" },
+        { token: "comment", foreground: "6e7781" },
+        { token: "number", foreground: "0550ae" },
+      ],
+      colors: {
+        "editor.background": "#ffffff",
+        "editor.foreground": "#24292f",
+        "editorCursor.foreground": "#4338ca",
+        "editor.lineHighlightBackground": "#f7f7f8",
+        "editorLineNumber.foreground": "#a1a1aa",
+      },
+    });
+
     monaco.editor.defineTheme("synq-dark", {
       base: "vs-dark",
       inherit: true,
       rules: [
-        { token: "keyword", foreground: "277955" },
+        { token: "keyword", foreground: "ff7b72" },
         { token: "string", foreground: "a5d6ff" },
         { token: "comment", foreground: "8b949e" },
-        { token: "number", foreground: "d2a8ff" },
+        { token: "number", foreground: "79c0ff" },
       ],
       colors: {
-        "editor.background": "#040d12",
-        "editor.foreground": "#f8fafc",
-        "editorCursor.foreground": "#277955",
-        "editor.lineHighlightBackground": "#0d1e25",
-        "editorLineNumber.foreground": "#1e3a44",
+        "editor.background": "#0f0f11",
+        "editor.foreground": "#e6edf3",
+        "editorCursor.foreground": "#818cf8",
+        "editor.lineHighlightBackground": "#151517",
+        "editorLineNumber.foreground": "#52525b",
       },
     });
 
@@ -250,25 +286,24 @@ const QueryEditor = () => {
   }, [monaco, schemaMetadata]);
 
   // Load History
-  const loadHistory = useCallback(async () => {
-    if (!selectedCluster) return;
-    setIsLoadingHistory(true);
-    try {
-      const logs = await fetchQueryLogs(selectedCluster.id);
-      setQueryHistory(
-        logs as {
-          id: string;
-          query: string;
-          success: boolean;
-          executionTimeMs: number;
-          createdAt: string;
-        }[],
-      );
-    } catch {
-      toast.error("Failed to load query history");
-    } finally {
-      setIsLoadingHistory(false);
-    }
+  // The loading flag is set by openBottomTab (an event), so effects can
+  // call this without a synchronous state update.
+  const loadHistory = useCallback(() => {
+    if (!selectedCluster) return Promise.resolve();
+    return fetchQueryLogs(selectedCluster.id)
+      .then((logs) =>
+        setQueryHistory(
+          logs as {
+            id: string;
+            query: string;
+            success: boolean;
+            executionTimeMs: number;
+            createdAt: string;
+          }[],
+        ),
+      )
+      .catch(() => toast.error("Failed to load query history"))
+      .finally(() => setIsLoadingHistory(false));
   }, [selectedCluster, fetchQueryLogs]);
 
   // -------------------------------------------------------------------------
@@ -281,11 +316,10 @@ const QueryEditor = () => {
 
   const proceedWithExecution = useCallback(
     async (sql: string, page: number = 1) => {
-      // Safety: Destructive Action Lock
-      const isDestructive = ["DROP ", "TRUNCATE "].some((k) =>
-        sql.toUpperCase().includes(k),
-      );
-      if (isDestructive && settings.destructiveActionLock) {
+      // Safety: Destructive Action Lock (on unless turned off; the API
+      // enforces the same lock)
+      const isDestructive = analyzeSql(sql).destructive.length > 0;
+      if (isDestructive && settings.destructiveActionLock !== false) {
         toast.error("Execution Blocked", {
           description:
             "Destructive commands (DROP/TRUNCATE) are locked in Project Settings.",
@@ -315,8 +349,7 @@ const QueryEditor = () => {
             totalReturned += resultsTotals[idx] || rs.length;
             hasSelect = true;
           } else if (rs && typeof rs === "object") {
-            totalAffected +=
-              (rs.rowCount as number) ?? (rs.affectedRows as number) ?? 0;
+            totalAffected += rs.rowCount ?? rs.affectedRows ?? 0;
           }
         });
 
@@ -349,7 +382,15 @@ const QueryEditor = () => {
         setIsRunning(false);
       }
     },
-    [selectedCluster, executeQuery, bottomTab, loadHistory, isPagingEnabled],
+    [
+      selectedCluster,
+      executeQuery,
+      bottomTab,
+      loadHistory,
+      isPagingEnabled,
+      settings.destructiveActionLock,
+      settings.safetyLimit,
+    ],
   );
 
   const handleRunQuery = useCallback(
@@ -361,22 +402,32 @@ const QueryEditor = () => {
       ).trim();
       if (!sql) return;
 
-      const lowerSql = sql.toLowerCase();
-      if (lowerSql.includes("drop database"))
+      const risk = analyzeSql(sql);
+      if (risk.dropsDatabase)
         return toast.error("Strictly prohibited command.");
 
-      const destructive = [
-        "drop table",
-        "truncate",
-        "delete",
-        "update",
-        "alter table",
-      ].filter((k) => lowerSql.includes(k));
+      const isProduction = selectedCluster.environment === "production";
+      const confirmProduction =
+        isProduction &&
+        settings.productionConfirmations !== false &&
+        risk.writes.length > 0;
+      const dataChanges = risk.writes.filter((w) =>
+        ["DELETE", "UPDATE", "ALTER", "DROP", "TRUNCATE", "MERGE"].includes(w),
+      );
 
-      if (destructive.length > 0) {
+      if (
+        risk.destructive.length > 0 ||
+        dataChanges.length > 0 ||
+        confirmProduction
+      ) {
+        const what = [
+          ...new Set([...risk.destructive, ...dataChanges, ...risk.writes]),
+        ];
         openModal({
-          title: "Destructive Action",
-          message: `Warning: You are about to execute a destructive command (${destructive.join(", ").toUpperCase()}). Proceed with caution.`,
+          title: isProduction ? "Production Database" : "Destructive Action",
+          message: isProduction
+            ? `You are about to run ${what.join(", ")} on the production cluster "${selectedCluster.name}". Proceed with caution.`
+            : `Warning: You are about to execute a destructive command (${what.join(", ")}). Proceed with caution.`,
           type: "warning",
           confirmLabel: "Execute Anyway",
           onConfirm: () => proceedWithExecution(sql),
@@ -386,12 +437,23 @@ const QueryEditor = () => {
 
       await proceedWithExecution(sql);
     },
-    [selectedCluster, activeQuery.code, openModal, proceedWithExecution],
+    [
+      selectedCluster,
+      activeQuery.code,
+      openModal,
+      proceedWithExecution,
+      settings.productionConfirmations,
+    ],
   );
 
   useEffect(() => {
-    if (bottomTab === "history" && selectedCluster) loadHistory();
+    if (bottomTab === "history" && selectedCluster) void loadHistory();
   }, [bottomTab, selectedCluster, loadHistory]);
+
+  const openBottomTab = (tab: "results" | "history") => {
+    if (tab === "history" && bottomTab !== "history") setIsLoadingHistory(true);
+    setBottomTab(tab);
+  };
 
   useEffect(() => {
     if (runRequested > handledRunId.current) {
@@ -400,7 +462,7 @@ const QueryEditor = () => {
     }
   }, [runRequested, handleRunQuery]);
 
-  const handleEditorMount = (editor: any, monaco: any) => {
+  const handleEditorMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
 
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
@@ -414,9 +476,11 @@ const QueryEditor = () => {
       contextMenuGroupId: "navigation",
       contextMenuOrder: 1,
       keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
-      run: (ed: any) => {
+      run: (ed: Parameters<OnMount>[0]) => {
         const selection = ed.getSelection();
-        const selectedText = ed.getModel()?.getValueInRange(selection);
+        const selectedText = selection
+          ? ed.getModel()?.getValueInRange(selection)
+          : "";
         if (selectedText?.trim()) {
           handleRunQuery(selectedText);
         } else {
@@ -445,8 +509,8 @@ const QueryEditor = () => {
 
         if (response.status >= 400) throw new Error("Generation failed");
 
-        // Parse SSE chunks: each line is "data: {"chunk":"..."}" or "data: [DONE]"
-        const fullGeneratedSql = (response.data as string)
+        // Parse SSE events: {"chunk": "..."}, {"error": "..."} or [DONE]
+        const events = (response.data as string)
           .split("\n")
           .filter(
             (line: string) =>
@@ -454,11 +518,18 @@ const QueryEditor = () => {
           )
           .map((line: string) => {
             try {
-              return JSON.parse(line.slice(6)).chunk ?? "";
+              return JSON.parse(line.slice(6)) as {
+                chunk?: string;
+                error?: string;
+              };
             } catch {
-              return "";
+              return {};
             }
-          })
+          });
+        const streamError = events.find((e) => e.error)?.error;
+        if (streamError) throw new Error(streamError);
+        const fullGeneratedSql = events
+          .map((e) => e.chunk ?? "")
           .join("")
           .trim();
         const initialCode = activeQuery.code.trim();
@@ -558,7 +629,7 @@ const QueryEditor = () => {
           <Editor
             height="100%"
             defaultLanguage="sql"
-            theme={settings.monacoTheme || "synq-dark"}
+            theme={editorTheme}
             value={activeQuery.code}
             onChange={(val) => handleUpdateCode(val || "")}
             beforeMount={defineThemes}
@@ -572,16 +643,16 @@ const QueryEditor = () => {
               automaticLayout: true,
               padding: { top: 20 },
               fontFamily:
-                "JetBrains Mono, Menlo, Monaco, Courier New, monospace",
+                "var(--font-geist-mono), Menlo, Monaco, Courier New, monospace",
               bracketPairColorization: {
                 enabled: settings.bracketPairColorization ?? true,
               },
             }}
           />
 
-          <div className="absolute top-6 right-8 flex items-center gap-3 px-4 py-1.5 rounded-lg border border-white/5 bg-black/40 text-[9px] font-black text-zinc-500 uppercase tracking-widest backdrop-blur-md opacity-40 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+          <div className="absolute top-6 right-8 flex items-center gap-3 px-4 py-1.5 rounded-lg border border-border bg-card text-[11px] font-medium text-subtle opacity-40 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
             <div
-              className={`h-1.5 w-1.5 rounded-full ${selectedCluster ? "bg-primary" : "bg-red-500"}`}
+              className={`h-1.5 w-1.5 rounded-full ${selectedCluster ? "bg-primary" : "bg-err"}`}
             ></div>
             {selectedCluster
               ? `${selectedCluster.type === "postgres" ? "PostgreSQL" : "MySQL"} - ${selectedCluster.name}`
@@ -605,7 +676,7 @@ const QueryEditor = () => {
         {queryResults && (
           <div
             onMouseDown={startResizing}
-            className="h-1.5 w-full cursor-row-resize bg-border/20 hover:bg-primary/50 transition-colors z-30"
+            className="h-1.5 w-full cursor-row-resize bg-border hover:bg-primary/50 transition-colors z-30"
           />
         )}
 
@@ -620,7 +691,7 @@ const QueryEditor = () => {
             queryResults={queryResults}
             queryTotals={queryTotals}
             bottomTab={bottomTab}
-            onSetTab={setBottomTab}
+            onSetTab={openBottomTab}
             onClose={() => setQueryResults(null)}
             aiOutput={aiOutput}
             onCloseAiOutput={() => setAiOutput(null)}

@@ -28,14 +28,14 @@ export const Workloads = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <span className="text-primary text-xs font-black tracking-[0.4em] uppercase block mb-3">
+              <span className="text-accent-fg text-xs font-medium block mb-3">
                 Connectivity
               </span>
-              <h2 className="text-4xl md:text-5xl font-serif text-white leading-[1.1] tracking-tighter">
+              <h2 className="text-4xl md:text-5xl text-foreground leading-[1.1] tracking-tight font-semibold">
                 Every Database. <br />
-                <span className="text-primary italic">One Interface.</span>
+                <span className="text-accent-fg">One Interface.</span>
               </h2>
-              <p className="text-xl text-zinc-500 font-medium leading-relaxed max-w-lg mt-6">
+              <p className="text-xl text-subtle leading-relaxed max-w-lg mt-6">
                 Stop switching tools. Use one simple interface to manage every
                 database in your stack — from local files to large clusters.
               </p>
@@ -49,13 +49,11 @@ export const Workloads = () => {
                   className={`px-6 py-3 rounded-full border transition-all duration-500 flex items-center gap-3 ${
                     activeIdx === i
                       ? "bg-primary border-primary text-white"
-                      : "bg-white/[0.02] border-white/10 text-zinc-500 hover:border-white/30"
+                      : "bg-ink/[0.02] border-border text-subtle hover:border-line-strong"
                   }`}
                 >
                   <w.icon className="h-4 w-4" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">
-                    {w.name}
-                  </span>
+                  <span className="text-[11px] font-medium">{w.name}</span>
                 </button>
               ))}
             </div>
@@ -63,8 +61,6 @@ export const Workloads = () => {
 
           {/* Visual Side - The Unified Core */}
           <div className="relative h-96 flex items-center justify-center">
-            <div className="absolute inset-0 bg-primary/5 blur-[120px] rounded-full" />
-
             <div className="relative">
               {/* Unified Rings */}
               {[...Array(3)].map((_, i) => (
@@ -92,7 +88,7 @@ export const Workloads = () => {
                 />
               ))}
 
-              <div className="h-80 w-80 rounded-full border border-white/5 flex items-center justify-center relative overflow-hidden">
+              <div className="h-80 w-80 rounded-full border border-border flex items-center justify-center relative overflow-hidden">
                 <div className="absolute inset-0 tech-grid opacity-[0.03]" />
 
                 <AnimatePresence mode="wait">
@@ -104,17 +100,17 @@ export const Workloads = () => {
                     transition={{ duration: 0.5, ease: "easeOut" }}
                     className="relative z-10 flex flex-col items-center justify-center gap-6"
                   >
-                    <div className="relative p-8 rounded-3xl bg-primary/10 border border-primary/20 backdrop-blur-xl">
+                    <div className="relative p-8 rounded-xl bg-primary/10 border border-primary/20">
                       {React.createElement(workloads[activeIdx].icon, {
-                        className: "h-16 w-16 text-primary",
+                        className: "h-16 w-16 text-accent-fg",
                       })}
                     </div>
 
                     <div className="text-center">
-                      <div className="text-[10px] font-black uppercase tracking-[0.4em] text-white opacity-40 mb-1">
+                      <div className="text-[11px] font-medium text-foreground opacity-40 mb-1">
                         Instance Layer
                       </div>
-                      <div className="text-sm font-mono font-bold text-primary">
+                      <div className="text-sm font-mono font-semibold text-accent-fg">
                         {workloads[activeIdx].name}{" "}
                         {workloads[activeIdx].version}
                       </div>
@@ -131,7 +127,7 @@ export const Workloads = () => {
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
-                className="absolute -top-10 -right-10 px-5 py-2.5 rounded-full border border-primary/20 bg-background/50 backdrop-blur-sm text-[9px] font-black text-primary uppercase tracking-[0.3em]"
+                className="absolute -top-10 -right-10 px-5 py-2.5 rounded-full border border-primary/20 bg-background/50 backdrop-blur-sm text-[11px] font-medium text-accent-fg"
               >
                 Unified Engine: Active
               </motion.div>
@@ -140,10 +136,10 @@ export const Workloads = () => {
         </div>
 
         {/* Groundedness Statement */}
-        <div className="mt-20 pt-16 border-t border-white/5 flex flex-col md:flex-row justify-between items-start gap-12 text-zinc-500">
+        <div className="mt-20 pt-16 border-t border-border flex flex-col md:flex-row justify-between items-start gap-12 text-subtle">
           <div className="max-w-xs space-y-4">
             <div className="h-1 w-12 bg-primary/40" />
-            <p className="text-xs font-bold leading-relaxed uppercase tracking-widest italic text-white/40">
+            <p className="text-xs leading-relaxed text-subtle">
               SynqDB doesn&apos;t just connect; <br />
               it harmonizes.
             </p>

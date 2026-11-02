@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
-import { SynqLogo } from "@/components/ui/SynqLogo";
+import { Logotype } from "@/components/ui/SynqLogo";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export default function LoginPage() {
@@ -12,11 +12,24 @@ export default function LoginPage() {
   const { login, isLoading, error, clearError, isAuthenticated } =
     useAuthStore();
 
+  // `?redirect=` (only same-site paths) and `?error=` from the OAuth flow.
+  const [redirectTo] = useState(() => {
+    if (typeof window === "undefined") return "/dashboard";
+    const target = new URLSearchParams(window.location.search).get("redirect");
+    return target && target.startsWith("/") && !target.startsWith("//")
+      ? target
+      : "/dashboard";
+  });
+  React.useEffect(() => {
+    const oauthError = new URLSearchParams(window.location.search).get("error");
+    if (oauthError) useAuthStore.setState({ error: oauthError });
+  }, []);
+
   React.useEffect(() => {
     if (isAuthenticated) {
-      router.push("/dashboard");
+      router.push(redirectTo);
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, redirectTo]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,7 +39,7 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       await login({ email, password });
-      router.push("/dashboard");
+      router.push(redirectTo);
     } catch {
       // Error is handled by the store
     }
@@ -40,28 +53,26 @@ export default function LoginPage() {
     <div className="min-h-screen bg-background flex flex-col justify-center items-center px-6 py-12">
       {/* Background elements */}
       <div className="absolute inset-0 tech-grid opacity-[0.05] pointer-events-none"></div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
 
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-10">
           <Link href="/" className="inline-flex items-center group mb-8">
-            <SynqLogo className="h-8 w-8 text-primary translate-y-[1px]" />
-            <span className="text-xl font-serif tracking-tight text-white -ml-0.5 italic">
-              ynqDB
-            </span>
+            <Logotype className="text-[22px]" />
           </Link>
-          <h1 className="text-3xl font-serif text-white mb-2">Welcome back</h1>
-          <p className="text-zinc-500 font-medium whitespace-nowrap">
+          <h1 className="text-3xl text-foreground mb-2 tracking-tight font-semibold">
+            Welcome back
+          </h1>
+          <p className="text-subtle whitespace-nowrap">
             Sign in to manage your data clusters.
           </p>
         </div>
 
-        <div className="glass rounded-3xl p-8 border border-white/5 shadow-2xl">
+        <div className="rounded-xl p-6 border border-border bg-card">
           <form onSubmit={handleSubmit} className="space-y-6">
             <button
               type="button"
               onClick={handleGoogleLogin}
-              className="w-full py-3 px-4 rounded-xl bg-white text-zinc-800 font-bold flex items-center justify-center gap-3 hover:bg-zinc-100 transition-all shadow-lg"
+              className="w-full h-10 px-4 rounded-md bg-background text-sm font-medium text-foreground border border-line-strong flex items-center justify-center gap-2.5 hover:bg-bg-300 transition-colors shadow-[0_1px_2px_rgb(0_0_0/0.04)]"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24">
                 <path
@@ -86,19 +97,19 @@ export default function LoginPage() {
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/5"></div>
+                <div className="w-full border-t border-border"></div>
               </div>
-              <div className="relative flex justify-center text-xs uppercase tracking-widest font-black text-zinc-600">
+              <div className="relative flex justify-center text-xs font-medium text-subtle">
                 <span className="bg-background px-4">Or continue with</span>
               </div>
             </div>
 
             {error && (
-              <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-3 text-red-400 text-xs font-medium animate-in fade-in slide-in-from-top-2">
+              <div className="p-4 rounded-xl bg-err/10 border border-err/20 flex items-start gap-3 text-err text-xs font-medium animate-in fade-in slide-in-from-top-2">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 <div className="flex-1 flex justify-between items-center">
                   <span>{error}</span>
-                  <button onClick={clearError} className="hover:text-red-300">
+                  <button onClick={clearError} className="hover:text-err">
                     ✕
                   </button>
                 </div>
@@ -107,40 +118,40 @@ export default function LoginPage() {
 
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
+                <label className="text-[11px] font-medium text-muted-foreground ml-1">
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-subtle" />
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@company.com"
-                    className="w-full bg-white/[0.02] border border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-white placeholder:text-zinc-700 focus:outline-none focus:border-primary/50 transition-all font-medium"
+                    className="w-full bg-background border border-line-strong rounded-md py-2 pl-11 pr-4 text-foreground placeholder:text-subtle/70 outline-none focus:border-primary/60 transition-all text-sm"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
+                <label className="text-[11px] font-medium text-muted-foreground ml-1">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-subtle" />
                   <input
                     type={showPassword ? "text" : "password"}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full bg-white/[0.02] border border-white/5 rounded-xl py-3.5 pl-11 pr-12 text-white placeholder:text-zinc-700 focus:outline-none focus:border-primary/50 transition-all font-medium"
+                    className="w-full bg-background border border-line-strong rounded-md py-2 pl-11 pr-12 text-foreground placeholder:text-subtle/70 outline-none focus:border-primary/60 transition-all text-sm"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-subtle hover:text-muted-foreground transition-colors"
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -152,7 +163,7 @@ export default function LoginPage() {
                 <div className="flex justify-end">
                   <Link
                     href="/auth/forgot-password"
-                    className="text-[10px] font-bold text-primary hover:underline uppercase tracking-widest"
+                    className="text-[11px] font-medium text-accent-fg hover:underline"
                   >
                     Forgot password?
                   </Link>
@@ -162,7 +173,7 @@ export default function LoginPage() {
 
             <button
               disabled={isLoading}
-              className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-black text-lg transition-all active:scale-95 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-2 rounded-md bg-primary text-white font-medium text-sm transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -174,9 +185,12 @@ export default function LoginPage() {
         </div>
 
         <div className="mt-8 text-center">
-          <p className="text-zinc-600 font-medium">
+          <p className="text-subtle">
             Don&apos;t have an account?{" "}
-            <Link href="/auth/signup" className="text-primary hover:underline">
+            <Link
+              href="/auth/signup"
+              className="text-accent-fg hover:underline"
+            >
               Create one free
             </Link>
           </p>

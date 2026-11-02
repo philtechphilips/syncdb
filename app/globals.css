@@ -1,82 +1,206 @@
 @import "tailwindcss";
 
-@theme {
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-serif);
+/* `dark:` follows the theme chosen on <html data-theme>, not only the OS setting. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-  --color-background: #040d12; /* Slightly deeper dark for higher contrast */
-  --color-foreground: #f8fafc;
+/*
+ * Quiet palette: plain surfaces, hairline borders and a single indigo accent
+ * for buttons and links. Light by default; [data-theme="dark"] below swaps
+ * every token, so the UI reads only from these.
+ */
+@theme static {
+  --color-bg: #ffffff;
+  --color-bg-100: #ffffff;
+  --color-bg-200: #fafafa;
+  --color-bg-300: #f3f3f4;
+  --color-line: rgb(0 0 0 / 0.08);
+  --color-line-strong: rgb(0 0 0 / 0.14);
+  --color-fg: #111111;
+  --color-fg-muted: #555555;
+  --color-subtle: #737373;
 
-  --color-card: #08161c;
-  --color-card-foreground: #f8fafc;
+  --color-ok: #16a34a;
+  --color-warn: #d97706;
+  --color-err: #dc2626;
 
-  --color-popover: #040d12;
-  --color-popover-foreground: #f8fafc;
-
-  --color-primary: #277955; /* Refined Forest Green */
+  /* The accent: buttons and active states use it as a fill, links and icons as text. */
+  --color-primary: #4338ca;
+  --color-primary-hover: #3730a3;
   --color-primary-foreground: #ffffff;
+  --color-accent-fg: #4338ca;
 
-  --color-secondary: #00684a; /* MongoDB Deep Green */
-  --color-secondary-foreground: #f8fafc;
+  /* Tints and hairlines: black on light surfaces, white on dark ones. */
+  --color-ink: #000000;
 
-  --color-muted: #0d1e25;
-  --color-muted-foreground: #cbd5e1; /* Higher contrast muted text */
+  /* A soft gray frame around a white panel. */
+  --color-chrome: #f6f6f7;
+  --color-panel: #ffffff;
+  --color-inset: #f7f7f8;
 
-  --color-accent: #277955;
-  --color-accent-foreground: #ffffff;
+  /* Code samples (GitHub light). */
+  --color-syn-text: #24292f;
+  --color-syn-kw: #cf222e;
+  --color-syn-str: #0a3069;
+  --color-syn-fn: #8250df;
+  --color-syn-const: #0550ae;
+  --color-syn-var: #953800;
+  --color-syn-comment: #6e7781;
 
-  --color-destructive: #ff4d4d;
+  /* Names the components use. */
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-fg);
+  --color-card: var(--color-bg-100);
+  --color-card-foreground: var(--color-fg);
+  --color-popover: var(--color-bg-100);
+  --color-popover-foreground: var(--color-fg);
+  --color-secondary: var(--color-bg-300);
+  --color-secondary-foreground: var(--color-fg);
+  --color-muted: var(--color-bg-300);
+  --color-muted-foreground: var(--color-fg-muted);
+  --color-accent: var(--color-primary);
+  --color-accent-foreground: var(--color-primary-foreground);
+  --color-destructive: var(--color-err);
   --color-destructive-foreground: #ffffff;
+  --color-border: var(--color-line);
+  --color-input: var(--color-line-strong);
+  --color-ring: var(--color-primary);
 
-  --color-border: #1e3a44; /* More visible border */
-  --color-input: #0d1e25;
-  --color-ring: #277955;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
 
-  --radius-xl: 1rem;
-  --radius-2xl: 1.5rem;
+:root {
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #0a0a0b;
+  --color-bg-100: #111113;
+  --color-bg-200: #151517;
+  --color-bg-300: #1d1d20;
+  --color-line: rgb(255 255 255 / 0.08);
+  --color-line-strong: rgb(255 255 255 / 0.14);
+  --color-fg: #ededed;
+  --color-fg-muted: #a1a1aa;
+  --color-subtle: #71717a;
+
+  --color-ok: #22c55e;
+  --color-warn: #f59e0b;
+  --color-err: #ef4444;
+
+  --color-primary: #6366f1;
+  --color-primary-hover: #818cf8;
+  --color-accent-fg: #a5b4fc;
+
+  --color-ink: #ffffff;
+
+  --color-syn-text: #e6edf3;
+  --color-syn-kw: #ff7b72;
+  --color-syn-str: #a5d6ff;
+  --color-syn-fn: #d2a8ff;
+  --color-syn-const: #79c0ff;
+  --color-syn-var: #ffa657;
+  --color-syn-comment: #8b949e;
+
+  --color-chrome: #0a0a0b;
+  --color-panel: #0f0f11;
+  --color-inset: #0d0d0f;
+}
+
+html {
+  background: var(--color-bg);
 }
 
 @layer base {
-  * {
-    @apply border-border/50;
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-border);
   }
   body {
-    @apply bg-background text-foreground antialiased selection:bg-primary/30 selection:text-white;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings:
+      "liga" 1,
+      "calt" 1;
+    -webkit-font-smoothing: antialiased;
   }
+}
+
+::selection {
+  background: rgb(99 102 241 / 0.25);
+}
+
+:focus-visible {
+  outline: 2px solid rgb(67 56 202 / 0.5);
+  outline-offset: 2px;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+/* Blueprint grid behind hero sections. */
+@utility bg-grid {
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in oklab, var(--color-ink) 5%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--color-ink) 5%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 64px 64px;
+}
+
+@utility bg-dots {
+  background-image: radial-gradient(
+    color-mix(in oklab, var(--color-ink) 10%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 16px 16px;
 }
 
 @layer utilities {
   .glass {
-    @apply bg-white/[0.03] backdrop-blur-xl border border-white/10;
-  }
-
-  .mesh-gradient {
-    background-image:
-      radial-gradient(at 0% 0%, rgba(39, 121, 85, 0.08) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(0, 104, 74, 0.1) 0px, transparent 50%),
-      radial-gradient(
-        at 100% 100%,
-        rgba(39, 121, 85, 0.05) 0px,
-        transparent 50%
-      ),
-      radial-gradient(at 0% 100%, rgba(0, 104, 74, 0.1) 0px, transparent 50%);
+    background: var(--color-bg-100);
+    border: 1px solid var(--color-line);
   }
 
   .tech-grid {
     background-image:
-      linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-    background-size: 40px 40px;
+      linear-gradient(
+        to right,
+        color-mix(in oklab, var(--color-ink) 4%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in oklab, var(--color-ink) 4%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 64px 64px;
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-br from-white via-white to-white/60;
+    color: var(--color-fg);
   }
 
-  .font-serif {
-    font-family: var(--font-serif), serif;
-  }
   @keyframes infinite-scroll {
     from {
       transform: translateX(0);
@@ -92,32 +216,6 @@
     width: max-content;
   }
 
-  @keyframes beam {
-    0% {
-      transform: translateY(-100%);
-      opacity: 0;
-    }
-    50% {
-      opacity: 0.5;
-    }
-    100% {
-      transform: translateY(100%);
-      opacity: 0;
-    }
-  }
-
-  .animate-beam-1 {
-    animation: beam 8s linear infinite;
-  }
-  .animate-beam-2 {
-    animation: beam 12s linear infinite;
-    animation-delay: 2s;
-  }
-  .animate-beam-3 {
-    animation: beam 10s linear infinite;
-    animation-delay: 4s;
-  }
-
   @keyframes shimmer {
     0% {
       background-position: -200% center;
@@ -130,20 +228,6 @@
   .animate-shimmer {
     background-size: 200% auto;
     animation: shimmer 3s linear infinite;
-  }
-
-  @keyframes float-y {
-    0%,
-    100% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-8px);
-    }
-  }
-
-  .animate-float {
-    animation: float-y 4s ease-in-out infinite;
   }
 
   @keyframes fade-in-up {
@@ -172,5 +256,16 @@
 
   .animate-marquee {
     animation: marquee 30s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
   }
 }

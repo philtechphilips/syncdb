@@ -8,7 +8,6 @@ import {
   FileJson,
   FileText,
   Database,
-  ShieldCheck,
   AlertCircle,
   Loader2,
   CheckCircle2,
@@ -51,7 +50,9 @@ export default function BackupRestorePage() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `backup_${selectedCluster.name}_${new Date().toISOString().split("T")[0]}.${backupFormat}`;
+      // A CSV backup holds one CSV per table, packed as a JSON map.
+      const extension = backupFormat === "csv" ? "csv.json" : backupFormat;
+      a.download = `backup_${selectedCluster.name}_${new Date().toISOString().split("T")[0]}.${extension}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -79,7 +80,20 @@ export default function BackupRestorePage() {
       if (restoreFormat === "json") {
         restoreData = JSON.parse(text);
       } else if (restoreFormat === "csv") {
-        restoreData = { [selectedCluster.name]: text };
+        // Either a CSV backup from SynqDB ({ table: csv }) or a single CSV
+        // file, restored into the table named after the file.
+        let parsed: unknown = null;
+        try {
+          parsed = JSON.parse(text);
+        } catch {
+          // not JSON — a plain CSV file
+        }
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          restoreData = parsed;
+        } else {
+          const tableName = file.name.replace(/\.csv$/i, "");
+          restoreData = { [tableName]: text };
+        }
       } else {
         restoreData = { content: text };
       }
@@ -96,9 +110,9 @@ export default function BackupRestorePage() {
 
   if (!selectedCluster) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-zinc-500">
+      <div className="flex flex-col items-center justify-center h-full text-subtle">
         <Database className="h-12 w-12 mb-4 opacity-20" />
-        <p className="text-sm font-medium">
+        <p className="text-sm">
           Please select a cluster to use Backup & Restore
         </p>
       </div>
@@ -132,35 +146,31 @@ export default function BackupRestorePage() {
   ];
 
   return (
-    <div className="flex-1 overflow-y-auto bg-background p-8 font-sans">
-      <div className="max-w-4xl mx-auto space-y-10">
+    <div className="flex-1 overflow-y-auto bg-background px-4 py-6 sm:px-6 font-sans">
+      <div className="max-w-4xl space-y-5">
         {/* Header */}
-        <div className="flex flex-col gap-2 items-center text-center">
-          <div className="h-12 w-12 bg-primary/10 flex items-center justify-center mb-2 border border-primary/20">
-            <ShieldCheck className="text-primary h-7 w-7" />
-          </div>
-          <h1 className="text-3xl font-black text-white tracking-tight">
-            Database Maintenance
+        <div>
+          <h1 className="text-[22px] leading-tight font-semibold tracking-tight text-foreground">
+            Backup &amp; restore
           </h1>
-          <p className="text-zinc-500 text-sm max-w-lg font-medium">
-            Securely snapshot your workspace or recover from a previous state.
-            Actions are performed server-side for maximum performance.
+          <p className="mt-1 text-[13px] text-muted-foreground">
+            Export this cluster to a file, or load a backup into it.
           </p>
         </div>
 
         {/* Mode Select */}
-        <div className="flex justify-center">
-          <div className="inline-flex p-1 bg-zinc-900/80 border border-white/5 rounded-xl backdrop-blur-md">
+        <div className="flex">
+          <div className="inline-flex p-0.5 bg-bg-200 border border-border rounded-lg">
             <button
               onClick={() => setMode("backup")}
-              className={`flex items-center gap-2 px-8 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${mode === "backup" ? "bg-primary text-white" : "text-zinc-500 hover:text-white"}`}
+              className={`flex items-center gap-2 px-8 py-2.5 rounded-lg text-xs font-medium transition-all ${mode === "backup" ? "bg-primary text-white" : "text-subtle hover:text-foreground"}`}
             >
               <Download className="h-4 w-4" />
               Backup
             </button>
             <button
               onClick={() => setMode("restore")}
-              className={`flex items-center gap-2 px-8 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${mode === "restore" ? "bg-primary text-white" : "text-zinc-500 hover:text-white"}`}
+              className={`flex items-center gap-2 px-8 py-2.5 rounded-lg text-xs font-medium transition-all ${mode === "restore" ? "bg-primary text-white" : "text-subtle hover:text-foreground"}`}
             >
               <Upload className="h-4 w-4" />
               Restore
@@ -171,14 +181,12 @@ export default function BackupRestorePage() {
         <div className="mt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {mode === "backup" ? (
             /* Backup Section */
-            <div className="group rounded-3xl border border-white/5 bg-zinc-900/40 p-10 flex flex-col gap-10 transition-all hover:bg-zinc-900/60 hover:border-white/10 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:opacity-10 transition-opacity">
-                <Download className="h-32 w-32 text-primary" />
-              </div>
-
+            <div className="relative rounded-xl border border-border bg-card p-6 flex flex-col gap-5">
               <div className="space-y-3">
-                <h2 className="text-xl font-black text-white">Full Snapshot</h2>
-                <p className="text-zinc-500 text-sm font-medium leading-relaxed max-w-xl">
+                <h2 className="text-base font-semibold tracking-tight text-foreground">
+                  Full snapshot
+                </h2>
+                <p className="text-subtle text-sm leading-relaxed max-w-xl">
                   Generate a portable export of all tables, relations, and data.
                   Depending on your cluster size, this may take a few seconds.
                 </p>
@@ -189,25 +197,25 @@ export default function BackupRestorePage() {
                   <div
                     key={f.id}
                     onClick={() => setBackupFormat(f.id)}
-                    className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col gap-3 ${backupFormat === f.id ? "bg-primary/5 border-primary/20 ring-1 ring-primary/20" : "bg-muted/20 border-white/5 hover:bg-muted/40"}`}
+                    className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col gap-3 ${backupFormat === f.id ? "bg-primary/5 border-primary/20 ring-1 ring-primary/20" : "bg-muted/20 border-border hover:bg-muted/40"}`}
                   >
                     <div
-                      className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${backupFormat === f.id ? "bg-primary text-white" : "bg-zinc-800 text-zinc-400"}`}
+                      className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${backupFormat === f.id ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}
                     >
                       <f.icon className="h-5 w-5" />
                     </div>
                     <div className="flex flex-col flex-1">
                       <span
-                        className={`text-[10px] font-black uppercase tracking-widest ${backupFormat === f.id ? "text-primary" : "text-zinc-200"}`}
+                        className={`text-[11px] font-medium ${backupFormat === f.id ? "text-accent-fg" : "text-foreground"}`}
                       >
                         {f.label}
                       </span>
-                      <p className="text-[10px] text-zinc-500 mt-1 leading-tight">
+                      <p className="text-[11px] text-subtle mt-1 leading-tight">
                         {f.description}
                       </p>
                     </div>
                     {backupFormat === f.id && (
-                      <CheckCircle2 className="h-4 w-4 text-primary absolute top-4 right-4" />
+                      <CheckCircle2 className="h-4 w-4 text-accent-fg absolute top-4 right-4" />
                     )}
                   </div>
                 ))}
@@ -216,7 +224,7 @@ export default function BackupRestorePage() {
               <button
                 onClick={handleBackup}
                 disabled={isBackingUp}
-                className="w-full h-14 rounded-2xl bg-primary text-white text-[13px] font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all active:scale-[0.98] disabled:opacity-50 mt-4"
+                className="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-white shadow-[0_1px_2px_rgb(67_56_202/0.25)] transition-colors hover:bg-primary-hover disabled:opacity-50"
               >
                 {isBackingUp ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
@@ -228,16 +236,12 @@ export default function BackupRestorePage() {
             </div>
           ) : (
             /* Restore Section */
-            <div className="group rounded-3xl border border-white/5 bg-zinc-900/40 p-10 flex flex-col gap-10 transition-all hover:bg-zinc-900/60 hover:border-white/10 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:opacity-10 transition-opacity">
-                <Upload className="h-32 w-32 text-primary" />
-              </div>
-
+            <div className="relative rounded-xl border border-border bg-card p-6 flex flex-col gap-5">
               <div className="space-y-3">
-                <h2 className="text-xl font-black text-white">
+                <h2 className="text-xl font-semibold text-foreground">
                   System Restore
                 </h2>
-                <p className="text-zinc-500 text-sm font-medium leading-relaxed max-w-xl">
+                <p className="text-subtle text-sm leading-relaxed max-w-xl">
                   Recover your database to a previous state by uploading a
                   backup. Warning: This operation will overwrite existing data.
                 </p>
@@ -250,25 +254,25 @@ export default function BackupRestorePage() {
                     onClick={() =>
                       setRestoreFormat(f.id as "sql" | "json" | "csv")
                     }
-                    className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col gap-3 ${restoreFormat === f.id ? "bg-primary/5 border-primary/20 ring-1 ring-primary/20" : "bg-muted/20 border-white/5 hover:bg-muted/40"}`}
+                    className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col gap-3 ${restoreFormat === f.id ? "bg-primary/5 border-primary/20 ring-1 ring-primary/20" : "bg-muted/20 border-border hover:bg-muted/40"}`}
                   >
                     <div
-                      className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${restoreFormat === f.id ? "bg-primary text-white" : "bg-zinc-800 text-zinc-400"}`}
+                      className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${restoreFormat === f.id ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}
                     >
                       <f.icon className="h-5 w-5" />
                     </div>
                     <div className="flex flex-col flex-1">
                       <span
-                        className={`text-[10px] font-black uppercase tracking-widest ${restoreFormat === f.id ? "text-primary" : "text-zinc-200"}`}
+                        className={`text-[11px] font-medium ${restoreFormat === f.id ? "text-accent-fg" : "text-foreground"}`}
                       >
                         {f.label}
                       </span>
-                      <p className="text-[10px] text-zinc-500 mt-1 leading-tight">
+                      <p className="text-[11px] text-subtle mt-1 leading-tight">
                         {f.description}
                       </p>
                     </div>
                     {restoreFormat === f.id && (
-                      <CheckCircle2 className="h-4 w-4 text-primary absolute top-4 right-4" />
+                      <CheckCircle2 className="h-4 w-4 text-accent-fg absolute top-4 right-4" />
                     )}
                   </div>
                 ))}
@@ -284,21 +288,21 @@ export default function BackupRestorePage() {
                       ? ".sql"
                       : restoreFormat === "json"
                         ? ".json"
-                        : ".csv"
+                        : ".csv,.json"
                   }
                   onChange={handleRestore}
                   disabled={isRestoring}
                 />
                 <label
                   htmlFor="restore-file"
-                  className={`w-full h-14 rounded-2xl border-2 border-dashed transition-all flex items-center justify-center gap-3 cursor-pointer ${isRestoring ? "opacity-50 pointer-events-none" : "border-primary/30 text-white hover:bg-primary/5 hover:border-primary/50 bg-primary"}`}
+                  className={`w-full h-14 rounded-xl border-2 border-dashed transition-all flex items-center justify-center gap-3 cursor-pointer ${isRestoring ? "opacity-50 pointer-events-none" : "border-primary/30 text-white hover:bg-primary/5 hover:border-primary/50 bg-primary"}`}
                 >
                   {isRestoring ? (
-                    <Loader2 className="h-5 w-5 animate-spin text-white" />
+                    <Loader2 className="h-5 w-5 animate-spin text-foreground" />
                   ) : (
                     <>
-                      <Upload className="h-5 w-5 text-white" />
-                      <span className="text-[13px] font-black uppercase tracking-widest text-white">
+                      <Upload className="h-5 w-5 text-foreground" />
+                      <span className="text-[13px] font-semibold text-foreground">
                         Select & Restore File
                       </span>
                     </>
@@ -310,17 +314,17 @@ export default function BackupRestorePage() {
         </div>
 
         {/* Status Card */}
-        <div className="bg-zinc-900/80 border border-white/5 rounded-2xl p-6 flex gap-5 backdrop-blur-md">
+        <div className="bg-bg-200 border border-border rounded-xl p-6 flex gap-5">
           <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-            <AlertCircle className="h-5 w-5 text-primary" />
+            <AlertCircle className="h-5 w-5 text-subtle" />
           </div>
           <div className="space-y-1">
-            <span className="text-[11px] font-black text-primary uppercase tracking-widest">
+            <span className="text-[11px] font-medium text-accent-fg">
               Workspace Context
             </span>
-            <p className="text-[13px] text-zinc-400 font-medium leading-relaxed">
+            <p className="text-[13px] text-muted-foreground leading-relaxed">
               Backup/Restore is currently targeting{" "}
-              <span className="text-white font-bold">
+              <span className="text-foreground font-semibold">
                 {selectedCluster.name}
               </span>{" "}
               ({selectedCluster.type}). All generated files are encrypted in

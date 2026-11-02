@@ -18,19 +18,19 @@ export default function DashboardError({
     <div className="flex-1 flex items-center justify-center p-8">
       <div className="max-w-sm w-full text-center space-y-5">
         <div className="flex justify-center">
-          <div className="h-12 w-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-            <AlertTriangle className="h-5 w-5 text-red-400" />
+          <div className="h-12 w-12 rounded-xl bg-err/10 border border-err/20 flex items-center justify-center">
+            <AlertTriangle className="h-5 w-5 text-err" />
           </div>
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-white mb-1.5">
+          <h2 className="text-lg font-semibold text-foreground mb-1.5">
             Failed to load this page
           </h2>
-          <p className="text-sm text-zinc-500 leading-relaxed">
+          <p className="text-sm text-subtle leading-relaxed">
             {error.message || "An unexpected error occurred in the dashboard."}
           </p>
           {error.digest && (
-            <p className="mt-2 text-[10px] font-mono text-zinc-700">
+            <p className="mt-2 text-[11px] font-mono text-subtle/70">
               {error.digest}
             </p>
           )}
@@ -38,14 +38,14 @@ export default function DashboardError({
         <div className="flex items-center justify-center gap-2.5">
           <button
             onClick={reset}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-all"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-md bg-primary text-white text-xs font-medium hover:bg-primary-hover transition-all"
           >
             <RotateCcw className="h-3 w-3" />
             Retry
           </button>
           <a
             href="/dashboard"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-white/10 text-white text-xs font-medium hover:bg-white/[0.05] transition-all"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-border text-foreground text-xs font-medium hover:bg-ink/[0.05] transition-all"
           >
             <Home className="h-3 w-3" />
             Dashboard home

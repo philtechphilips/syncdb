@@ -96,7 +96,7 @@ export const Pricing = () => {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="text-primary text-[10px] font-black tracking-[0.4em] uppercase block mb-3"
+            className="text-accent-fg text-[11px] font-medium block mb-3"
           >
             Pricing
           </motion.span>
@@ -106,11 +106,11 @@ export const Pricing = () => {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-serif text-white mb-8 leading-[1.1] tracking-tighter"
+            className="text-4xl md:text-5xl text-foreground mb-8 leading-[1.1] tracking-tight font-semibold"
           >
             Start free.
             <br />
-            <span className="text-primary italic">Scale when ready.</span>
+            <span className="text-accent-fg">Scale when ready.</span>
           </motion.h2>
 
           {/* Billing toggle */}
@@ -120,28 +120,28 @@ export const Pricing = () => {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="inline-flex items-center gap-3 p-1 rounded-full border border-white/10 bg-white/[0.03]"
+            className="inline-flex items-center gap-3 p-1 rounded-full border border-border bg-ink/[0.03]"
           >
             <button
               onClick={() => setAnnual(false)}
-              className={`px-5 py-2 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-300 ${
+              className={`px-5 py-2 rounded-full text-[11px] font-medium transition-all duration-300 ${
                 !annual
-                  ? "bg-white/10 text-white"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-ink/10 text-foreground"
+                  : "text-subtle hover:text-foreground"
               }`}
             >
               Monthly
             </button>
             <button
               onClick={() => setAnnual(true)}
-              className={`flex items-center gap-2 px-5 py-2 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-300 ${
+              className={`flex items-center gap-2 px-5 py-2 rounded-full text-[11px] font-medium transition-all duration-300 ${
                 annual
-                  ? "bg-white/10 text-white"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-ink/10 text-foreground"
+                  : "text-subtle hover:text-foreground"
               }`}
             >
               Annual
-              <span className="px-2 py-0.5 rounded-full bg-primary/15 border border-primary/25 text-primary text-[9px]">
+              <span className="px-2 py-0.5 rounded-full bg-primary/15 border border-primary/25 text-accent-fg text-[11px]">
                 −20%
               </span>
             </button>
@@ -158,10 +158,10 @@ export const Pricing = () => {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
-              className={`relative rounded-2xl p-6 flex flex-col gap-6 transition-all duration-300 ${
+              className={`relative rounded-xl p-6 flex flex-col gap-6 transition-all duration-300 ${
                 plan.featured
-                  ? "border border-primary/30 bg-primary/[0.04] shadow-xl shadow-primary/5 lg:-mt-4"
-                  : "border border-white/[0.07] bg-white/[0.02] hover:border-white/12"
+                  ? "border border-primary/30 bg-primary/[0.04] shadow-xl lg:-mt-4"
+                  : "border border-border bg-ink/[0.02] hover:border-line-strong"
               }`}
             >
               {/* Featured glow */}
@@ -171,7 +171,7 @@ export const Pricing = () => {
 
               {/* Badge */}
               {plan.badge && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary text-white text-[9px] font-black uppercase tracking-widest shadow-lg shadow-primary/20">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary text-white text-[11px] font-medium shadow-[0_1px_2px_rgb(67_56_202/0.25)]">
                   <Zap className="h-2.5 w-2.5" />
                   {plan.badge}
                 </div>
@@ -179,10 +179,10 @@ export const Pricing = () => {
 
               {/* Plan header */}
               <div>
-                <div className="text-sm font-bold text-white mb-0.5">
+                <div className="text-sm font-semibold text-foreground mb-0.5">
                   {plan.name}
                 </div>
-                <div className="text-xs text-zinc-500 font-medium">
+                <div className="text-xs text-subtle font-medium">
                   {plan.tagline}
                 </div>
               </div>
@@ -191,19 +191,19 @@ export const Pricing = () => {
               <div className="flex items-end gap-2">
                 {plan.monthlyPrice !== null ? (
                   <>
-                    <span className="text-4xl font-serif text-white leading-none tracking-tighter">
+                    <span className="text-4xl text-foreground leading-none tracking-tight font-semibold">
                       {plan.monthlyPrice === 0
                         ? "Free"
                         : `$${annual ? plan.annualPrice : plan.monthlyPrice}`}
                     </span>
                     {plan.monthlyPrice > 0 && (
-                      <span className="text-zinc-500 text-sm mb-0.5 font-medium">
+                      <span className="text-subtle text-sm mb-0.5 font-medium">
                         / seat / mo
                       </span>
                     )}
                   </>
                 ) : (
-                  <span className="text-4xl font-serif text-primary italic leading-none tracking-tighter">
+                  <span className="text-4xl text-accent-fg leading-none tracking-tight font-semibold">
                     Custom
                   </span>
                 )}
@@ -213,7 +213,7 @@ export const Pricing = () => {
               {plan.monthlyPrice !== null &&
                 plan.monthlyPrice > 0 &&
                 annual && (
-                  <p className="text-[10px] text-primary/70 font-medium -mt-4">
+                  <p className="text-[11px] text-accent-fg/70 -mt-4">
                     Billed annually — save $
                     {(plan.monthlyPrice - plan.annualPrice!) * 12}/yr per seat
                   </p>
@@ -223,8 +223,8 @@ export const Pricing = () => {
               <button
                 className={`w-full flex items-center justify-center gap-2 py-3 rounded-full text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] ${
                   plan.ctaVariant === "primary"
-                    ? "bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20"
-                    : "border border-white/15 text-white hover:bg-white/[0.05]"
+                    ? "bg-primary text-white hover:bg-primary/90 shadow-lg"
+                    : "border border-line-strong text-foreground hover:bg-ink/[0.05]"
                 }`}
               >
                 {plan.cta}
@@ -232,7 +232,7 @@ export const Pricing = () => {
               </button>
 
               {/* Divider */}
-              <div className="h-px bg-white/5" />
+              <div className="h-px bg-ink/5" />
 
               {/* Feature list */}
               <ul className="space-y-3">
@@ -245,14 +245,14 @@ export const Pricing = () => {
                       className={`h-4 w-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
                         plan.featured
                           ? "bg-primary/15 border border-primary/25"
-                          : "bg-white/5 border border-white/10"
+                          : "bg-ink/5 border border-border"
                       }`}
                     >
                       <Check
-                        className={`h-2.5 w-2.5 ${plan.featured ? "text-primary" : "text-zinc-400"}`}
+                        className={`h-2.5 w-2.5 ${plan.featured ? "text-accent-fg" : "text-muted-foreground"}`}
                       />
                     </div>
-                    <span className="text-zinc-400 font-medium leading-snug">
+                    <span className="text-muted-foreground font-medium leading-snug">
                       {feature}
                     </span>
                   </li>
@@ -268,7 +268,7 @@ export const Pricing = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="text-center mt-12 text-xs text-zinc-600 font-medium"
+          className="text-center mt-12 text-xs text-subtle font-medium"
         >
           All plans include a 14-day free trial. No credit card required.
         </motion.p>

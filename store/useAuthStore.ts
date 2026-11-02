@@ -1,22 +1,40 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import api from "@/lib/api";
+import api, { refreshAccessToken } from "@/lib/api";
 import { getErrorMessage } from "@/lib/errorUtils";
 
-// Refresh token lives in localStorage so it survives new tabs and browser
-// restarts. Access token stays in-memory only — never written to storage.
-const RT_KEY = "synqdb_rt";
+// The refresh token is an httpOnly cookie owned by the API; JavaScript can
+// never read it. The access token stays in memory only.
+const LEGACY_RT_KEY = "synqdb_rt";
+if (typeof window !== "undefined") {
+  try {
+    localStorage.removeItem(LEGACY_RT_KEY); // tokens from older versions
+  } catch {
+    // storage unavailable
+  }
+}
 
-const saveRefreshToken = (token: string | null) => {
-  if (typeof window === "undefined") return;
-  if (token) localStorage.setItem(RT_KEY, token);
-  else localStorage.removeItem(RT_KEY);
-};
+/** A connection saved on the agent (`synqdb-agent add`); never includes secrets. */
+export interface AgentConnectionInfo {
+  name: string;
+  type: string;
+  database: string | null;
+}
 
-export const loadRefreshToken = (): string | null => {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(RT_KEY);
-};
+/** Project settings saved on the account (all optional). */
+export interface UserSettings {
+  aiModel?: string;
+  aiContextEnabled?: boolean;
+  aiVerbosity?: string;
+  destructiveActionLock?: boolean;
+  productionConfirmations?: boolean;
+  editorFontSize?: number;
+  safetyLimit?: number;
+  autoSaveQueries?: boolean;
+  monacoTheme?: string;
+  bracketPairColorization?: boolean;
+  [key: string]: unknown;
+}
 
 export interface User {
   id: string;
@@ -24,7 +42,7 @@ export interface User {
   full_name: string;
   role: string;
   profile_picture?: string;
-  settings?: Record<string, any>;
+  settings?: UserSettings;
 }
 
 interface AuthState {
@@ -34,13 +52,13 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
 
-  // Called by api.ts refresher — must not import api to avoid circular dep
-  getRefreshToken: () => string | null;
-  setTokens: (access: string, refresh: string) => void;
+  /** Called after a refresh: stores the new access token (and user). */
+  setSession: (access: string, user?: User | null) => void;
   setUser: (user: User | null) => void;
 
   login: (credentials: Record<string, unknown>) => Promise<void>;
   register: (data: Record<string, unknown>) => Promise<Record<string, unknown>>;
+  /** Clears local state and ends the session on the server. */
   logout: () => void;
   checkAuth: () => Promise<boolean>;
 
@@ -56,11 +74,15 @@ interface AuthState {
     current_password: string;
     new_password: string;
   }) => Promise<void>;
-  updateSettings: (settings: Record<string, any>) => Promise<void>;
+  updateSettings: (settings: UserSettings) => Promise<void>;
 
   fetchAgentKey: () => Promise<{ agentKey: string }>;
   rotateAgentKey: () => Promise<{ agentKey: string }>;
-  fetchAgentStatus: () => Promise<{ connected: boolean }>;
+  fetchAgentStatus: () => Promise<{
+    connected: boolean;
+    version: string | null;
+    connections: AgentConnectionInfo[];
+  }>;
   clearError: () => void;
 }
 
@@ -77,25 +99,8 @@ function scheduleProactiveRefresh(accessToken: string) {
     const payload = JSON.parse(atob(accessToken.split(".")[1]));
     const expiresInMs = payload.exp * 1000 - Date.now();
     const refreshInMs = Math.max(expiresInMs - 60_000, 0); // 60s before expiry
-
-    proactiveRefreshTimer = setTimeout(async () => {
-      const rt = loadRefreshToken();
-      if (!rt) return;
-      try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL;
-        const res = await fetch(`${API_URL}/v1/auth/refresh`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refresh_token: rt }),
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        saveRefreshToken(data.refresh_token ?? rt);
-        useAuthStore.setState({ access_token: data.access_token });
-        scheduleProactiveRefresh(data.access_token); // chain next refresh
-      } catch {
-        // Interceptor will handle it on next request
-      }
+    proactiveRefreshTimer = setTimeout(() => {
+      void refreshAccessToken();
     }, refreshInMs);
   } catch {
     // Malformed token — interceptor handles it on next request
@@ -111,11 +116,12 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       error: null,
 
-      getRefreshToken: () => loadRefreshToken(),
-
-      setTokens: (access, refresh) => {
-        saveRefreshToken(refresh);
-        set({ access_token: access, isAuthenticated: true });
+      setSession: (access, user) => {
+        set({
+          access_token: access,
+          isAuthenticated: true,
+          ...(user ? { user } : {}),
+        });
         scheduleProactiveRefresh(access);
       },
 
@@ -127,8 +133,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         try {
           const res = await api.post("/v1/auth/login", credentials);
-          const { user, access_token, refresh_token } = res.data;
-          saveRefreshToken(refresh_token);
+          const { user, access_token } = res.data;
           set({ user, access_token, isAuthenticated: true, isLoading: false });
           scheduleProactiveRefresh(access_token);
         } catch (error: unknown) {
@@ -154,13 +159,19 @@ export const useAuthStore = create<AuthState>()(
           clearTimeout(proactiveRefreshTimer);
           proactiveRefreshTimer = null;
         }
-        saveRefreshToken(null);
+        const wasSignedIn = !!get().access_token || get().isAuthenticated;
         set({
           user: null,
           access_token: null,
           isAuthenticated: false,
           error: null,
         });
+        if (wasSignedIn) {
+          // Ends the server session and clears the httpOnly cookie.
+          void api
+            .post("/v1/auth/logout", {}, { _skipToast: true })
+            .catch(() => {});
+        }
         if (
           typeof window !== "undefined" &&
           !window.location.pathname.startsWith("/auth")
@@ -169,54 +180,40 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // checkAuth — called once on dashboard mount.
-      // 1. No in-memory token → silent refresh from localStorage RT.
-      // 2. Have in-memory token → trust it (interceptor handles expiry on-demand).
-      // 3. RT missing or refresh fails → return false (logout handled by caller).
+      // checkAuth — called on dashboard mount and after OAuth.
+      // No in-memory token → exchange the refresh cookie for one.
       checkAuth: async () => {
         set({ isLoading: true });
-
         const { access_token } = get();
-
-        if (!access_token) {
-          const rt = loadRefreshToken();
-          if (!rt) {
-            set({ isAuthenticated: false, isLoading: false });
-            return false;
-          }
-          try {
-            const API_URL = process.env.NEXT_PUBLIC_API_URL;
-            const res = await fetch(`${API_URL}/v1/auth/refresh`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ refresh_token: rt }),
-            });
-            if (!res.ok) throw new Error("refresh failed");
-            const data = await res.json();
-            saveRefreshToken(data.refresh_token ?? rt);
-            set({
-              access_token: data.access_token,
-              isAuthenticated: true,
-              isLoading: false,
-            });
-            scheduleProactiveRefresh(data.access_token);
-            return true;
-          } catch {
-            saveRefreshToken(null);
-            set({
-              isAuthenticated: false,
-              isLoading: false,
-              access_token: null,
-            });
-            return false;
-          }
+        if (access_token) {
+          set({ isAuthenticated: true, isLoading: false });
+          scheduleProactiveRefresh(access_token);
+          return true;
         }
-
-        // Token already in memory — still valid (interceptor will refresh on 401).
-        // Schedule a proactive refresh so it doesn't expire while the user is active.
-        set({ isAuthenticated: true, isLoading: false });
-        scheduleProactiveRefresh(access_token);
-        return true;
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/v1/auth/refresh`,
+            {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: "{}",
+            },
+          );
+          if (!res.ok) throw new Error("refresh failed");
+          const data = await res.json();
+          set({
+            access_token: data.access_token,
+            user: data.user ?? get().user,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+          scheduleProactiveRefresh(data.access_token);
+          return true;
+        } catch {
+          set({ isAuthenticated: false, isLoading: false, access_token: null });
+          return false;
+        }
       },
 
       // ── Profile ─────────────────────────────────────────────────────────────
@@ -284,23 +281,23 @@ export const useAuthStore = create<AuthState>()(
       // ── Agent ───────────────────────────────────────────────────────────────
 
       fetchAgentKey: async () => {
-        const res = await api.get("/v1/auth/agent-key", {
-          _skipToast: true,
-        } as any);
+        const res = await api.get("/v1/auth/agent-key", { _skipToast: true });
         return res.data;
       },
 
       rotateAgentKey: async () => {
-        const res = await api.post("/v1/auth/rotate-agent-key", {}, {
-          _skipToast: true,
-        } as any);
+        const res = await api.post(
+          "/v1/auth/rotate-agent-key",
+          {},
+          { _skipToast: true },
+        );
         return res.data;
       },
 
       fetchAgentStatus: async () => {
         const res = await api.get("/v1/auth/agent-status", {
           _skipToast: true,
-        } as any);
+        });
         return res.data;
       },
 
@@ -308,8 +305,8 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "auth-storage",
-      // Only persist the user profile — tokens are handled separately
-      // (access_token in-memory, refresh_token in localStorage via saveRefreshToken)
+      // Only persist the user profile — the access token stays in memory and
+      // the refresh token is an httpOnly cookie.
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,

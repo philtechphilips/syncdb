@@ -16,12 +16,12 @@ export interface DataExplorerState {
     rowId: string | number;
     colName: string;
     type: "cell" | "row";
-    value?: any;
+    value?: unknown;
   } | null;
   selectedRows: Set<string | number>;
 }
 
-export function useDataExplorer(initialData: any[] = []) {
+export function useDataExplorer(initialData: Record<string, unknown>[] = []) {
   const [selectedRows, setSelectedRows] = useState<Set<string | number>>(
     new Set(),
   );
@@ -47,7 +47,7 @@ export function useDataExplorer(initialData: any[] = []) {
       e: React.MouseEvent,
       rowId: string | number,
       colName: string,
-      value: any,
+      value: unknown,
       type: "cell" | "row" = "cell",
     ) => {
       e.preventDefault();

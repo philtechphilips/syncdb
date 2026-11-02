@@ -68,8 +68,7 @@ export const SecuritySection = () => (
     id="security"
     className="py-32 bg-background relative overflow-hidden"
   >
-    <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-    <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[500px] h-[500px] bg-primary/[0.04] blur-[130px] rounded-full pointer-events-none" />
+    <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-ink/[0.06] to-transparent" />
 
     <div className="max-w-7xl mx-auto px-6 relative z-10">
       {/* Header */}
@@ -80,15 +79,15 @@ export const SecuritySection = () => (
           whileInView="visible"
           viewport={{ once: true }}
         >
-          <span className="text-primary text-[10px] font-black tracking-[0.4em] uppercase block mb-3">
+          <span className="text-accent-fg text-[11px] font-medium block mb-3">
             Security
           </span>
-          <h2 className="text-4xl md:text-5xl font-serif text-white leading-[1.1] tracking-tighter">
+          <h2 className="text-4xl md:text-5xl text-foreground leading-[1.1] tracking-tight font-semibold">
             Protected
             <br />
-            <span className="text-primary italic">by design.</span>
+            <span className="text-accent-fg">by design.</span>
           </h2>
-          <p className="text-xl text-zinc-500 font-medium leading-relaxed max-w-xl mt-6">
+          <p className="text-xl text-subtle leading-relaxed max-w-xl mt-6">
             Here&apos;s exactly what we do to protect your credentials and data
             — no marketing speak, just what&apos;s actually in the code.
           </p>
@@ -107,16 +106,16 @@ export const SecuritySection = () => (
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
-              className="group flex gap-4 p-5 rounded-2xl border border-white/[0.06] bg-white/[0.015] hover:border-primary/20 hover:bg-primary/[0.03] transition-all duration-300"
+              className="group flex gap-4 p-5 rounded-xl border border-border bg-ink/[0.015] hover:border-primary/20 hover:bg-primary/[0.03] transition-all duration-300"
             >
-              <div className="h-9 w-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-110 transition-transform duration-300">
-                <Icon className="h-4 w-4 text-primary" />
+              <div className="h-9 w-9 rounded-xl bg-bg-200 border border-border flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-110 transition-transform duration-300">
+                <Icon className="h-4 w-4 text-subtle" />
               </div>
               <div className="space-y-1.5">
-                <h3 className="text-sm font-bold text-white tracking-tight leading-snug">
+                <h3 className="text-sm font-semibold text-foreground tracking-tight leading-snug">
                   {pillar.title}
                 </h3>
-                <p className="text-sm text-zinc-500 leading-relaxed group-hover:text-zinc-400 transition-colors duration-300">
+                <p className="text-sm text-subtle leading-relaxed group-hover:text-muted-foreground transition-colors duration-300">
                   {pillar.description}
                 </p>
               </div>
@@ -131,20 +130,20 @@ export const SecuritySection = () => (
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
-        className="mt-12 pt-10 border-t border-white/5 flex items-center justify-between flex-wrap gap-4"
+        className="mt-12 pt-10 border-t border-border flex items-center justify-between flex-wrap gap-4"
       >
-        <p className="text-sm text-zinc-600 font-medium">
+        <p className="text-sm text-subtle">
           See something we should add?{" "}
           <a
             href="#"
-            className="text-zinc-400 underline underline-offset-4 hover:text-white transition-colors"
+            className="text-muted-foreground underline underline-offset-4 hover:text-foreground transition-colors"
           >
             Open an issue on GitHub
           </a>
         </p>
         <div className="flex items-center gap-2">
-          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600">
+          <div className="h-1.5 w-1.5 rounded-full bg-ok animate-pulse" />
+          <span className="text-[11px] font-medium text-subtle">
             No open security incidents
           </span>
         </div>
