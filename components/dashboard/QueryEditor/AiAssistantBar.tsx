@@ -64,7 +64,7 @@ const AiAssistantBar = ({
         ) : mode === "explain" ? (
           <div className="flex-1 flex items-center gap-6">
             <div className="flex items-center gap-3 shrink-0">
-              <HelpCircle className="h-4 w-4 text-subtle" />
+              <HelpCircle className="h-4 w-4 text-accent-fg" />
               <span className="text-[11px] font-medium text-muted-foreground">
                 Explain Mode:
               </span>

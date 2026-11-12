@@ -94,7 +94,7 @@ const LocalAgentSection = () => {
               { step: "3", label: "Run", cmd: "synqdb-agent" },
             ].map(({ step, label, cmd }) => (
               <div key={step} className="flex items-center gap-3">
-                <span className="h-5 w-5 rounded-full bg-bg-200 border border-border text-[11px] font-medium text-muted-foreground flex items-center justify-center shrink-0">
+                <span className="h-5 w-5 rounded-full bg-primary/10 border border-primary/20 text-[11px] font-medium text-accent-fg flex items-center justify-center shrink-0">
                   {step}
                 </span>
                 <div className="flex items-center gap-2 flex-1 min-w-0">

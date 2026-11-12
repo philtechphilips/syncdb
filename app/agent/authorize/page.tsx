@@ -10,7 +10,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
-import { Logotype } from "@/components/ui/SynqLogo";
+import { AuthShell } from "@/components/auth/AuthShell";
 import { useAuthStore } from "@/store/useAuthStore";
 import api from "@/lib/api";
 import { getErrorMessage } from "@/lib/errorUtils";
@@ -117,7 +117,7 @@ function AuthorizeContent() {
             <XCircle className="h-8 w-8 text-muted-foreground" />
           )}
         </div>
-        <h2 className="text-2xl text-foreground tracking-tight font-semibold">
+        <h2 className="font-display text-[34px] leading-[1.05] tracking-[-0.03em] text-foreground">
           {ok ? "CLI Authorized" : "Request Denied"}
         </h2>
         <p className="text-muted-foreground max-w-xs">
@@ -141,7 +141,7 @@ function AuthorizeContent() {
         <div className="h-16 w-16 rounded-xl bg-err/10 border border-err/20 flex items-center justify-center">
           <XCircle className="h-8 w-8 text-err" />
         </div>
-        <h2 className="text-2xl text-foreground tracking-tight font-semibold">
+        <h2 className="font-display text-[34px] leading-[1.05] tracking-[-0.03em] text-foreground">
           Authorization Failed
         </h2>
         <p className="text-muted-foreground max-w-xs">{errorMsg}</p>
@@ -160,12 +160,12 @@ function AuthorizeContent() {
       onSubmit={handleAuthorize}
       className="flex flex-col items-center gap-6 text-center w-full max-w-sm"
     >
-      <div className="h-16 w-16 rounded-xl bg-bg-200 border border-border flex items-center justify-center">
-        <Terminal className="h-8 w-8 text-subtle" />
+      <div className="h-16 w-16 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+        <Terminal className="h-8 w-8 text-accent-fg" />
       </div>
 
       <div className="space-y-1">
-        <h2 className="text-2xl text-foreground tracking-tight font-semibold">
+        <h2 className="font-display text-[34px] leading-[1.05] tracking-[-0.03em] text-foreground">
           Authorize CLI Agent
         </h2>
         <p className="text-muted-foreground text-sm">
@@ -173,7 +173,7 @@ function AuthorizeContent() {
         </p>
       </div>
 
-      <div className="w-full glass rounded-xl border border-border p-4 text-left space-y-3 text-sm">
+      <div className="w-full rounded-2xl bg-sand p-4 text-left space-y-3 text-sm">
         <div className="flex items-center gap-2 text-foreground/80 font-medium">
           <ShieldCheck className="h-4 w-4 text-accent-fg shrink-0" />
           Authorizing as <span className="text-foreground">{user?.email}</span>
@@ -206,7 +206,7 @@ function AuthorizeContent() {
           maxLength={9}
           autoComplete="off"
           spellCheck={false}
-          className="w-full text-center font-mono text-lg bg-background border border-line-strong rounded-md px-4 py-2 text-foreground placeholder:text-subtle/70 outline-none focus:border-primary/60"
+          className="w-full text-center font-mono text-lg bg-background border border-line-strong rounded-xl h-12 px-4 text-foreground placeholder:text-subtle/70 outline-none focus:border-primary/60"
         />
         {errorMsg && <span className="block text-xs text-err">{errorMsg}</span>}
       </label>
@@ -226,7 +226,7 @@ function AuthorizeContent() {
         <button
           type="button"
           onClick={handleDeny}
-          className="flex-1 py-2.5 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:border-line-strong transition-colors text-sm font-medium"
+          className="flex-1 h-11 rounded-full bg-sand-2 text-foreground hover:bg-ink/[0.08] transition-colors text-[15px] font-medium"
         >
           Deny
         </button>
@@ -235,7 +235,7 @@ function AuthorizeContent() {
           disabled={
             state === "authorizing" || code.replace(/[^A-Z0-9]/g, "").length < 8
           }
-          className="flex-1 py-2.5 rounded-md bg-primary text-white font-medium text-sm hover:bg-primary-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          className="flex-1 h-11 rounded-full bg-primary text-white font-medium text-[15px] hover:bg-primary-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {state === "authorizing" ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -249,26 +249,14 @@ function AuthorizeContent() {
 
 export default function AgentAuthorizePage() {
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-12">
-      <div className="absolute inset-0 tech-grid opacity-[0.05] pointer-events-none" />
-
-      <div className="relative z-10 w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center group">
-            <Logotype className="text-[22px]" />
-          </Link>
-        </div>
-
-        <div className="rounded-xl p-6 border border-border bg-card flex flex-col items-center">
-          <Suspense
-            fallback={
-              <Loader2 className="h-8 w-8 text-accent-fg animate-spin" />
-            }
-          >
-            <AuthorizeContent />
-          </Suspense>
-        </div>
+    <AuthShell>
+      <div className="flex flex-col items-center">
+        <Suspense
+          fallback={<Loader2 className="h-8 w-8 text-accent-fg animate-spin" />}
+        >
+          <AuthorizeContent />
+        </Suspense>
       </div>
-    </div>
+    </AuthShell>
   );
 }

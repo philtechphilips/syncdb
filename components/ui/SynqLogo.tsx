@@ -2,26 +2,29 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-/** Text logotype used in the UI. The chevron mark below is for icons and small spaces. */
+/** The SynqDB logo: the chevron mark in the accent colour, then "ynqDB". Sized by font size. */
 export function Logotype({
   className = "text-[17px]",
+  inverted = false,
 }: {
   className?: string;
+  /** White on a coloured background. */
+  inverted?: boolean;
 }) {
   return (
     <span
       role="img"
       aria-label="SynqDB"
-      className={`inline-flex items-center leading-none whitespace-nowrap uppercase select-none text-foreground ${className}`}
+      className={`inline-flex items-center leading-none whitespace-nowrap select-none ${className}`}
     >
-      <span aria-hidden="true" className="font-semibold tracking-[-0.055em]">
-        Synq
-      </span>
+      <SynqLogo
+        className={`h-[1.6em] w-[1.6em] shrink-0 translate-y-[0.03em] ${inverted ? "text-white" : "text-primary"}`}
+      />
       <span
         aria-hidden="true"
-        className="ml-[0.08em] font-light tracking-[0.02em]"
+        className={`-ml-[0.1em] font-semibold tracking-tight ${inverted ? "text-white" : "text-foreground"}`}
       >
-        DB
+        ynqDB
       </span>
     </span>
   );

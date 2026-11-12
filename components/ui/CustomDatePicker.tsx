@@ -139,9 +139,9 @@ const CustomDatePicker = ({
       >
         <div className="absolute left-4 top-1/2 -translate-y-1/2">
           {isDateTime ? (
-            <Clock className="h-4 w-4 text-subtle" />
+            <Clock className="h-4 w-4 text-accent-fg/50" />
           ) : (
-            <Calendar className="h-4 w-4 text-subtle" />
+            <Calendar className="h-4 w-4 text-accent-fg/50" />
           )}
         </div>
         <span className={value ? "text-foreground font-mono" : "text-subtle"}>

@@ -117,7 +117,7 @@ const DataTableBody = ({
                 <td className="h-9 w-9 text-center border-r border-border">
                   <button
                     onClick={() => onOpenUpdateModal(row)}
-                    className="p-1 rounded opacity-0 group-hover:opacity-100 text-subtle hover:text-foreground hover:bg-ink/[0.06] transition-colors"
+                    className="p-1 rounded opacity-0 group-hover:opacity-100 text-subtle hover:text-accent-fg hover:bg-primary/10 transition-colors"
                     title="Update Row"
                   >
                     <Maximize2 className="h-2.5 w-2.5" />

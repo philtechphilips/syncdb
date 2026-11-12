@@ -93,8 +93,8 @@ const FKTablePickerModal = ({
         {/* Header */}
         <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-ink/[0.02]">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-bg-200 flex items-center justify-center border border-border">
-              <Database className="h-5 w-5 text-subtle" />
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+              <Database className="h-5 w-5 text-accent-fg" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-foreground tracking-tight">

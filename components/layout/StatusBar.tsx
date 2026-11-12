@@ -21,7 +21,9 @@ const StatusBar = () => {
     <div className="hidden sm:flex h-8 w-full shrink-0 items-center justify-between border-t border-border bg-bg-200 px-4 text-xs text-muted-foreground">
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2 group cursor-default">
-          <DatabaseIcon className="h-3.5 w-3.5 text-subtle" />
+          <DatabaseIcon
+            className={`h-3.5 w-3.5 ${selectedCluster ? "text-accent-fg" : "text-subtle"}`}
+          />
           <span className={selectedCluster ? "text-foreground" : "text-subtle"}>
             {dbDisplay}
           </span>
@@ -30,7 +32,7 @@ const StatusBar = () => {
         {selectedCluster && (
           <>
             {selectedTable && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-accent-fg/80">
                 <Table className="h-3.5 w-3.5" />
                 <span>{selectedTable}</span>
               </div>
@@ -41,7 +43,7 @@ const StatusBar = () => {
 
       <div className="flex items-center gap-6">
         {isDataLoading ? (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 text-accent-fg">
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
             <span>Loading…</span>
           </div>

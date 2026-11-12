@@ -46,6 +46,14 @@
   --color-syn-var: #953800;
   --color-syn-comment: #6e7781;
 
+  /* Landing page surfaces. */
+  --color-sand: #f6f5fa;
+  --color-sand-2: #eceaf5;
+
+  --animate-drift: drift 7s ease-in-out infinite;
+  --animate-caret: caret 1s steps(1) infinite;
+  --animate-tab-progress: tab-progress 4.5s linear forwards;
+
   /* Names the components use. */
   --color-background: var(--color-bg);
   --color-foreground: var(--color-fg);
@@ -102,6 +110,9 @@
   --color-syn-const: #79c0ff;
   --color-syn-var: #ffa657;
   --color-syn-comment: #8b949e;
+
+  --color-sand: #131317;
+  --color-sand-2: #1e1d25;
 
   --color-chrome: #0a0a0b;
   --color-panel: #0f0f11;
@@ -255,8 +266,136 @@ html {
   }
 
   .animate-marquee {
-    animation: marquee 30s linear infinite;
+    animation: marquee 60s linear infinite;
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Landing page                                                        */
+/* ------------------------------------------------------------------ */
+
+@utility font-display {
+  font-family: var(--font-newsreader), ui-serif, Georgia, serif;
+  font-weight: 400;
+  font-optical-sizing: auto;
+}
+
+@utility marquee-mask {
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    black 8%,
+    black 92%,
+    transparent
+  );
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate(6px, -12px);
+    opacity: 1;
+  }
+}
+
+@keyframes caret {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes tab-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.dash-flow {
+  stroke-dasharray: 4 6;
+  animation: dash-flow 1.1s linear infinite;
+}
+
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.landing-panel {
+  background:
+    radial-gradient(55% 45% at 50% 0%, #e0e7ff 0%, transparent 70%),
+    radial-gradient(45% 45% at 0% 100%, #ede9fe 0%, transparent 70%),
+    radial-gradient(45% 45% at 100% 100%, #dbeafe 0%, transparent 70%),
+    linear-gradient(180deg, #f3f2fc 0%, #e8e6fb 100%);
+}
+
+.landing-band {
+  background: linear-gradient(
+    180deg,
+    var(--color-primary) 0%,
+    #6a5cf3 30%,
+    #c4bffa 72%,
+    var(--color-bg) 100%
+  );
+}
+
+.landing-cta {
+  background:
+    linear-gradient(180deg, var(--color-bg) 0%, transparent 9%),
+    radial-gradient(
+      70% 55% at 50% 0%,
+      rgb(255 255 255 / 0.1) 0%,
+      transparent 70%
+    ),
+    linear-gradient(180deg, #4338ca 0%, #3a32b4 100%);
+}
+
+[data-theme="dark"] .landing-cta {
+  background:
+    linear-gradient(180deg, var(--color-bg) 0%, transparent 9%),
+    radial-gradient(
+      70% 55% at 50% 0%,
+      rgb(99 102 241 / 0.2) 0%,
+      transparent 70%
+    ),
+    linear-gradient(180deg, #17153a 0%, #110f29 100%);
+}
+
+[data-theme="dark"] .landing-panel {
+  background:
+    radial-gradient(
+      55% 45% at 50% 0%,
+      rgb(99 102 241 / 0.28) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      45% 45% at 0% 100%,
+      rgb(139 92 246 / 0.18) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      45% 45% at 100% 100%,
+      rgb(59 130 246 / 0.14) 0%,
+      transparent 70%
+    ),
+    linear-gradient(180deg, #121222 0%, #17152c 100%);
+}
+
+[data-theme="dark"] .landing-band {
+  background: linear-gradient(
+    180deg,
+    var(--color-primary) 0%,
+    #4338ca 35%,
+    #1e1b4b 75%,
+    var(--color-bg) 100%
+  );
 }
 
 @media (prefers-reduced-motion: reduce) {

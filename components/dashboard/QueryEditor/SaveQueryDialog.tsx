@@ -155,7 +155,7 @@ const SaveQueryDialog: React.FC<SaveQueryDialogProps> = ({
         </div>
 
         <div className="flex items-center gap-3 mb-8">
-          <div className="h-10 w-10 rounded-xl bg-bg-200 flex items-center justify-center border border-border">
+          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
             <Save size={20} className="text-accent-fg" />
           </div>
           <div>

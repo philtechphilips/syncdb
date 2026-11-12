@@ -6,7 +6,7 @@
     <!-- Architectural Diamond Frame - Subtle Background -->
     <path
         d="M50 10 L85 45 L50 80 L15 45 Z"
-        stroke="#277955"
+        stroke="#4338ca"
         stroke-width="1.5"
         opacity="0.1"
     />
@@ -15,7 +15,7 @@
     <!-- Left Layer (Source) -->
     <path
         d="M42 30 L22 50 L42 70"
-        stroke="#277955"
+        stroke="#4338ca"
         stroke-width="10"
         stroke-linecap="round"
         stroke-linejoin="round"
@@ -24,7 +24,7 @@
     <!-- Right Layer (Interface) -->
     <path
         d="M58 30 L78 50 L58 70"
-        stroke="#277955"
+        stroke="#4338ca"
         stroke-width="10"
         stroke-linecap="round"
         stroke-linejoin="round"
@@ -35,7 +35,7 @@
     <rect
         x="47" y="32" width="6" height="36"
         rx="3"
-        fill="#277955"
+        fill="#4338ca"
     />
     
     <!-- Dynamic Pulse Detail -->
@@ -43,6 +43,6 @@
         cx="50"
         cy="50"
         r="3"
-        fill="#277955"
+        fill="#4338ca"
     />
 </svg>

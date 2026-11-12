@@ -9,7 +9,7 @@ export const getEnvColor = (env: string = "development") => {
     case "staging":
       return "#F59E0B";
     default:
-      return "#10B981"; // Primary green for dev
+      return "#4338ca"; // Accent for dev
   }
 };
 

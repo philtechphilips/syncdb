@@ -51,7 +51,7 @@ const DiagramToolbar = ({
       className={`flex flex-col lg:flex-row lg:items-center justify-between border-b border-border bg-background px-2 lg:px-4 py-2 gap-3 min-h-[3.5rem] lg:min-h-0 ${isFullscreen ? "lg:h-14 lg:px-8" : ""}`}
     >
       <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-[11px] font-medium text-muted-foreground">
-        <div className="flex items-center gap-2 text-muted-foreground">
+        <div className="flex items-center gap-2 text-accent-fg">
           <MousePointer2 className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">Canvas</span>
         </div>

@@ -33,7 +33,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useClusterStore, Cluster } from "@/store/useClusterStore";
 import { useModalStore } from "@/store/useModalStore";
-import { Logotype } from "@/components/ui/SynqLogo";
+import { SynqLogo } from "@/components/ui/SynqLogo";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Skeleton } from "@/components/ui/Skeleton";
 
@@ -158,10 +158,19 @@ const Sidebar = ({
       className={`fixed left-0 top-0 z-50 h-screen w-[220px] bg-chrome flex flex-col font-sans transition-transform duration-300 transform lg:translate-x-0 ${isMobileOpen ? "translate-x-0 border-r border-border" : "-translate-x-full"}`}
     >
       {/* Logo Area & Mobile Close */}
-      <div className="flex items-start justify-between px-4 pt-5 pb-5">
-        <div className="flex flex-col gap-1.5">
-          <Logotype className="text-[18px]" />
-          <span className="text-[11px] text-subtle">Database workspace</span>
+      <div className="flex items-center justify-between px-4 pt-5 pb-5">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 shrink-0 bg-primary/10 rounded-xl border border-primary/20 flex items-center justify-center overflow-hidden text-primary">
+            <SynqLogo className="h-5 w-5" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold text-foreground tracking-tight">
+              SynqDB
+            </span>
+            <span className="text-[11px] text-accent-fg leading-tight">
+              Professional
+            </span>
+          </div>
         </div>
         <button
           onClick={onCloseMobile}
@@ -289,28 +298,28 @@ const Sidebar = ({
           <nav className="flex flex-col gap-0.5">
             <button
               onClick={() => onTabChange("query")}
-              className={`flex h-9 w-full items-center gap-3 rounded-lg px-3 text-[13px] transition-colors ${activeTab === "query" ? "bg-panel text-foreground shadow-[0_1px_2px_rgb(0_0_0/0.06),inset_0_0_0_1px_rgb(0_0_0/0.06)]" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
+              className={`flex h-9 w-full items-center gap-3 rounded-lg px-3 text-[13px] transition-colors ${activeTab === "query" ? "bg-primary/10 text-accent-fg font-medium" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
             >
               <Terminal className="h-4 w-4" />
               SQL Editor
             </button>
             <button
               onClick={() => onTabChange("er")}
-              className={`flex h-9 w-full items-center gap-3 rounded-lg px-3 text-[13px] transition-colors ${activeTab === "er" ? "bg-panel text-foreground shadow-[0_1px_2px_rgb(0_0_0/0.06),inset_0_0_0_1px_rgb(0_0_0/0.06)]" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
+              className={`flex h-9 w-full items-center gap-3 rounded-lg px-3 text-[13px] transition-colors ${activeTab === "er" ? "bg-primary/10 text-accent-fg font-medium" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
             >
               <LayoutGrid className="h-4 w-4" />
               ER Diagrams
             </button>
             <button
               onClick={() => onTabChange("sync")}
-              className={`flex h-9 w-full items-center gap-3 rounded-lg px-3 text-[13px] transition-colors ${activeTab === "sync" ? "bg-panel text-foreground shadow-[0_1px_2px_rgb(0_0_0/0.06),inset_0_0_0_1px_rgb(0_0_0/0.06)]" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
+              className={`flex h-9 w-full items-center gap-3 rounded-lg px-3 text-[13px] transition-colors ${activeTab === "sync" ? "bg-primary/10 text-accent-fg font-medium" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
             >
               <Zap className="h-4 w-4" />
               Database Sync
             </button>
             <button
               onClick={() => onTabChange("backup")}
-              className={`flex h-9 w-full items-center gap-3 rounded-lg px-3 text-[13px] transition-colors ${activeTab === "backup" ? "bg-panel text-foreground shadow-[0_1px_2px_rgb(0_0_0/0.06),inset_0_0_0_1px_rgb(0_0_0/0.06)]" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
+              className={`flex h-9 w-full items-center gap-3 rounded-lg px-3 text-[13px] transition-colors ${activeTab === "backup" ? "bg-primary/10 text-accent-fg font-medium" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
             >
               <HardDrive className="h-4 w-4" />
               Backup & Restore
@@ -325,7 +334,7 @@ const Sidebar = ({
             <button
               onClick={onOpenConnect}
               aria-label="Add connection"
-              className="text-subtle hover:text-foreground transition-colors"
+              className="text-accent-fg hover:text-foreground transition-colors"
             >
               <Plus className="h-3.5 w-3.5" />
             </button>
@@ -337,11 +346,11 @@ const Sidebar = ({
               className="flex h-9 items-center gap-2 rounded-lg px-3 text-[13px] text-foreground hover:bg-ink/[0.04] cursor-pointer transition-colors"
             >
               {isTablesExpanded ? (
-                <ChevronDown className="h-3 w-3 text-subtle" />
+                <ChevronDown className="h-3 w-3 text-subtle group-hover:text-accent-fg" />
               ) : (
-                <ChevronRight className="h-3 w-3 text-subtle" />
+                <ChevronRight className="h-3 w-3 text-subtle group-hover:text-accent-fg" />
               )}
-              <Table className="h-4 w-4 text-subtle" />
+              <Table className="h-4 w-4 text-accent-fg/80" />
               <span>Tables</span>
               <span className="ml-auto font-mono text-[11px] text-subtle">
                 {
@@ -383,7 +392,7 @@ const Sidebar = ({
                           onContextMenu={(e) =>
                             handleContextMenu(e, table.name)
                           }
-                          className={`flex h-7 items-center gap-2 ml-4 pl-3 pr-1 rounded-md font-mono text-xs transition-colors cursor-pointer group/item ${selectedTable === table.name ? "text-foreground bg-ink/[0.06]" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
+                          className={`flex h-7 items-center gap-2 ml-4 pl-3 pr-1 rounded-md font-mono text-xs transition-colors cursor-pointer group/item ${selectedTable === table.name ? "text-accent-fg bg-primary/10" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
                         >
                           <span className="truncate flex-1">{table.name}</span>
                           <button
@@ -411,14 +420,14 @@ const Sidebar = ({
           <nav className="flex flex-col gap-0.5">
             <button
               onClick={() => router.push("/dashboard/settings/project")}
-              className={`flex h-9 w-full items-center gap-3 rounded-lg px-3 text-[13px] transition-colors ${pathname === "/dashboard/settings/project" ? "bg-panel text-foreground shadow-[0_1px_2px_rgb(0_0_0/0.06),inset_0_0_0_1px_rgb(0_0_0/0.06)]" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
+              className={`flex h-9 w-full items-center gap-3 rounded-lg px-3 text-[13px] transition-colors ${pathname === "/dashboard/settings/project" ? "bg-primary/10 text-accent-fg font-medium" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
             >
               <Settings className="h-4 w-4" />
               Project Settings
             </button>
             <button
               onClick={() => onTabChange("logs")}
-              className={`flex h-9 w-full items-center gap-3 rounded-lg px-3 text-[13px] transition-colors ${activeTab === "logs" ? "bg-panel text-foreground shadow-[0_1px_2px_rgb(0_0_0/0.06),inset_0_0_0_1px_rgb(0_0_0/0.06)]" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
+              className={`flex h-9 w-full items-center gap-3 rounded-lg px-3 text-[13px] transition-colors ${activeTab === "logs" ? "bg-primary/10 text-accent-fg font-medium" : "text-muted-foreground hover:bg-ink/[0.04] hover:text-foreground"}`}
             >
               <History className="h-4 w-4" />
               Query Logs
@@ -506,7 +515,7 @@ const Sidebar = ({
           {[
             {
               label: "View Data",
-              color: "text-foreground",
+              color: "text-accent-fg",
               onClick: () => onTableSelect(contextMenu.table!),
             },
             {

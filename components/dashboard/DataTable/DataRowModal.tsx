@@ -48,7 +48,7 @@ const DataRowModal = ({
               {isEditMode ? (
                 <ArrowUpDown className="h-5 w-5 text-accent-fg rotate-45" />
               ) : (
-                <Plus className="h-5 w-5 text-subtle" />
+                <Plus className="h-5 w-5 text-accent-fg" />
               )}
               {isEditMode ? "Update Row" : "Insert New Row"}
             </h3>

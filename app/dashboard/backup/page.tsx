@@ -5,6 +5,7 @@ import { useClusterStore } from "@/store/useClusterStore";
 import {
   Download,
   Upload,
+  ShieldCheck,
   FileJson,
   FileText,
   Database,
@@ -150,9 +151,14 @@ export default function BackupRestorePage() {
       <div className="max-w-4xl space-y-5">
         {/* Header */}
         <div>
-          <h1 className="text-[22px] leading-tight font-semibold tracking-tight text-foreground">
-            Backup &amp; restore
-          </h1>
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-accent-fg">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <h1 className="text-[22px] leading-tight font-semibold tracking-tight text-foreground">
+              Backup &amp; restore
+            </h1>
+          </div>
           <p className="mt-1 text-[13px] text-muted-foreground">
             Export this cluster to a file, or load a backup into it.
           </p>
@@ -181,7 +187,10 @@ export default function BackupRestorePage() {
         <div className="mt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {mode === "backup" ? (
             /* Backup Section */
-            <div className="relative rounded-xl border border-border bg-card p-6 flex flex-col gap-5">
+            <div className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 flex flex-col gap-5">
+              <div className="absolute top-0 right-0 p-6 opacity-[0.06] group-hover:opacity-10 transition-opacity pointer-events-none">
+                <Download className="h-28 w-28 text-primary" />
+              </div>
               <div className="space-y-3">
                 <h2 className="text-base font-semibold tracking-tight text-foreground">
                   Full snapshot
@@ -236,7 +245,10 @@ export default function BackupRestorePage() {
             </div>
           ) : (
             /* Restore Section */
-            <div className="relative rounded-xl border border-border bg-card p-6 flex flex-col gap-5">
+            <div className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 flex flex-col gap-5">
+              <div className="absolute top-0 right-0 p-6 opacity-[0.06] group-hover:opacity-10 transition-opacity pointer-events-none">
+                <Upload className="h-28 w-28 text-primary" />
+              </div>
               <div className="space-y-3">
                 <h2 className="text-xl font-semibold text-foreground">
                   System Restore
@@ -316,7 +328,7 @@ export default function BackupRestorePage() {
         {/* Status Card */}
         <div className="bg-bg-200 border border-border rounded-xl p-6 flex gap-5">
           <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-            <AlertCircle className="h-5 w-5 text-subtle" />
+            <AlertCircle className="h-5 w-5 text-accent-fg" />
           </div>
           <div className="space-y-1">
             <span className="text-[11px] font-medium text-accent-fg">

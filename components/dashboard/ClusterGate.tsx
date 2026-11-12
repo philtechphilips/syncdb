@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useClusterStore, Cluster } from "@/store/useClusterStore";
 import { useAuthStore } from "@/store/useAuthStore";
-import { Logotype } from "@/components/ui/SynqLogo";
+import { SynqLogo } from "@/components/ui/SynqLogo";
 import { Skeleton } from "@/components/ui/Skeleton";
 import ConnectionDialog from "./ConnectionDialog";
 
@@ -62,10 +62,21 @@ export default function ClusterGate({
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative overflow-hidden">
         <div className="absolute inset-0 tech-grid opacity-[0.05] pointer-events-none"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
 
         <div className="w-full max-w-4xl relative z-10 flex flex-col items-center">
           <div className="text-center mb-12 flex flex-col items-center">
-            <Logotype className="mb-8 text-[22px]" />
+            <div className="inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 mb-6 p-4 text-primary">
+              <SynqLogo className="h-full w-full" />
+            </div>
+            <div className="flex flex-col mb-6">
+              <span className="text-2xl font-semibold text-foreground tracking-tight">
+                SynqDB
+              </span>
+              <span className="text-xs text-accent-fg mt-1">
+                Professional Interface
+              </span>
+            </div>
             <h1 className="text-3xl text-foreground mb-3 tracking-tight font-semibold">
               {clusters.length === 0
                 ? "Establish your first connection"

@@ -210,9 +210,14 @@ export default function SyncPage() {
       <div className="px-4 sm:px-6 py-6 border-b border-border bg-background">
         <div className="flex flex-col lg:flex-row lg:items-start justify-between mb-5 gap-4">
           <div>
-            <h1 className="text-[22px] leading-tight font-semibold tracking-tight text-foreground">
-              Database sync
-            </h1>
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-accent-fg">
+                <Zap className="h-5 w-5" />
+              </div>
+              <h1 className="text-[22px] leading-tight font-semibold tracking-tight text-foreground">
+                Database sync
+              </h1>
+            </div>
             <p className="mt-1 text-[13px] text-muted-foreground">
               Compare two clusters, then copy the differences across.
             </p>

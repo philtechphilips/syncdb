@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
-import { Logotype } from "@/components/ui/SynqLogo";
+import { AuthHeading, AuthShell } from "@/components/auth/AuthShell";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export default function LoginPage() {
@@ -50,29 +50,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col justify-center items-center px-6 py-12">
-      {/* Background elements */}
-      <div className="absolute inset-0 tech-grid opacity-[0.05] pointer-events-none"></div>
+    <AuthShell>
+      <div>
+        <AuthHeading title="Welcome back">
+          Sign in to manage your data clusters.
+        </AuthHeading>
 
-      <div className="w-full max-w-md relative z-10">
-        <div className="text-center mb-10">
-          <Link href="/" className="inline-flex items-center group mb-8">
-            <Logotype className="text-[22px]" />
-          </Link>
-          <h1 className="text-3xl text-foreground mb-2 tracking-tight font-semibold">
-            Welcome back
-          </h1>
-          <p className="text-subtle whitespace-nowrap">
-            Sign in to manage your data clusters.
-          </p>
-        </div>
-
-        <div className="rounded-xl p-6 border border-border bg-card">
+        <div>
           <form onSubmit={handleSubmit} className="space-y-6">
             <button
               type="button"
               onClick={handleGoogleLogin}
-              className="w-full h-10 px-4 rounded-md bg-background text-sm font-medium text-foreground border border-line-strong flex items-center justify-center gap-2.5 hover:bg-bg-300 transition-colors shadow-[0_1px_2px_rgb(0_0_0/0.04)]"
+              className="w-full h-11 px-4 rounded-full bg-sand-2 text-[15px] font-medium text-foreground flex items-center justify-center gap-2.5 hover:bg-ink/[0.08] transition-colors"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24">
                 <path
@@ -118,7 +107,7 @@ export default function LoginPage() {
 
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-medium text-muted-foreground ml-1">
+                <label className="text-[13px] text-muted-foreground">
                   Email Address
                 </label>
                 <div className="relative">
@@ -129,13 +118,13 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@company.com"
-                    className="w-full bg-background border border-line-strong rounded-md py-2 pl-11 pr-4 text-foreground placeholder:text-subtle/70 outline-none focus:border-primary/60 transition-all text-sm"
+                    className="w-full bg-background border border-line-strong rounded-xl h-11 pl-11 pr-4 text-foreground placeholder:text-subtle/70 outline-none focus:border-primary/60 transition-all text-sm"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-medium text-muted-foreground ml-1">
+                <label className="text-[13px] text-muted-foreground">
                   Password
                 </label>
                 <div className="relative">
@@ -146,7 +135,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full bg-background border border-line-strong rounded-md py-2 pl-11 pr-12 text-foreground placeholder:text-subtle/70 outline-none focus:border-primary/60 transition-all text-sm"
+                    className="w-full bg-background border border-line-strong rounded-xl h-11 pl-11 pr-12 text-foreground placeholder:text-subtle/70 outline-none focus:border-primary/60 transition-all text-sm"
                   />
                   <button
                     type="button"
@@ -173,7 +162,7 @@ export default function LoginPage() {
 
             <button
               disabled={isLoading}
-              className="w-full py-2 rounded-md bg-primary text-white font-medium text-sm transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-11 rounded-full bg-primary text-white font-medium text-[15px] hover:bg-primary-hover shadow-[0_1px_2px_rgb(67_56_202/0.3)] transition-colors flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -184,8 +173,8 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <div className="mt-8 text-center">
-          <p className="text-subtle">
+        <div className="mt-8">
+          <p className="text-[14px] text-muted-foreground">
             Don&apos;t have an account?{" "}
             <Link
               href="/auth/signup"
@@ -196,6 +185,6 @@ export default function LoginPage() {
           </p>
         </div>
       </div>
-    </div>
+    </AuthShell>
   );
 }

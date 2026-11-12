@@ -27,7 +27,7 @@ export default function NotFound() {
           <div className="absolute inset-0 flex items-center justify-center translate-y-4">
             <div className="flex flex-col items-center gap-6">
               <div className="h-24 w-24 rounded-xl bg-ink/[0.02] border border-border flex items-center justify-center group">
-                <Search className="h-10 w-10 text-subtle" />
+                <Search className="h-10 w-10 text-accent-fg" />
               </div>
               <h2 className="text-3xl md:text-4xl text-foreground max-w-md tracking-tight font-semibold">
                 Data cluster not found

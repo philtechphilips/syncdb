@@ -105,7 +105,7 @@ export const formatToPDF = <T extends Record<string, unknown>>(
     head: [keys],
     body: body,
     styles: { fontSize: 8 },
-    headStyles: { fillColor: [0, 237, 100], textColor: [0, 0, 0] },
+    headStyles: { fillColor: [67, 56, 202], textColor: [255, 255, 255] },
   });
 
   return doc;

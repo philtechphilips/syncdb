@@ -31,12 +31,13 @@ const AgentSetupModal = ({ onDone }: AgentSetupModalProps) => {
     <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/25 backdrop-blur-[2px] p-4 animate-in fade-in duration-300">
       <div className="relative w-full max-w-lg rounded-xl bg-background p-10 shadow-3xl border border-primary/20 overflow-hidden">
         <div className="absolute inset-0 tech-grid opacity-[0.03] pointer-events-none" />
+        <div className="absolute -top-20 -right-20 h-48 w-48 rounded-full blur-[80px] bg-primary/10 pointer-events-none" />
 
         <div className="relative z-10 space-y-8">
           {/* Header */}
           <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-xl bg-bg-200 border border-border flex items-center justify-center">
-              <Terminal className="h-6 w-6 text-subtle" />
+            <div className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <Terminal className="h-6 w-6 text-accent-fg" />
             </div>
             <div>
               <h2 className="text-xl text-foreground tracking-tight font-semibold">
@@ -57,7 +58,7 @@ const AgentSetupModal = ({ onDone }: AgentSetupModalProps) => {
             <div className="rounded-xl border border-border bg-bg-200 p-4 space-y-3">
               {STEPS.map((step, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <span className="h-5 w-5 rounded-full bg-bg-200 border border-border text-[11px] font-medium text-muted-foreground flex items-center justify-center shrink-0">
+                  <span className="h-5 w-5 rounded-full bg-primary/10 border border-primary/20 text-[11px] font-medium text-accent-fg flex items-center justify-center shrink-0">
                     {i + 1}
                   </span>
                   <code className="flex-1 font-mono text-xs text-accent-fg">
@@ -69,7 +70,7 @@ const AgentSetupModal = ({ onDone }: AgentSetupModalProps) => {
                     title={`Copy ${step.label} command`}
                   >
                     {copiedIdx === i ? (
-                      <Check className="h-3.5 w-3.5 text-subtle" />
+                      <Check className="h-3.5 w-3.5 text-accent-fg" />
                     ) : (
                       <Copy className="h-3.5 w-3.5" />
                     )}

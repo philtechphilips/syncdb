@@ -252,11 +252,16 @@ const ConnectionDialog = ({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/25 backdrop-blur-[2px] p-4 animate-in fade-in duration-200">
       <div className="relative w-full max-w-4xl rounded-xl bg-card border border-border shadow-2xl overflow-hidden max-h-[95vh] flex flex-col">
+        {/* Ambient glow tied to cluster colour */}
+        <div
+          className="absolute -top-32 -right-32 h-72 w-72 rounded-full blur-[120px] pointer-events-none opacity-10 transition-colors duration-500"
+          style={{ backgroundColor: formData.color }}
+        />
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between px-8 pt-7 pb-5 border-b border-border relative z-10">
           <div className="flex items-center gap-3.5">
-            <div className="h-9 w-9 rounded-xl bg-bg-200 border border-border flex items-center justify-center shrink-0">
-              <Plug className="h-4 w-4 text-subtle" />
+            <div className="h-9 w-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+              <Plug className="h-4 w-4 text-accent-fg" />
             </div>
             <div>
               <h2 className="text-base font-semibold text-foreground tracking-tight leading-none mb-0.5">

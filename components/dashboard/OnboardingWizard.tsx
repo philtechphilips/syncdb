@@ -371,8 +371,8 @@ const ExploreStep = ({ onDone }: { onDone: () => void }) => (
             key={f.title}
             className="p-4 rounded-xl border border-border bg-ink/2 hover:border-primary/20 hover:bg-primary/3 transition-all group"
           >
-            <div className="h-8 w-8 rounded-lg bg-bg-200 border border-border flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-              <Icon className="h-3.5 w-3.5 text-subtle" />
+            <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+              <Icon className="h-3.5 w-3.5 text-accent-fg" />
             </div>
             <div className="text-sm font-semibold text-foreground mb-1">
               {f.title}
@@ -440,6 +440,7 @@ export const OnboardingWizard = ({ onDismiss }: { onDismiss: () => void }) => {
   return (
     <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-[2px] flex items-center justify-center px-4">
       {/* Ambient glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary/[0.07] blur-[120px] rounded-full pointer-events-none" />
 
       <div className="relative w-full max-w-lg">
         {/* Skip */}
@@ -500,8 +501,8 @@ export const OnboardingWizard = ({ onDismiss }: { onDismiss: () => void }) => {
           {/* Header */}
           <div className="px-6 pt-6 pb-4">
             <div className="flex items-center gap-3 mb-1">
-              <div className="h-8 w-8 rounded-xl bg-bg-200 border border-border flex items-center justify-center">
-                <Database className="h-4 w-4 text-subtle" />
+              <div className="h-8 w-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <Database className="h-4 w-4 text-accent-fg" />
               </div>
               <div>
                 <h2 className="text-base font-semibold text-foreground">

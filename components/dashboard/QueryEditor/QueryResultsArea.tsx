@@ -429,9 +429,9 @@ const QueryResultsArea = ({
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
                 {aiMode === "explain" ? (
-                  <HelpCircle className="h-5 w-5 text-subtle" />
+                  <HelpCircle className="h-5 w-5 text-accent-fg" />
                 ) : (
-                  <Lightbulb className="h-5 w-5 text-subtle" />
+                  <Lightbulb className="h-5 w-5 text-accent-fg" />
                 )}
               </div>
               <div>
@@ -490,7 +490,7 @@ const QueryResultsArea = ({
                       )
                     ) : (
                       <div className="p-8 flex items-center gap-4 bg-primary/5 rounded-lg border border-primary/10 mx-4 mt-4">
-                        <CheckCircle2 className="h-4 w-4 text-subtle" />
+                        <CheckCircle2 className="h-4 w-4 text-accent-fg" />
                         <span className="text-[11px] font-medium text-foreground/80">
                           {affectedRows !== null
                             ? `Command executed: ${affectedRows} rows affected`
@@ -544,7 +544,7 @@ const QueryResultsArea = ({
                       >
                         <td className="px-6 py-3 text-center">
                           {log.success ? (
-                            <CheckCircle2 className="h-4 w-4 text-subtle" />
+                            <CheckCircle2 className="h-4 w-4 text-accent-fg" />
                           ) : (
                             <AlertCircle className="h-4 w-4 text-err" />
                           )}

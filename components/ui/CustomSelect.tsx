@@ -96,7 +96,7 @@ const CustomSelect = <T extends string | number | boolean | null>({
                 >
                   {optLabel}
                   {isSelected && (
-                    <CheckCircle2 className="h-3.5 w-3.5 text-subtle" />
+                    <CheckCircle2 className="h-3.5 w-3.5 text-accent-fg" />
                   )}
                 </button>
               );

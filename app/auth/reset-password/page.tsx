@@ -11,7 +11,7 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import { Logotype } from "@/components/ui/SynqLogo";
+import { AuthHeading, AuthShell } from "@/components/auth/AuthShell";
 import { useAuthStore } from "@/store/useAuthStore";
 
 function ResetPasswordForm() {
@@ -64,8 +64,8 @@ function ResetPasswordForm() {
   if (isSuccess) {
     return (
       <div className="text-center py-4 animate-in zoom-in-95 duration-500">
-        <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-bg-200 border border-border mb-6">
-          <CheckCircle2 className="h-8 w-8 text-subtle" />
+        <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 border border-primary/20 mb-6">
+          <CheckCircle2 className="h-8 w-8 text-accent-fg" />
         </div>
         <h3 className="text-xl font-semibold text-foreground mb-2">
           Password reset successful
@@ -103,7 +103,7 @@ function ResetPasswordForm() {
 
       <div className="space-y-4">
         <div className="space-y-1.5">
-          <label className="text-[11px] font-medium text-muted-foreground ml-1">
+          <label className="text-[13px] text-muted-foreground">
             New Password
           </label>
           <div className="relative">
@@ -114,7 +114,7 @@ function ResetPasswordForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full bg-background border border-line-strong rounded-md py-2 pl-11 pr-12 text-foreground placeholder:text-subtle/70 outline-none focus:border-primary/60 transition-all text-sm"
+              className="w-full bg-background border border-line-strong rounded-xl h-11 pl-11 pr-12 text-foreground placeholder:text-subtle/70 outline-none focus:border-primary/60 transition-all text-sm"
             />
             <button
               type="button"
@@ -131,7 +131,7 @@ function ResetPasswordForm() {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[11px] font-medium text-muted-foreground ml-1">
+          <label className="text-[13px] text-muted-foreground">
             Confirm New Password
           </label>
           <div className="relative">
@@ -142,7 +142,7 @@ function ResetPasswordForm() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full bg-background border border-line-strong rounded-md py-2 pl-11 pr-4 text-foreground placeholder:text-subtle/70 outline-none focus:border-primary/60 transition-all text-sm"
+              className="w-full bg-background border border-line-strong rounded-xl h-11 pl-11 pr-4 text-foreground placeholder:text-subtle/70 outline-none focus:border-primary/60 transition-all text-sm"
             />
           </div>
         </div>
@@ -150,7 +150,7 @@ function ResetPasswordForm() {
 
       <button
         disabled={isLoading || !token}
-        className="w-full py-2 rounded-md bg-primary text-white font-medium text-sm transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full h-11 rounded-full bg-primary text-white font-medium text-[15px] hover:bg-primary-hover shadow-[0_1px_2px_rgb(67_56_202/0.3)] transition-colors flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isLoading ? (
           <Loader2 className="h-5 w-5 animate-spin" />
@@ -173,24 +173,13 @@ export default function ResetPasswordPage() {
   }, [isAuthenticated, router]);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col justify-center items-center px-6 py-12">
-      {/* Background elements */}
-      <div className="absolute inset-0 tech-grid opacity-[0.05] pointer-events-none"></div>
+    <AuthShell>
+      <div>
+        <AuthHeading title="Create new password">
+          Enter a strong password to secure your account.
+        </AuthHeading>
 
-      <div className="w-full max-w-md relative z-10">
-        <div className="text-center mb-10">
-          <Link href="/" className="inline-flex items-center group mb-8">
-            <Logotype className="text-[22px]" />
-          </Link>
-          <h1 className="text-3xl text-foreground mb-2 tracking-tight font-semibold">
-            Create new password
-          </h1>
-          <p className="text-subtle whitespace-nowrap">
-            Enter a strong password to secure your account.
-          </p>
-        </div>
-
-        <div className="rounded-xl p-6 border border-border bg-card">
+        <div>
           <Suspense
             fallback={
               <div className="flex justify-center py-8">
@@ -209,6 +198,6 @@ export default function ResetPasswordPage() {
           </Link>
         </p>
       </div>
-    </div>
+    </AuthShell>
   );
 }
